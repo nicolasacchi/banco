@@ -24,14 +24,52 @@ module Validation
     # answer_format_it and steps_it have their own check (E-SUPPORT-LEAK, D-216).
     SUPPORT_PATH = %r{\A/(?:answer_format_it|steps_it(?:/|\z))}
 
-    def initialize(unit, context:, files: {}, passage: nil)
+    # bilingual: the revision is a bilingual one (D-402): +unit+ and every instance are read on two layers, the target text under its legacy
+    # `_it` key (what every check below was written for) and the Italian translation, scanned for the leaks of the key; +subject+ names the
+    # language (a testlet's sub item has no subject of its own).
+    def initialize(unit, context:, files: {}, passage: nil, bilingual: false, subject: nil)
       @passage = passage
       @unit = unit
       @context = context
       @files = files
+      @subject = subject || unit.body["subject"]
+      @lang = bilingual ? Lessons::Lang.target(@subject) : nil
+      layer_unit if @lang
     end
 
     def call(inst, label:, seed: nil, generated: false)
+      return run(inst, label: label, seed: seed, generated: generated) unless @lang && inst["display"].is_a?(Hash) && !inst["answer"].nil?
+
+      renamed = @renamed.dup
+      found = run(Bilingual.target_layer(inst, @lang, "", renamed), label: label, seed: seed, generated: generated, layered: true)
+      f = Findings.new
+      found.each { |x| f.add(x.code, Bilingual.author_pointer(x.field, @lang, renamed), x.message, **x.detail.except(:seeds), seed: x.detail[:seeds]&.first) }
+      generated_layers(inst, label, seed, f) if generated
+      italian = Findings.new
+      @italian.scan_italian(Lessons::Bilingual.italian_layer(inst), target_key(inst), label, seed, italian)
+      italian.each { |x| f.add(x.code, x.field, "in the Italian translation: #{x.message}", **x.detail.except(:seeds), rule: "it-#{x.detail[:rule]}", seed: x.detail[:seeds]&.first) }
+      f
+    end
+
+    # The Italian layer of one instance: what the student reads with the translation open must not hold the key either (§4.2 rule 5). The key is
+    # looked for in the Italian text of the key option (a choice) and in the target key; the supports, the hints and the stored-order phrases
+    # are read as the Italian they are.
+    def scan_italian(layer, target_text, label, seed, f)
+      display = layer["display"]
+      answer = layer["answer"]
+      return unless display.is_a?(Hash) && !answer.nil?
+
+      @target_key = target_text
+      return unless Answers.shape_problems(@unit.component, answer, display).empty?
+
+      leaks(display, answer, layer, label, seed, f)
+      support_leaks(display, answer, layer, label, seed, f)
+      ItemChecks.method_words(display, "#{label}/display", @unit.skill, f, seed: seed)
+      stored_order(display, layer, label, seed, f) if STORED_ORDER_COMPONENTS.include?(@unit.component)
+      hint_leaks(display, answer, layer, label, seed, f) if @unit.body["kind"] == "practice_item"
+    end
+
+    def run(inst, label:, seed:, generated:, layered: false)
       f = Findings.new
       display = inst["display"]
       answer = inst["answer"]
@@ -42,7 +80,7 @@ module Validation
 
       keys = Answers.display_keys(display)
       keys.each { |path, name| f.add("E-DISPLAY-KEY", "#{label}/display#{path}", "the display carries a field that reveals the answer (#{name})", seed: seed) }
-      SchemaCheck.generated(inst, f, seed: seed) if generated && keys.empty?
+      SchemaCheck.generated(inst, f, seed: seed, subject: @subject) if generated && keys.empty? && !layered
       size_rules(display, label, seed, f)
       problems = Answers.shape_problems(@unit.component, answer, display)
       problems.each { |p| f.add("E-GEN-SCHEMA", "#{label}/answer", p, rule: "answer_shape", seed: seed) }
@@ -62,11 +100,12 @@ module Validation
       sentence_commas(inst, label, seed, f) if problems.empty? && @unit.component == "normalized_text"
       hint_rules(display, answer, inst, label, seed, f) if problems.empty?
       quote_and_figure(display, label, seed, f)
-      if generated
+      if generated && !layered
         Readability.lint_document({ "display" => display, "solution" => inst["solution"], "hints_it" => inst["hints_it"] }.compact, label, f)
       end
       f
     end
+    private :run
 
     # True when the correct option is the longest of its options (W-LONGEST-CORRECT).
     def longest_correct?(inst)
@@ -76,6 +115,32 @@ module Validation
     end
 
     private
+    # ---- the two layers of a bilingual revision (D-402) ------------------------------------------------------
+
+    # @unit becomes the unit as the checks read it (the target text under its legacy `_it` keys, no translation), @italian a twin that reads the
+    # Italian layer. The instances of the body stay out: they are layered one by one.
+    def layer_unit
+      body = @unit.body.except("instances")
+      @renamed = Set.new
+      target = Units::Unit.new(**@unit.to_h.merge(body: Bilingual.target_layer(body, @lang, "", @renamed)))
+      italian = Units::Unit.new(**@unit.to_h.merge(body: Lessons::Bilingual.italian_layer(body)))
+      @italian = self.class.new(italian, context: @context, files: @files, subject: @subject)
+      @unit = target
+    end
+
+    # The target text of the key option of a choice (its R2 `text`), nil for the other components.
+    def target_key(inst)
+      return unless @unit.component == "choice"
+
+      Array(inst.dig("display", "options")).find { |o| o.is_a?(Hash) && o["id"] == inst["answer"].to_s }&.dig("text")
+    end
+
+    # A generated instance is not in item.json: its own pairs, the lint of its Italian texts and of its target-language texts.
+    def generated_layers(inst, label, seed, f)
+      Bilingual.check(f, inst, lang: @lang, prefix: label, conflicts: false)
+      Bilingual.lint_target(f, inst, @lang, known: Bilingual.names(@lang), prefix: label)
+      Readability.lint_document({ "display" => inst["display"], "solution" => inst["solution"], "hints_it" => inst["hints_it"] }.compact, label, f)
+    end
 
     # ---- sizes ---------------------------------------------------------------
 
@@ -271,7 +336,7 @@ module Validation
       prompt = @unit.body["prompt"].is_a?(Hash) ? @unit.body["prompt"].slice("stem_it", "table", "quote", "figure") : {}
       if component == "choice"
         key = Array(display["options"]).find { |o| o["id"] == answer.to_s }
-        needles = key ? [ key["text"] ] : []
+        needles = key ? [ key["text"], @target_key ].compact : []
         scope = readable_strings(display, include_stem: true, include_options: false)
         # The item's own prompt is read with every instance (D-081).
         scope += prefixed(readable_strings(prompt, include_stem: true, include_options: false), "prompt")
@@ -347,7 +412,7 @@ module Validation
       values.flat_map do |value, key|
         if @unit.component == "choice"
           option = Array(display["options"]).find { |o| o["id"] == value.to_s }
-          option ? [ option["text"].to_s ] : []
+          [ option && option["text"].to_s, (@target_key if key) ].compact
         else
           accept = key ? @unit.accept + Array(inst["accept"]) : []
           Answers.key_texts(@unit.component, value, accept: accept, min: support_min) + ordering_texts(display, value) + matching_texts(display, value)
@@ -538,6 +603,14 @@ module Validation
       hints = Array(inst["hints_it"] || @unit.body["hints_it"]).select { |h| h.is_a?(String) }
       return f.add("E-HINTS", "#{label}/hints_it", "a practice instance has hints: its own hints_it or the item's", seed: seed) if hints.empty?
 
+      hint_leaks(display, answer, inst, label, seed, f, hints: hints)
+    end
+
+    # The hints that state the key (E-HINT-KEY) or name the key option (W-HINT-OPTION); the Italian layer of a bilingual item is scanned too.
+    def hint_leaks(display, answer, inst, label, seed, f, hints: nil)
+      hints ||= Array(inst["hints_it"] || @unit.body["hints_it"]).select { |h| h.is_a?(String) }
+      return if hints.empty?
+
       case @unit.component
       when "choice" then option_hints(display, answer, hints, label, seed, f)
       when "number", "fraction", "expression", "normalized_text" then key_hints(display, answer, inst, hints, label, seed, f)
@@ -560,8 +633,9 @@ module Validation
 
     def option_hints(display, answer, hints, label, seed, f)
       key = Array(display["options"]).find { |o| o["id"] == answer.to_s } or return
+      texts = [ key["text"].to_s, @target_key ].compact
       hints.each_with_index do |hint, i|
-        next unless Answers.contains?(hint, key["text"].to_s)
+        next unless texts.any? { |t| Answers.contains?(hint, t) }
 
         f.add("W-HINT-OPTION", "#{label}/hints_it/#{i}", "the hint names the correct option (#{key['text'].to_s[0, 30].inspect}); the reviewer judges", seed: seed)
       end

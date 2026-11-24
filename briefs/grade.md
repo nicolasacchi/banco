@@ -29,6 +29,12 @@ The item carries a rubric: `points[{id, weight 1-3, expected_it}]`, a `threshold
 and a `model_answer_it`. Send `{points: [{point_id, score, quote|null,
 rationale_it}], missing_it}`.
 
+In `english` and `spanish` (D-402) the student writes his answer in the language he is learning, answering a stem he read in that language (the
+item shows `stem_en|_es` and its Italian `stem_it`). Grade the answer in that language against the rubric, whose points stay in Italian (`expected_it`);
+the item then has two model answers, `model_answer_en|_es` (the sample in the target language) and `model_answer_it` (its Italian translation): read the
+target one to compare. The quote you give is an exact substring of what the student wrote, in whatever language he wrote it. A spelling or accent slip in
+the target language is an observation, as in rule 3, unless the rubric point is about spelling.
+
 - Every rubric point appears exactly once; no unknown points.
 - `score` is an integer from 0 to the weight of the point; the server computes the
   total.

@@ -46,7 +46,7 @@ class BilingualTest < ActiveSupport::TestCase
 
   test "pairs names the pointer of the target field, the base and both texts; lists pair by index" do
     found = B.pairs(fixture("item_choice.json"), "en").to_a
-    assert_includes found, [ "/prompt/stem_en", "stem", "Choose the two words that fill the gaps, in the order they are needed.",
+    assert_includes found, [ "/prompt/stem_en", "stem", "Choose the two words for the gaps, in the right order.",
                              "Scegli le due parole che completano la frase, nell'ordine in cui servono." ]
     assert_includes found, [ "/hints_en/1", "hints", "Think of the nouns: a bed, the shopping. Which verb is the usual partner of each one?",
                              "Pensa ai nomi: un letto, la spesa. Quale verbo è il compagno abituale di ciascuno?" ]

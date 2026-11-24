@@ -70,6 +70,40 @@ stop at `awaiting_teacher`.
 - In a `choice`, `matching` or `ordering` item the options, rows and steps are shuffled for every student: a step, final or hint never says «dall'alto», «nell'ordine delle righe», «la prima frase», «l'opzione b» or names `l1`, `r2`, `e3`; name the option by its text (`W-SOLUTION-STORED-ORDER`, a warning).
 - A formula never ends in a spacing command (`\;`, `\,`, `\quad`) right before a mark: `$C_3H_6$.`, not `$C_3H_6\;$.` (`W-MATH-SPACE-PUNCT`, a warning).
 
+## English and Spanish: written in the language, with the Italian one tap away (D-402)
+
+In `english` and `spanish` the student reads the exercises in the language he is learning and can open the Italian of every text with the
+«Traduzione» button. An item of these subjects opts in with `"bilingual": true` (the item's root; a testlet's sub items inherit it). Then **every
+student text is written twice**, and both texts are yours to write: never leave one to a machine.
+
+- **Where the two texts go.** The target text is under `<base>_en` (english) or `<base>_es` (spanish), its Italian under `<base>_it`: `prompt.stem_en` +
+  `prompt.stem_it`, `answer_format_en|_it`, `steps_en|_it` (lists of the same length), `hints_en|_it` (item and instance), `error_catalogue[].message_en|_it`,
+  `display.stem_en|_it`, `solution.steps[].text_en|_it`, `display.figure.alt_en|_it`, `display.table.caption_en|_it`. A few keys have no suffix and
+  already hold the target text: an option's, element's or row's `text`, a table's `header` and `rows`, `quote.text`, the solution's `final`; their
+  Italian goes beside them as `text_it`, `header_it`, `rows_it` (the same shape), `quote.text_it`, `final_it`. Every option, element and row has its `text_it`
+  (a name or a number too: the check says «copy» only when the text has a word of four letters).
+- **Not translated, on purpose.** The key and everything graded (`answer`, `accept`, `errors[].value`, `paradigm_forms`, `tests`), the typed fragments,
+  `quote.ref`, and the teacher's own texts: `description_it`, `choice_only_reason_it`, `notes_it`, the rubric's `expected_it`. They stay as they are
+  and in Italian. The sentences the practice page writes by itself («Giusto», «Ci sei quasi», «Giuste: N su M») are in the student's interface
+  language, not content: do not write them.
+- **The target text** (`E-READ`, `W-LANG-LEVEL`, `E-LESSON-LANG`): sentences of at most **12 words**, the instruction at most 60; the words of the first 3 000 of the
+  language (a grammar word the item teaches, «verb», «noun», goes in the item's optional `teaches_en` / `teaches_es` list); no Italian word in a `_en` or `_es` text.
+  English is British by default. Use **common given names** (Tom, Amy, Emma, Jack, Sophie; Lucía, Carlos, Marta, Pablo; the lists are in
+  `config/banco/lexicon/{en,es}_names.txt`), never the student's or his household's, and no famous person unless the skill is about him. Invented, plausible contexts.
+- **The Italian text** is a faithful, plain translation (not a gloss, not a hint), at most 25 words a sentence like every Italian text, and it says what the target says:
+  nothing added, nothing dropped, the same level. It must be Italian (`E-LANG-TRANSLATION-LANG`) and written, not copied (`E-LANG-TRANSLATION-COPY`).
+- **Same shape in both languages** (`E-LANG-PAIR-SHAPE`, `E-LANG-PAIR-MISSING`, `E-LANG-PAIR-ORPHAN`): the same number of `___` blanks, the same formulas
+  `$…$` and numbers, the same `**bold**` words, the same paragraphs and list items, and a list as long as its translation.
+- **The translation must not give the key away** (`E-SOLUTION-IN-DISPLAY`, `E-SUPPORT-LEAK`, `E-HINT-KEY`, `W-HINT-OPTION`, `W-MESSAGE-GIVES-KEY`, run on the
+  target text **and** on the Italian one): the student can always open the Italian. So no «translate this» exercise whose Italian prompt is the exercise, no
+  vocabulary matching whose Italian options are the answer, no Italian hint or stem that names the key. A mistake lives in the target text.
+- **A reading passage** (`passage_en|_es` + `passage_it`) is a comprehension text: its Italian is shown to the student only **after** he has answered (with the
+  solution, or once the exercise is closed), never before, so he cannot answer from the Italian. Write it anyway, complete and faithful. The instruction and the
+  question stems keep their Italian as usual.
+- **Generators** emit both layers in `display`, `solution` and `hints_*`; `verify.mjs` reads the target text (`instance.display.stem_en`). A static item lists both.
+- **Stored and served as written.** An item with no `bilingual` flag is validated and served exactly as before, until a new revision opts in. `bilingual` with a
+  `_en` text in a revision without the flag, or a `_es` text in english, is `E-LANG-BILINGUAL-FLAG`.
+
 ## Pools
 
 - A generated item keeps `generator.pool` of 24 clean seeds; a static practice item has at least 10

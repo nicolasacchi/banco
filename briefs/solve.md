@@ -83,6 +83,18 @@ string) and `answers`. Nothing else is allowed. A minimal file:
 }
 ```
 
+## Items in English or Spanish with the Italian (D-402)
+
+An item of `english` or `spanish` may show each text twice: the language it teaches (`stem_en`, `stem_es`, an option's `text`, `hints_*`…) and its Italian
+beside it (`stem_it`, `text_it`…). `banco solve open` gives you **both layers**, as the student has them when he opens the translation. **Answer from the
+target-language text**, as a student who is learning the language would; the Italian is only there to help him read. If you can answer correctly from the Italian
+alone, without reading the target text (a «translate this» task whose Italian is the exercise, an Italian option that is the answer, an Italian stem that
+names it), say so in your report as a `translation_leak`: the teacher reads it. A mistake or a mismatch between the two texts is a `translation_fidelity` note, not
+a reason to change your answer.
+
+A reading passage has no Italian in your copy (`passage_it` is missing): the student reads that translation only after he has answered, so you answer
+from the English or Spanish passage alone, as he does.
+
 ## Rules (version 2)
 
 1. Solve as a competent student of the stated level would: no tricks, no use of the

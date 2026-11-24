@@ -10,10 +10,15 @@ module Review
       findings = Validation::Findings.new
       return findings unless Validation::SchemaCheck.call("review", doc, findings)
 
-      expected = Checklist.expected_count(practice: text.practice?)
+      expected = Checklist.expected_count(practice: text.practice?, bilingual: text.bilingual?)
       if doc["checklist"].size != expected
         findings.add("E-REVIEW-CHECKLIST", "/checklist", "a review of #{text.practice? ? 'a practice item' : 'this item'} has exactly #{expected} checklist points, not #{doc['checklist'].size}",
                      expected: expected, got: doc["checklist"].size)
+        return findings
+      end
+      ids = Checklist.ids(practice: text.practice?, bilingual: text.bilingual?)
+      if doc["checklist"].map { |c| c["id"] } != ids
+        findings.add("E-REVIEW-CHECKLIST", "/checklist", "the checklist points of this item are #{ids.join(', ')} (a bilingual item has 14 and 15 for the translation, and no 12 and 13 unless it is a practice item), in this order", rule: "ids", expected: ids.size)
         return findings
       end
 

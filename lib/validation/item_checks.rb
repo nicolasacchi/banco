@@ -9,7 +9,9 @@ module Validation
 
     module_function
 
-    def call(item, files:, context:, findings:)
+    # grandfathered: the revision passed under older rules (a bilingual one is then not required, D-402).
+    def call(item, files:, context:, findings:, grandfathered: false)
+      language(item, findings, grandfathered: grandfathered)
       skills(item, context, findings)
       graph_errors(item, context, findings)
       composite(item, context, findings)
@@ -31,7 +33,12 @@ module Validation
     # steps_it say what to do, not how: a method word of the skill's subject (the rules file)
     # in the item's own steps is a warning. Once per item; the instance display is checked per instance.
     def support_method_words(item, findings)
-      Units.of(item).each { |unit| method_words(unit.body, unit.path, unit.skill, findings) }
+      lang = Lessons::Lang.target(item["subject"])
+      return Units.of(item).each { |unit| method_words(unit.body, unit.path, unit.skill, findings) } unless Bilingual.bilingual?(item) && lang
+
+      Bilingual.layers(item, lang, findings) do |doc, found|
+        Units.of(doc).each { |unit| method_words(unit.body, unit.path, unit.skill, found) }
+      end
     end
 
     # +hash+ holds steps_it; path is where it sits ("" for the item, "/instances/0/display"...).
@@ -46,6 +53,22 @@ module Validation
       return unless word
 
       findings.add("W-STEPS-METHOD", "#{path}/steps_it", "the steps name a method of the skill (#{word}): say what to do, not how", word: word, seed: seed)
+    end
+
+    # ---- the bilingual courses (D-402) ---------------------------------------------------
+
+    # The marker (E-LANG-BILINGUAL-REQUIRED, E-LANG-BILINGUAL-FLAG) and, for a bilingual item, every pair of it (completeness, shape, language,
+    # copy) and the lint of its target-language texts. An item without the marker is checked exactly as before.
+    def language(item, findings, grandfathered:)
+      subject = item["subject"]
+      Bilingual.required(findings, item, subject: subject, grandfathered: grandfathered)
+      Bilingual.flag(findings, item, subject: subject)
+      lang = Lessons::Lang.target(subject)
+      return unless lang && Bilingual.bilingual?(item)
+
+      Bilingual.check(findings, item, lang: lang, conflicts: false)
+      known = Array(item["teaches_#{lang}"]).flat_map { |w| w.to_s.downcase.scan(Lessons::Lexicon::WORD) }
+      Bilingual.lint_target(findings, item, lang, known: known)
     end
 
     # ---- E-SKILL-UNKNOWN ---------------------------------------------------------
@@ -320,7 +343,10 @@ module Validation
 
     # In a foreign-language subject the passage and the model answer are English or
     # Spanish text that sits under *_it keys; the Italian lint means nothing there (D-112).
+    # A bilingual revision (D-402) writes the target text under `_en|_es` and its Italian under `_it`: every `_it` is Italian and is linted.
     def target_language_keys(item)
+      return [] if Bilingual.bilingual?(item)
+
       Rules.list(:readability, :target_language_subjects).include?(item["subject"]) ? Rules.list(:readability, :target_language_keys) : []
     end
 
@@ -332,7 +358,7 @@ module Validation
         next unless %w[number fraction expression].include?(body["component"])
         next if body["calculation"] == false # D-106: a counting or reading item has no arithmetic to allow
 
-        stem = body.dig("prompt", "stem_it").to_s
+        stem = Lessons::Lang.pick(body["prompt"].is_a?(Hash) ? body["prompt"] : {}, "stem").to_s
         next if stem.downcase.include?(Rules.get(:readability, :calculator_sentence))
 
         findings.add("W-CALCULATOR", "#{path}/prompt/stem_it", "a numeric item in #{item['subject']} says whether the calculator is allowed")

@@ -24,8 +24,30 @@ module Validation
       references(skills, graph_index, context, findings)
       cycles(skills, graph, findings)
       topics(doc, subject, skills, graph_index, findings)
+      language(doc, subject, findings)
       Readability.lint_document(doc.slice("notes_it", "skills", "topics"), "", findings)
       findings
+    end
+
+    # D-402: a topic entry with `bilingual: true` (and a course skill that has its `label_<lang>`) is a pair, checked like an item's texts; a
+    # sibling of the subject's language in an entry without the marker is E-LANG-BILINGUAL-FLAG. The title and label stay Italian-linted.
+    def language(doc, subject, findings)
+      lang = Lessons::Lang.target(subject)
+      doc["topics"].each_with_index do |t, i|
+        Bilingual.flag(findings, t, subject: subject, prefix: "/topics/#{i}")
+        next unless lang && Bilingual.bilingual?(t)
+
+        Bilingual.check(findings, t, lang: lang, prefix: "/topics/#{i}", conflicts: false)
+        Bilingual.lint_target(findings, t, lang, prefix: "/topics/#{i}")
+      end
+      return unless lang
+
+      doc["skills"].each_with_index do |s, i|
+        next unless s.key?("label_#{lang}")
+
+        Bilingual.check(findings, s, lang: lang, prefix: "/skills/#{i}", conflicts: false)
+        Bilingual.lint_target(findings, s, lang, prefix: "/skills/#{i}")
+      end
     end
 
     # E-COURSE-SKILL-DUPLICATE: a course skill is new: not in the graph, not twice.

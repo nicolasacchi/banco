@@ -17,7 +17,7 @@ module Validation
     def call(name, data, findings, prefix: "", skip_extra_in_display: false)
       added = 0
       ok = true
-      Banco::Schemas.schema(name).validate(data).each do |e|
+      Banco::Schemas.for_subject(name, Banco::Schemas.subject_of(data)).validate(data).each do |e|
         pointer = e["data_pointer"].to_s
         type = e["type"]
         next if %w[minItems maxItems].include?(type) && pointer.match?(SIZE_FIELDS)
@@ -49,10 +49,10 @@ module Validation
       end
     end
 
-    # Errors of a generated instance against the instance definition of banco.item/1
-    # (E-GEN-SCHEMA), without the size rules left to InstanceChecks.
-    def generated(output, findings, seed:)
-      Banco::Schemas.schema("item").ref("#/$defs/instance").validate(output).each do |e|
+    # Errors of a generated instance against the instance definition of banco.item/1 (the derived one for a subject that teaches a language,
+    # D-402) (E-GEN-SCHEMA), without the size rules left to InstanceChecks.
+    def generated(output, findings, seed:, subject: nil)
+      Banco::Schemas.for_subject("item", subject).ref("#/$defs/instance").validate(output).each do |e|
         pointer = e["data_pointer"].to_s
         next if %w[minItems maxItems].include?(e["type"]) && pointer.match?(SIZE_FIELDS)
 

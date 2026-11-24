@@ -38,7 +38,9 @@ module Validation
       keyed = display_key_scan(item)
       return finish(item, []) unless SchemaCheck.call("item", item, @findings, skip_extra_in_display: keyed) && !keyed
 
-      ItemChecks.call(item, files: @files, context: @context, findings: @findings)
+      @subject = item["subject"]
+      @bilingual = Bilingual.bilingual?(item) && !Lessons::Lang.target(@subject).nil?
+      ItemChecks.call(item, files: @files, context: @context, findings: @findings, grandfathered: @grandfathered)
       instances = collect(item)
       finish(item, instances)
     end
@@ -81,9 +83,15 @@ module Validation
       end
     end
 
+    # The one instance of a short answer is its prompt. A bilingual one keeps both texts of the prompt (the siblings of every field) and both model
+    # answers; the rubric stays Italian (D-402).
     def short_answer_instance(item)
-      display = item["prompt"].slice("stem_it", "table", "quote", "figure")
-      { seed: nil, display: display, answer: item["rubric"], errors: nil, solution: { "model_answer_it" => item.dig("rubric", "model_answer_it") } }
+      prompt = item["prompt"]
+      display = prompt.slice(*prompt.keys.select { |k| k.match?(/\Astem_(?:it|en|es)\z/) }, "table", "quote", "figure")
+      model = item.dig("rubric", "model_answer_it")
+      solution = { "model_answer_it" => model }
+      solution.merge!(item["rubric"].slice("model_answer_en", "model_answer_es")) if @bilingual
+      { seed: nil, display: display, answer: item["rubric"], errors: nil, solution: solution }
     end
 
     def single(item)
@@ -119,7 +127,7 @@ module Validation
           @findings.add("E-GEN-SCHEMA", "#{unit.path}/generator", "generators in testlet sub-items are not supported yet: list instances", rule: "testlet_generator")
           []
         else
-          static(unit, item, passage: item["passage_it"])
+          static(unit, item, passage: passage_of(item))
         end
       end
       return [] if lists.any?(&:empty?)
@@ -130,7 +138,7 @@ module Validation
         testlet_leaks(item, subs, k)
         {
           seed: nil,
-          display: { "passage_it" => item["passage_it"], "sub_items" => subs.map { |u, inst| { "id" => u.body["id"], "skill" => u.skill, "component" => u.component, "display" => inst[:display] } } },
+          display: { "passage_it" => item["passage_it"], **item.slice("passage_en", "passage_es"), "sub_items" => subs.map { |u, inst| { "id" => u.body["id"], "skill" => u.skill, "component" => u.component, "display" => inst[:display] } } },
           answer: subs.to_h { |u, inst| [ u.body["id"], inst[:answer] ] },
           errors: subs.to_h { |u, inst| [ u.body["id"], inst[:errors] ] },
           solution: subs.to_h { |u, inst| [ u.body["id"], inst[:solution] ] }
@@ -146,7 +154,7 @@ module Validation
         needles = testlet_needles(unit, inst)
         next if needles.empty?
 
-        if unit.component != "choice" && (n = needles.find { |t| Answers.contains?(item["passage_it"].to_s, t) })
+        if unit.component != "choice" && (n = needles.find { |t| Answers.contains?(passage_of(item), t) })
           @findings.add("W-TESTLET-LEAK", "#{unit.path}/instances/#{k}/passage_it", "the key of this sub-item appears in the passage (#{n.to_s[0, 30].inspect})", rule: "passage")
         end
         subs.each_with_index do |(other, oinst), j|
@@ -166,7 +174,7 @@ module Validation
 
       if unit.component == "choice"
         key = Array(inst[:display]&.dig("options")).find { |o| o["id"] == answer.to_s }
-        key ? [ key["text"].to_s ] : []
+        key ? [ key["text"].to_s, key["text_it"].to_s ].reject(&:empty?) : []
       else
         Answers.key_texts(unit.component, answer, accept: unit.accept + Array(inst[:accept]))
       end
@@ -176,7 +184,7 @@ module Validation
 
     def static(unit, item, passage: nil)
       list = Array(unit.instances)
-      checker = InstanceChecks.new(unit, context: @context, files: @files, passage: passage)
+      checker = InstanceChecks.new(unit, context: @context, files: @files, passage: passage, bilingual: @bilingual, subject: @subject)
       list.each_with_index do |inst, i|
         @findings.merge!(checker.call(inst, label: "#{unit.path}/instances/#{i}"))
         ItemChecks.excluded_params(unit.body, inst, "#{unit.path}/instances/#{i}", @findings)
@@ -230,10 +238,12 @@ module Validation
       return if needles.empty?
 
       Array(unit.body["error_catalogue"]).each_with_index do |entry, i|
-        n = needles.find { |t| Answers.contains?(entry["message_it"].to_s, t) }
-        next unless n
+        %w[message_it message_en message_es].each do |key|
+          n = needles.find { |t| Answers.contains?(entry[key].to_s, t) }
+          next unless n
 
-        @findings.add("W-MESSAGE-GIVES-KEY", "#{unit.path}/error_catalogue/#{i}/message_it", "the message states the key of an instance (#{n.to_s[0, 30].inspect}); a message points at the step, never at an answer", code: entry["code"])
+          @findings.add("W-MESSAGE-GIVES-KEY", "#{unit.path}/error_catalogue/#{i}/#{key}", "the message states the key of an instance (#{n.to_s[0, 30].inspect}); a message points at the step, never at an answer", code: entry["code"])
+        end
       end
     end
 
@@ -243,10 +253,22 @@ module Validation
       row = { seed: seed, display: inst["display"], answer: inst["answer"], errors: inst["errors"], solution: inst["solution"] }
       row[:accept] = inst["accept"] if inst["accept"]
       # A practice instance keeps its effective hints (its own, else the item's), apart from the display (A2.4).
-      hints = unit.body["kind"] == "practice_item" ? (inst["hints_it"] || unit.body["hints_it"]) : nil
+      hints = unit.body["kind"] == "practice_item" ? hints_of(inst, unit.body) : nil
       row[:hints] = hints if hints
       row
     end
+
+    # The effective hints of an instance: its own, else the item's. A legacy item stores the Italian list; a bilingual one the pair as written, an
+    # object {"hints_en": [...], "hints_it": [...]} ("hints_es" in spanish), which the readers take as the pair of the instance (D-402).
+    def hints_of(inst, body)
+      return inst["hints_it"] || body["hints_it"] unless @bilingual
+
+      own = inst.slice("hints_en", "hints_es", "hints_it").compact
+      (own.empty? ? body.slice("hints_en", "hints_es", "hints_it") : own).presence
+    end
+
+    # The passage as the target layer shows it: `passage_en|_es` of a bilingual testlet, `passage_it` of a legacy one.
+    def passage_of(item) = Lessons::Lang.pick(item, "passage")
 
     def verify_static(unit, item, list)
       return unless @files.key?("verify.mjs") && list.any?
@@ -272,7 +294,7 @@ module Validation
         gen = phase.generate_all(1..Rules.get(:generator, :seeds))
         return [] if generator_problems(gen)
 
-        checker = InstanceChecks.new(unit, context: @context, files: @files)
+        checker = InstanceChecks.new(unit, context: @context, files: @files, bilingual: @bilingual, subject: @subject)
         clean = []
         problems = 0
         gen.rows.each do |row|
@@ -291,7 +313,7 @@ module Validation
           merge_seed_findings(local)
           ItemChecks.excluded_params(unit.body, inst, "generated", @findings, seed: row.seed)
           if local.errors.empty?
-            clean << { seed: row.seed, "display" => inst["display"], "answer" => inst["answer"], "errors" => inst["errors"], "solution" => inst["solution"], "accept" => inst["accept"], "hints_it" => inst["hints_it"] }
+            clean << { seed: row.seed, "display" => inst["display"], "answer" => inst["answer"], "errors" => inst["errors"], "solution" => inst["solution"], "accept" => inst["accept"], "hints_it" => inst["hints_it"], **inst.slice("hints_en", "hints_es") }
           else
             problems += 1
           end

@@ -34,7 +34,7 @@ module Api
         render json: { revision_id: @revision.id, item: @item.key, subject: @item.subject.key, seq: @revision.seq, status: @revision.status,
                        current: current, superseded_by: current ? nil : latest.id,
                        item_json: JSON.parse(@revision.body_json), instances: instances, figures: figures, programme_lines: @text.programme_lines,
-                       checklist: Review::Checklist.all(practice: @item.practice?), brief: brief_row("review"),
+                       checklist: Review::Checklist.all(practice: @item.practice?, bilingual: @text.bilingual?), brief: brief_row("review"),
                        next: next_step }
       end
 

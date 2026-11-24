@@ -28,13 +28,23 @@ module Review
       "free pages pinned by the lesson: na in this release (there are none)"
     ].freeze
 
+    # A bilingual lesson (english or spanish, D-402) is reviewed on two more points (12 and 13): the same two as a bilingual item. A lesson that
+    # is not bilingual keeps its 11, so the reviews already filed keep their count.
+    TRANSLATION_POINTS = Checklist::TRANSLATION_POINTS
+
     module_function
 
     def all = POINTS.each_with_index.map { |text, i| { id: i + 1, text: text } }
 
     def lesson2?(revision) = revision.body["schema"] == "banco.lesson/2"
 
-    # The points of a revision: 8 for banco.lesson/1, 11 for banco.lesson/2.
-    def for(revision) = (lesson2?(revision) ? POINTS2 : POINTS).each_with_index.map { |text, i| { id: i + 1, text: text } }
+    def bilingual?(revision) = lesson2?(revision) && revision.body["bilingual"] == true
+
+    # The points of a revision: 8 for banco.lesson/1, 11 for banco.lesson/2, 13 for a bilingual banco.lesson/2.
+    def for(revision)
+      points = lesson2?(revision) ? POINTS2 : POINTS
+      points += TRANSLATION_POINTS if bilingual?(revision)
+      points.each_with_index.map { |text, i| { id: i + 1, text: text } }
+    end
   end
 end

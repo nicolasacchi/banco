@@ -54,6 +54,16 @@ class BancoSchemasBilingualTest < ActiveSupport::TestCase
     end
   end
 
+  test "an item of english or spanish may list the words it teaches (teaches_en, teaches_es); no other subject may" do
+    derived = S::Bilingual.derive(S.read("item"), "item")
+    %w[teaches_en teaches_es].each { |key| assert_equal "array", derived.dig("properties", key, "type") }
+    assert_not S.read("item").fetch("properties").key?("teaches_en"), "the file is not changed"
+    item = JSON.parse(Rails.root.join("test/fixtures/lang/item_choice.json").read)
+    assert_empty S.validate("item", item.merge("teaches_en" => %w[gap verb]))
+    assert_not_empty S.validate("item", item.merge("teaches_en" => "gap"))
+    assert_not_empty S.validate("item", item.merge("subject" => "math", "teaches_en" => %w[gap]))
+  end
+
   test "derive does not change what it was given, and the schema of a subject without a language is the file" do
     base = S.read("item")
     copy = Marshal.load(Marshal.dump(base))
