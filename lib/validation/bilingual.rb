@@ -299,10 +299,11 @@ module Validation
       protected.split(/(?<=[.!?…][»”"])\s+|(?<=[.!?…])\s+|;\s*|\n+/).map { |s| s.tr("\u0001", ".").strip }.reject { |s| s.scan(Readability::WORD).empty? }
     end
 
-    # The first absolute word of the language (config/banco/validation_rules.yml readability.absolute_words_target) outside «not only» and «no solo».
+    # The first absolute word of the language (config/banco/validation_rules.yml readability.absolute_words_target: never «only» or «solo», the word of the
+    # instruction «Write only the missing words»).
     def absolute_word(lang, text)
       words = Array(Rules.get(:readability, :absolute_words_target)[lang])
-      lower = text.downcase.gsub(/(?<!\p{L})not only(?!\p{L})|(?<!\p{L})no s[oó]lo(?!\p{L})/, " ")
+      lower = text.downcase
       words.find { |w| lower.match?(/(?<!\p{L})#{Regexp.escape(w)}(?!\p{L})/) }
     end
 

@@ -193,7 +193,9 @@ module Lessons
 
     def check_fields(check, base, add)
       join = ->(k) { base.empty? ? k : "#{base}/#{k}" }
-      %w[prompt_it explain_it answer_format_it input_before input_after].each { |k| add.call(join.call(k), check[k]) }
+      %w[prompt_it sentence_it explain_it answer_format_it].each { |k| add.call(join.call(k), check[k]) }
+      # the text around the box of a typed gap is one inline run on its line, never a list: «14.» is its text (:inline)
+      %w[input_before input_after].each { |k| add.call(join.call(k), check[k], :inline) }
       check["options"].to_a.each_with_index { |o, i| add.call(join.call("options/#{i}/text_it"), o["text_it"]) }
       %w[left right].each { |side| check[side].to_a.each_with_index { |o, i| add.call(join.call("#{side}/#{i}/text_it"), o["text_it"]) } }
       %w[tiles items].each { |side| check[side].to_a.each_with_index { |o, i| add.call(join.call("#{side}/#{i}/text_it"), o["text_it"]) } }

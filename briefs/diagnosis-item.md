@@ -87,7 +87,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   `{"stance": "item_right", "note_it": "..."}`: the item is right, and the note is a short proof the
   teacher can check (the key, the rule, the source; for a second answer, why it is wrong).
   `{"stance": "fixed", "revision_id": N, "note_it": "..."}`: a later revision of the same item fixes it,
-  and the note says what changed. The note is Italian, at most 700 characters, short sentences, and
+  and the note says what changed. The note is Italian, at most 700 characters, sentences of at most 25 words (`E-READ`; an error code such as `W-MATCHING-JUDGE-ROWS` may be named), short sentences, and
   follows the readability rules. Use a new author session that did not raise the finding. Your answer
   never closes the finding: the teacher reads it and decides in the browser.
 - A `normalized_text` item that does not measure accents says `accent_policy: "flag"`

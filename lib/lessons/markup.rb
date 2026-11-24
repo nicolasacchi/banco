@@ -77,7 +77,11 @@ module Lessons
     end
 
     # The blocks of +text+ before they become nodes; every construct outside v2 raises Refused.
-    def raw_blocks(text, line_offset: 1, roles: false)
+    # inline: the text is one run of inline markup (the `input_before` / `input_after` of a typed gap, drawn on the line of the box): it is a single paragraph, never a
+    # list, so «14.» or «- » at its start is the text, not a list marker (D-402).
+    def raw_blocks(text, line_offset: 1, roles: false, inline: false)
+      return inline_block(text, line_offset, roles) if inline
+
       lines = text.to_s.gsub(/\r\n?/, "\n").split("\n", -1)
       blocks = []
       current = []
@@ -91,6 +95,16 @@ module Lessons
       end
       blocks << build(current, roles) unless current.empty?
       blocks
+    end
+
+    def inline_block(text, line_offset, roles)
+      rows = text.to_s.gsub(/\r\n?/, "\n").split("\n").each_with_index.map { |l, i| [ l, i + line_offset ] }.reject { |l, _| l.strip.empty? }
+      return [] if rows.empty?
+
+      rows.each { |line, n| line_level(line, n) }
+      block = RawBlock.new(type: :p, line: rows.first[1], source: rows.map(&:first).join("\n"), text: rows.map { |l, _| l.strip }.join(" "))
+      inline(block.text, block.line, roles: roles)
+      [ block ]
     end
 
     def build(rows, roles = false)
@@ -357,14 +371,14 @@ module Lessons
     end
 
     # Every inline node of a lesson/2 text with the line of its paragraph or item: yields (node, line).
-    def each_node(text, line_offset: 1, target: nil, &block)
+    def each_node(text, line_offset: 1, target: nil, inline: false, &block)
       walk = lambda do |nodes, line|
         nodes.each do |n|
           yield n, line
           walk.call(n["children"], line) if n["children"]
         end
       end
-      raw_blocks(text, line_offset: line_offset, roles: true).each do |b|
+      raw_blocks(text, line_offset: line_offset, roles: true, inline: inline).each do |b|
         if b.type == :p then walk.call(inline(b.text, b.line, roles: true, target: target), b.line)
         else b.items.each { |it| ([ it[:text] ] + it[:subs]).each { |t| walk.call(inline(t, it[:line], roles: true, target: target), it[:line]) } }
         end
@@ -372,9 +386,9 @@ module Lessons
     end
 
     # The colour roles a text uses, in [[role:...]] spans and \\role{name}{...} macros: [[name, line]].
-    def roles_used(text, line_offset: 1)
+    def roles_used(text, line_offset: 1, inline: false)
       names = []
-      each_node(text, line_offset: line_offset) do |n, line|
+      each_node(text, line_offset: line_offset, inline: inline) do |n, line|
         case n["t"]
         when "role" then names << [ n["role"], line ]
         when "math" then n["v"].scan(/\\role\{([^{}]*)\}/) { |(name)| names << [ name, line ] }
@@ -384,9 +398,9 @@ module Lessons
     end
 
     # The links a text holds: [[kind, target, line]].
-    def links_used(text, line_offset: 1)
+    def links_used(text, line_offset: 1, inline: false)
       links = []
-      each_node(text, line_offset: line_offset) { |n, line| links << [ n["kind"], n["target"], line ] if n["t"] == "link" }
+      each_node(text, line_offset: line_offset, inline: inline) { |n, line| links << [ n["kind"], n["target"], line ] if n["t"] == "link" }
       links
     end
 

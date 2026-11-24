@@ -24,18 +24,21 @@ module Validation
     ROMAN = /\A[IVXLCDM]+\z/
     # An acronym alone between parentheses, after the words it stands for: «prodotto interno lordo (PIL)» (D-324).
     PAREN_ACRONYM = /\(\s*\p{Lu}{3,}\s*\)/
+    # The name of an error code or a warning, `W-MATCHING-JUDGE-ROWS`, `E-LESSON-RENDER`: a note of the author's answer names the rule it relies on (D-402).
+    ERROR_CODE = /(?<![\p{L}\p{N}-])[EW](?:-[A-Z][A-Z0-9]*)+(?![\p{L}\p{N}-])/
 
     module_function
 
     # Lints one text. role: :stem, :message, :passage or :text. negation: false for the Italian of an instance sentence of a bilingual item (D-402): the sentence is
-    # the material the student works on, its negation is the content, not the way the instruction is phrased (W-NEGATIVE-STEM).
-    def lint(text, field:, role:, findings:, negation: true)
+    # the material the student works on, its negation is the content, not the way the instruction is phrased (W-NEGATIVE-STEM). codes: true for the note of an answer
+    # to a finding, which may name an error code (ERROR_CODE passes the ALL-CAPS rule, being one word for the sentence length too).
+    def lint(text, field:, role:, findings:, negation: true, codes: false)
       return unless text.is_a?(String)
 
       plain = text.gsub(MATH, " m ")
       markup(plain, field, findings)
       emoji(plain, field, findings)
-      caps(plain, field, findings)
+      caps(plain, field, findings, codes: codes)
       bold(text.gsub(MATH, " m "), field, findings)
       phrases(text, field, findings)
       sentences = sentences_of(strip_markup(plain))
@@ -55,7 +58,7 @@ module Validation
     # Walks a parsed JSON value and lints every *_it string by its key.
     # skip: keys whose text is in the language being taught (D-112): not linted. bilingual: the document is a bilingual item (D-402): the `stem_it` of an
     # instance's display is the Italian of a sentence, never the instruction.
-    def lint_document(node, path, findings, skip: [], bilingual: false)
+    def lint_document(node, path, findings, skip: [], bilingual: false, codes: false)
       case node
       when Hash
         node.each do |key, value|
@@ -63,22 +66,22 @@ module Validation
           if skip.include?(key.to_s) && value.is_a?(String)
             next
           elsif value.is_a?(String) && key.to_s.end_with?("_it")
-            lint(value, field: field, role: role_for(key.to_s), findings: findings, negation: !(bilingual && key.to_s == "stem_it" && path.end_with?("/display")))
+            lint(value, field: field, role: role_for(key.to_s), findings: findings, negation: !(bilingual && key.to_s == "stem_it" && path.end_with?("/display")), codes: codes)
           elsif value.is_a?(Array) && key.to_s.end_with?("_it") && value.all?(String)
             # steps_it: a list of short texts, each linted on its own (D-216).
-            value.each_with_index { |text, i| lint(text, field: "#{field}/#{i}", role: :text, findings: findings) }
+            value.each_with_index { |text, i| lint(text, field: "#{field}/#{i}", role: :text, findings: findings, codes: codes) }
           elsif key.to_s != "quote"
-            lint_document(value, field, findings, skip: skip, bilingual: bilingual)
+            lint_document(value, field, findings, skip: skip, bilingual: bilingual, codes: codes)
           end
         end
       when Array
-        node.each_with_index { |v, i| lint_document(v, "#{path}/#{i}", findings, skip: skip, bilingual: bilingual) }
+        node.each_with_index { |v, i| lint_document(v, "#{path}/#{i}", findings, skip: skip, bilingual: bilingual, codes: codes) }
       end
     end
 
     def role_for(key)
       case key
-      when "stem_it" then :stem
+      when "stem_it", "task_it" then :stem # the task line of an instance is an instruction too (D-402)
       when "message_it" then :message
       when "passage_it" then :passage
       else :text
@@ -106,10 +109,11 @@ module Validation
       findings.add("E-READ", field, "an emoji or pictogram", rule: "emoji") if plain.match?(EMOJI)
     end
 
-    def caps(plain, field, findings)
+    def caps(plain, field, findings, codes: false)
       allowed = Rules.list(:readability, :caps_allowlist)
       # A spreadsheet function name (SOMMA(, CONTA.SE) is a name, not shouting (D-095); so is an acronym that stands
-      # alone inside parentheses (D-324). Outside parentheses only the allowlist passes.
+      # alone inside parentheses (D-324). Outside parentheses only the allowlist passes. The name of an error code passes in a note (codes).
+      plain = plain.gsub(ERROR_CODE, " ") if codes
       word = plain.gsub(PAREN_ACRONYM, " ").scan(/\p{L}+(?![(\p{L}]|\.\p{L})/).find do |w|
         w.length >= 3 && w == w.upcase && w != w.downcase && !allowed.include?(w) && !w.match?(ROMAN)
       end

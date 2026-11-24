@@ -147,6 +147,18 @@ class FindingsApiTest < ActionDispatch::IntegrationTest
     assert_equal 0, FindingResponse.count
   end
 
+  test "a note may name an error code: W-MATCHING-JUDGE-ROWS passes the ALL-CAPS rule that other capital words do not" do
+    respond(@blind_finding, { stance: "item_right", note_it: "Il codice W-MATCHING-JUDGE-ROWS avvisa se una riga resta sola." }, headers: { "X-Banco-Dry-Run" => "1" })
+    assert_response :success
+    respond(@blind_finding, { stance: "item_right", note_it: "Il codice E-LESSON-RENDER e il codice W-ABSOLUTE vanno bene." }, headers: { "X-Banco-Dry-Run" => "1" })
+    assert_response :success
+    respond(@blind_finding, { stance: "item_right", note_it: "Qui c'è ASSOLUTAMENTE una riga." }, headers: { "X-Banco-Dry-Run" => "1" })
+    assert_response :unprocessable_entity
+    assert_equal "E-READ", json["code"]
+    respond(@blind_finding, { stance: "item_right", note_it: "La chiave " + ("parola " * 25).strip + " e W-ABSOLUTE." }, headers: { "X-Banco-Dry-Run" => "1" })
+    assert_response :unprocessable_entity, "the sentence limit (25 words) still holds"
+  end
+
   test "a dry run stores nothing; the latest response shows in work open" do
     respond(@blind_finding, { stance: "item_right", note_it: "La chiave è giusta." }, headers: { "X-Banco-Dry-Run" => "1" })
     assert_response :success

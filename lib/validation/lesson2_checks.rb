@@ -64,6 +64,11 @@ module Validation
       when Hash
         sentence = Lessons::Bilingual.in_sentence?(node, sentence)
         node.each_key do |key|
+          if (s = key.is_a?(String) && node.key?("component") && key.match(/\A#{Lessons::Bilingual::SENTENCE}_(en|es)\z/)) # a check's own sentence: a target text with no `_it` beside it
+            names = { "en" => "English", "es" => "Spanish" }
+            emit.call("#{pointer}/#{key}", lang ? "#{key} is in #{names[s[1]]} and the subject teaches #{names[target]}" : "#{key} belongs to a bilingual lesson (bilingual: true in the front matter)") if lang.nil? || s[1] != lang
+            next
+          end
           m = key.is_a?(String) && key.match(/\A(.+)_(en|es)\z/) or next
           base = m[1]
           next if !node.key?("#{base}_it") || Lessons::Bilingual::EXEMPT.include?(base) || Lessons::Bilingual::FIELDS[:native].include?(base)
@@ -552,16 +557,17 @@ module Validation
         field = slot(field) if layer == :target
         @plain << [ text, line ]
         begin
-          blocks = Lessons::Markup.raw_blocks(text, line_offset: line, roles: true)
+          inline = lists_allowed == :inline # input_before / input_after: one inline run, never block markup
+          blocks = Lessons::Markup.raw_blocks(text, line_offset: line, roles: true, inline: inline)
           unless lists_allowed || (blocks.size == 1 && blocks.first.type == :p)
             add("E-LESSON-MARKUP", field, "line #{line}: one paragraph is expected here, not a list or several paragraphs", line: line, rule: "inline-only")
             return
           end
-          Lessons::Markup.roles_used(text, line_offset: line).each do |name, at|
+          Lessons::Markup.roles_used(text, line_offset: line, inline: inline).each do |name, at|
             add("E-LESSON-ROLE", field, "line #{at}: #{name} is not a colour role of #{@subject}'s palette", line: at, rule: "role-#{name}-#{field}") unless Lessons::Palette.role?(@subject, name)
           end
-          Lessons::Markup.links_used(text, line_offset: line).each { |kind, target, at| link(field, kind, target, at) }
-          spans(field, text, line, layer)
+          Lessons::Markup.links_used(text, line_offset: line, inline: inline).each { |kind, target, at| link(field, kind, target, at) }
+          spans(field, text, line, layer, inline: inline)
           formula_space(field, text, line)
           lint(field, blocks, layer)
         rescue Lessons::Markup::Refused => e
@@ -624,8 +630,8 @@ module Validation
 
       # ---- the text layer (D-266): language spans, role spans of a language subject, code spans, glossary words ---------------------------------
 
-      def spans(field, text, line, layer = nil)
-        Lessons::Markup.each_node(text, line_offset: line, target: layer == :italian ? nil : @target) do |n, at|
+      def spans(field, text, line, layer = nil, inline: false)
+        Lessons::Markup.each_node(text, line_offset: line, target: layer == :italian ? nil : @target, inline: inline) do |n, at|
           case n["t"]
           when "lang"
             language_span(field, n["lang"], n["v"], at, layer, plain_words: true)
@@ -768,9 +774,9 @@ module Validation
         card["blocks"].each do |b|
           next if %w[legend check try].include?(b["type"])
 
-          Lessons::Blocks.markup_fields(b).each do |sub, text, _|
+          Lessons::Blocks.markup_fields(b).each do |sub, text, lists|
             at = b["type"] == "text" ? b["line"] : field_line(b["line"], sub)
-            Lessons::Markup.roles_used(text, line_offset: at).each { |name, l| used[name] ||= l }
+            Lessons::Markup.roles_used(text, line_offset: at, inline: lists == :inline).each { |name, l| used[name] ||= l }
           rescue Lessons::Markup::Refused
             nil
           end
@@ -847,8 +853,8 @@ module Validation
       def card_terms(card)
         terms = []
         Lessons::Blocks.each_block(card).each do |b, _|
-          Lessons::Blocks.markup_fields(b).each do |_, text, _|
-            Lessons::Markup.each_node(text) { |n, _| terms << n["term"] if n["t"] == "gloss" }
+          Lessons::Blocks.markup_fields(b).each do |_, text, lists|
+            Lessons::Markup.each_node(text, inline: lists == :inline) { |n, _| terms << n["term"] if n["t"] == "gloss" }
           rescue Lessons::Markup::Refused
             nil
           end

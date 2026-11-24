@@ -69,6 +69,25 @@ export function semantic(data) {
   return roleError
 }
 
+// The name of a part's role in the language of a bilingual lesson (D-402): when the page has a language and the part is written in it, the palette's `label_en|es`
+// (its Italian name is then said by the figure's panel: roleNamePairs). Else undefined: the Italian name, as a legacy lesson always had it.
+function roleNameIn(lang, part, role) {
+  return lang && langOf(part) === lang ? role?.[`label_${lang}`] : undefined
+}
+
+// The «target name → Italian name» pairs of the role names a sentence figure draws in the language of the lesson (the parts with no label of their own), for its panel.
+export function roleNamePairs(data, subject, lang) {
+  const out = []
+  const parts = [data?.parts, ...(data?.states ?? []).map((s) => s?.parts)].flat().filter(Boolean)
+  for (const part of parts) {
+    if (part.label_it != null || !part.role) continue
+    const role = roleInfo(palette, subject, part.role)
+    const target = roleNameIn(lang, part, role)
+    if (target && role.label_it && !out.some(([t]) => t === target)) out.push([target, role.label_it])
+  }
+  return out
+}
+
 function info(ctx, role) {
   return roleInfo(palette, ctx.subject, role) ?? { label_it: role }
 }
@@ -79,9 +98,10 @@ function measureNode(ctx, p, maxW) {
   const r = info(ctx, p.role)
   const iconW = r.icon ? Math.round(f * 1.1) + 4 : 0
   const text = ctx.measure(textOf(p), f, maxW ? maxW - iconW : undefined)
-  const labelText = p.label_it ?? r.label_it
+  const named = roleNameIn(ctx.lang, p, r)
+  const labelText = p.label_it ?? named ?? r.label_it
   const lab = ctx.measure(labelText, f, maxW)
-  return { r, iconW, text, lab, labelText, w: Math.ceil(Math.max(text.w + iconW, lab.w)), th: text.h, lh: lab.h }
+  return { r, iconW, text, lab, labelText, named: p.label_it == null && named != null, w: Math.ceil(Math.max(text.w + iconW, lab.w)), th: text.h, lh: lab.h }
 }
 
 function drawNode(ctx, p, i, x, y, w, nd, hits, boxed) {
@@ -96,7 +116,7 @@ function drawNode(ctx, p, i, x, y, w, nd, hits, boxed) {
   label(ctx, textOf(p), startX + nd.iconW, ty, { anchor: "start", maxW: nd.text.h > ctx.lineH ? nd.text.w : undefined, cls: `role-${p.role} dg-parttext${p.implied ? " dg-implied-text" : ""}`, role: p.role, key: `${key}:text`, lang: langOf(p) })
   const barY = ty + nd.th + 1
   if (!boxed) shape(ctx, "line", { x1: x + 2, y1: barY + 2, x2: x + w - 2, y2: barY + 2, cls: `dg-bar st-${p.role}${p.implied ? " dg-implied" : ""}`, key: `${key}:bar` })
-  const lab = label(ctx, nd.labelText, cx, barY + 6, { maxW: w, cls: `role-${p.role} dg-partlabel`, role: p.role, key: `${key}:label` })
+  const lab = label(ctx, nd.labelText, cx, barY + 6, { maxW: w, cls: `role-${p.role} dg-partlabel`, role: p.role, key: `${key}:label`, lang: nd.named ? langOf(p) : undefined })
   hits.push({ key, id: p.id ?? `p${i}`, x, y, w, h: barY + 6 + lab.h - y, role: p.role, name: nd.r.label_it, text: textOf(p), question_it: p.question_it ?? null })
 }
 

@@ -22,20 +22,23 @@ export function plain(text) {
 // The texts of a figure that a translation can be asked for (D-402): every `<base>_it` string of its data, a list of them too, in the order the data
 // has them, once each (every state's too), and the edge labels of a flow (the third place of each edge: the Italian is in `tr`), the figure's own alt and
 // caption left out (the alt is said first by the panel, the caption has its own translation line), and the `pieces_it` of a mirror, which are the Italian side
-// itself. A bilingual lesson's figure holds the target text in these slots. Pure.
+// itself, as is the `label_it` of a word_parts word (a hash with a `form_*`) that the figure's `tr` has no entry for: the legacy gloss, «banana» under «plátano».
+// A bilingual lesson's figure holds the target text in these slots. Pure.
+const WORD_FORM = /^form_(?:en|es|la|it)$/
 export function figureStrings(data) {
   const found = []
   const add = (text) => {
     if (typeof text === "string" && text.trim() !== "" && !found.includes(text)) found.push(text)
   }
-  const walk = (value, key, top) => {
+  const legacyGloss = (holder, key, value) => key === "label_it" && Object.keys(holder).some((k) => WORD_FORM.test(k)) && !(data.tr && Object.hasOwn(data.tr, value))
+  const walk = (value, key, top, holder) => {
     if (typeof value === "string") {
-      if (/_it$/.test(key ?? "") && key !== "pieces_it" && !(top && (key === "alt_it" || key === "caption_it"))) add(value)
+      if (/_it$/.test(key ?? "") && key !== "pieces_it" && !(top && (key === "alt_it" || key === "caption_it")) && !legacyGloss(holder, key, value)) add(value)
     } else if (key === "edges" && Array.isArray(value)) value.forEach((edge) => Array.isArray(edge) && add(edge[2]))
-    else if (Array.isArray(value)) value.forEach((item) => walk(item, key, false))
-    else if (value && typeof value === "object") for (const [k, v] of Object.entries(value)) walk(v, k, false)
+    else if (Array.isArray(value)) value.forEach((item) => walk(item, key, false, holder))
+    else if (value && typeof value === "object") for (const [k, v] of Object.entries(value)) walk(v, k, false, value)
   }
-  if (data && typeof data === "object") for (const [k, v] of Object.entries(data)) walk(v, k, true)
+  if (data && typeof data === "object") for (const [k, v] of Object.entries(data)) walk(v, k, true, data)
   return found
 }
 
@@ -107,7 +110,9 @@ export function makeContext(data, opts) {
     palette: opts.palette ?? null,
     validateTex: opts.validateTex ?? null,
     icons: opts.icons ?? null,
-    subject: opts.subject ?? "math"
+    subject: opts.subject ?? "math",
+    // the language of a bilingual lesson (D-402, "en" or "es"; none in a legacy one): a layout that draws a name of its own (a role's) draws it in that language
+    lang: opts.lang ?? null
   }
 }
 

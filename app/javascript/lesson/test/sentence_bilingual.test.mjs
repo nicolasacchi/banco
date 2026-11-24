@@ -42,3 +42,19 @@ test("a sentence written in text_it beside a part in text_es is refused: the sen
   const bad = { type: "sentence", alt_it: "x", text_it: "Lei legge", parts: [{ id: "v", text_es: "lee", role: "verb" }] }
   assert.match(semantic(bad)?.message ?? "", /language of its sentence/)
 })
+
+// D-402: a part with no label of its own is named by its role; in a bilingual lesson the name is the palette's `label_en|es`, target text, and the figure's panel says the
+// Italian one; a legacy lesson (no lang) keeps the Italian name.
+test("the role name of a part with no label is drawn in the language of a bilingual lesson, and its Italian is in the panel; a legacy lesson keeps the Italian name", async () => {
+  const { roleNamePairs } = await import("lesson/diagrams/sentence")
+  const figure = { type: "sentence", alt_it: "Una frase con un verbo e un complemento.", text_es: "Ella lee", parts: [{ id: "s", text_es: "Ella", role: "verb" }, { id: "v", text_es: "lee", role: "od" }] }
+  const draw = (lang) => layout(figure, { width: 900, fontPx: 20, subject: "spanish", measure, state: 0, lang })
+  const names = (scene) => scene.labels.filter((l) => l.key?.endsWith(":label"))
+  assert.deepEqual(names(draw("es")).map((l) => l.text_it), ["verbo", "complemento directo"])
+  assert.ok(names(draw("es")).every((l) => l.lang === "es"), "target text: it carries its language")
+  assert.deepEqual(names(draw(undefined)).map((l) => l.text_it), ["verbo", "complemento diretto"])
+  assert.ok(names(draw(undefined)).every((l) => l.lang === undefined), "a legacy lesson is drawn as it was")
+  assert.deepEqual(roleNamePairs(figure, "spanish", "es"), [["verbo", "verbo"], ["complemento directo", "complemento diretto"]])
+  assert.deepEqual(roleNamePairs(figure, "spanish", undefined), [])
+  assert.deepEqual(roleNamePairs({ ...figure, parts: [{ ...figure.parts[0], label_it: "mine" }] }, "spanish", "es"), [], "a part with its own label has none")
+})

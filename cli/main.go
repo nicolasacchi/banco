@@ -136,6 +136,10 @@ func runWith(args []string, e *env) int {
 	if args[0] == "help" {
 		return runHelp(e, nil)
 	}
+	// "banco --version" is "banco version"
+	if args[0] == "--version" {
+		args = append([]string{"version"}, args[1:]...)
+	}
 	for _, a := range args {
 		if a == "--help" || a == "-h" {
 			return runHelp(e, args)

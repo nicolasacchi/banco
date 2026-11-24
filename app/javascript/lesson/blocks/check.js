@@ -124,33 +124,37 @@ export function renderCheck(spec, ctx, loc, options = {}) {
   const line = !!options.inline && isLine(spec)
   const prompt = el("div", { class: "check-prompt" })
   prompt.appendChild(renderRich(spec.prompt_it, ctx))
+  // the check's own sentence (D-402): the form material it is about, target-only (no translation, no «translation missing»), under the instruction and above the options
+  const sentence = spec.sentence_it ? el("div", { class: "check-sentence" }, renderRich(spec.sentence_it, noTranslation(ctx))) : null
   const handleInput = input(spec, ctx, options)
   // text before and after the box: the three stay together, as the sentence they make, and the box's hint ("Scrivi il numero...") goes on
-  // its own line above them, still the box's label (D-310: on a phone it sat between the formula and the box)
+  // its own line above them, still the box's label (D-310: on a phone it sat between the formula and the box). The accent keyboard goes
+  // below the sentence, never between the box and its `input_after` (D-402: the sentence was split in two at 390 px).
   const around = !line && Boolean(spec.input_before || spec.input_after)
   const row = el("div", { class: `check-row${line ? " is-line" : ""}${around ? " is-around" : ""}` })
   const hint = around ? handleInput.element.querySelector(":scope > label.hint") : null
+  const keys = around ? handleInput.element.querySelector(":scope > .accent-keys") : null
   // the words around the box are a fragment of the sentence the box completes, never translated alone (D-402): the prompt's translation says what to write
   const fragment = noTranslation(ctx)
-  if (spec.input_before) row.appendChild(renderInlineRich(spec.input_before, el("span", { class: "check-before" }), fragment))
+  if (spec.input_before) row.appendChild(renderInlineRich(spec.input_before, el("span", { class: "check-before" }), fragment, { inline: true }))
   row.appendChild(handleInput.element)
-  if (spec.input_after) row.appendChild(renderInlineRich(spec.input_after, el("span", { class: "check-after" }), fragment))
+  if (spec.input_after) row.appendChild(renderInlineRich(spec.input_after, el("span", { class: "check-after" }), fragment, { inline: true }))
   if (spec.answer_format_it) form.appendChild(beside(el("p", { class: "hint", text: spec.answer_format_it }), spec.answer_format_it, ctx))
   const submit = button(ctx.t.check_button, { class: `button small${line ? " check-go" : ""}`, type: "submit" })
   const feedback = el("div", { class: "feedback", "aria-live": "polite", role: "status" })
   if (line) {
     row.appendChild(submit)
-    form.append(prompt, row, feedback)
+    form.append(prompt, ...(sentence ? [sentence] : []), row, feedback)
     if (spec.component === "fraction" && !spec.answer_format_it) form.insertBefore(el("p", { class: "hint line-hint", text: ctx.t.fraction_line_hint }), feedback)
-  } else form.append(prompt, ...(hint ? [hint] : []), row, el("p", { class: "check-actions" }, submit), feedback)
+  } else form.append(prompt, ...(sentence ? [sentence] : []), ...(hint ? [hint] : []), row, ...(keys ? [keys] : []), el("p", { class: "check-actions" }, submit), feedback)
 
   // the fixed how-to line of a new component on its first use in the lesson, and its closed "Come si risponde" (A9)
   const [howto, help] = howtoNodes(spec, ctx, loc)
-  if (howto) prompt.after(howto)
+  if (howto) (sentence ?? prompt).after(howto)
   if (help) form.appendChild(help)
   // `listen`: the question is heard; its text stays behind "Mostra il testo" and an answer after looking is sent as text_shown
   const listen = ctx.safe ? null : listenBox(spec, ctx)
-  if (listen) (howto ?? prompt).after(listen.element)
+  if (listen) (howto ?? sentence ?? prompt).after(listen.element)
 
   if (ctx.teacher) {
     const notes = checkNotes(ctx.full?.spec(loc), ctx)

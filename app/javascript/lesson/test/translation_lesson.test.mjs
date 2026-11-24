@@ -375,6 +375,16 @@ test("markLabel: a served slot with its Italian is target text with a translatio
   assert.equal(legacy.getAttribute("lang"), null, "a legacy lesson is drawn as it was")
 })
 
+test("a word_parts word's `label_it` beside its `form_*` is the legacy Italian gloss («banana» under «plátano»): not a served text, drawn as Italian; a folded pair (tr has it) is target text", () => {
+  const data = { type: "word_parts", alt_it: "Words", view: "syllables", words: [{ form_es: "plátano", label_it: "banana" }, { form_es: "sillón", label_it: "última" }], tr: { "última": "ultima" } }
+  assert.deepEqual(figureStrings(data), ["última"])
+  const ctx = scoped(contextOf(fixture("served_lesson_es.json")), data)
+  const served = new Set(figureStrings(data))
+  const mark = (text) => { const node = el("div"); markLabel(node, { text_it: text }, ctx, { served, figureCtx: ctx }); return node }
+  assert.equal(mark("banana").getAttribute("lang"), "it", "no «es text with no Italian translation»")
+  assert.equal(mark("última").getAttribute("lang"), "es")
+})
+
 const { glossaryList } = await import("lesson/cards")
 
 test("the card's glossary lists an entry once, however the card names it: [[g:sílaba]] in the target and [[g:sillaba]] in its translation", () => {
@@ -421,4 +431,25 @@ test("a served table figure that is form material passes the schema check and ca
   const scene = layoutFigure(figure, { width: 320, fontPx: 16, subject: "english", measure: (text) => ({ w: String(text).length * 8, h: 20 }), state: 0 })
   assert.ok(!scene.error, scene.error?.message)
   assert.equal(scene.table.translate_material, false)
+})
+
+test("the legend's role name and question are the palette's own in the language of a bilingual lesson, with the Italian one as a translation; a legacy lesson keeps the Italian", async () => {
+  const { sample, render } = await import("lesson/blocks/legend")
+  const body = fixture("served_lesson_es.json")
+  const ctx = contextOf(body, { subject: "spanish" })
+  const chip = sample("verb", ctx)
+  const named = chip.children?.[0] ?? chip
+  assert.equal(named.getAttribute("lang"), "es")
+  assert.equal(named.textContent, "verbo")
+  assert.equal(named.hasAttribute("data-translated"), true)
+  assert.equal(trNodes(chip).length + (chip.children ?? []).filter((n) => n.classList?.contains("tr")).length > 0, true, "the Italian name follows as a .tr")
+  const muted = sample("muted", ctx)
+  assert.match((muted.children?.[0] ?? muted).textContent, /secundario/, "a common role: secundario, not secondario")
+  const legacy = sample("verb", { ...ctx, lang: null, trScopes: null })
+  assert.equal(legacy.textContent, "verbo")
+  assert.equal(legacy.getAttribute("lang"), null)
+  const list = render({ roles: [{ role: "od" }] }, ctx)
+  assert.match(list.textContent, /complemento directo/)
+  assert.match(list.textContent, /¿Qué\? ¿A quién\?/)
+  assert.doesNotMatch(render({ roles: [{ role: "od" }] }, { ...ctx, lang: null, trScopes: null }).textContent, /directo/)
 })

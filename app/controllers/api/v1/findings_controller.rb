@@ -276,7 +276,7 @@ module Api
           return false
         end
         findings = Validation::Findings.new
-        Validation::Readability.lint_document({ "note_it" => note }, doc_name, findings)
+        Validation::Readability.lint_document({ "note_it" => note }, doc_name, findings, codes: true)
         return true unless refuse_findings(findings, "shorten and simplify note_it, then #{step}")
 
         false

@@ -5,6 +5,7 @@
 // size and again on resize. If layout() answers { error } the figure shows alt_it and the description.
 import * as N from "lesson/num"
 import { figureStrings } from "lesson/diagrams/common"
+import { roleNamePairs } from "lesson/diagrams/sentence"
 import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { FAMILY, HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
@@ -181,7 +182,8 @@ function animate(oldBoxes, root, reduced) {
 // The translation panel of a figure, or null when none of its texts has an Italian: a `.tr` of the alt's translation and the list «target → italiano» (D-402).
 export function translationPanel(data, ctx) {
   const alt = typeof data?.alt_it === "string" ? translationOf(data.alt_it, ctx) : null
-  const pairs = figureStrings(data).map((text) => [text, translationOf(text, ctx)]).filter(([, italian]) => italian !== null)
+  const roles = data?.type === "sentence" ? roleNamePairs(data, ctx.subject, ctx.lang) : [] // the role names the layout draws in the language of the lesson
+  const pairs = [...figureStrings(data).map((text) => [text, translationOf(text, ctx)]).filter(([, italian]) => italian !== null), ...roles.filter(([text]) => !figureStrings(data).includes(text))]
   if (alt === null && pairs.length === 0) return null
   const panel = translationNode(null, { tag: "div" })
   panel.setAttribute("class", "tr dg-tr")
@@ -357,7 +359,7 @@ export function mountDiagram(data, ctx, options = {}) {
     const fontPx = ctx.fontPx()
     measurer.current.degenerate = false
     syncControls()
-    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: state.i, tryValue: state.tryValue, mode, set: options.set ?? null, controls: state.controls, revealed: [] })
+    const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, lang: ctx.lang, state: state.i, tryValue: state.tryValue, mode, set: options.set ?? null, controls: state.controls, revealed: [] })
     if (scene.error) return showError(scene.error)
     figure.classList.remove("dg-failed")
     figure.querySelector(".dg-fallback")?.remove()
@@ -666,7 +668,7 @@ export function mountDiagram(data, ctx, options = {}) {
     state.printWidth = width
     clear(printHost)
     for (const view of mod.printViews(data) ?? []) {
-      const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, state: view.state, mode: "print", controls: view.controls })
+      const scene = layout(data, { width, fontPx, measure: measurer.current.measure, subject: ctx.subject, lang: ctx.lang, state: view.state, mode: "print", controls: view.controls })
       if (scene.error) continue
       const env = { defs: new Map(), scale: 1, id: `${id}-print${printHost.children.length}` }
       const pane = svg("svg", { class: "dg-svg", viewBox: `0 0 ${scene.width} ${scene.height}`, width: scene.width, height: scene.height, role: "img", "aria-label": data.alt_it })

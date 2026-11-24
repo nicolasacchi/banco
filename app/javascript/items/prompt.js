@@ -24,6 +24,9 @@ export function renderPrompt(part, ctx) {
     }
     const stem = sides(part, "stem", lang)
     if (stem) box.appendChild(block(renderMarkup(stem.text), stem.text, stem.italian, ctx))
+    // the instance's own task line, a pair, above its sentence (the one line of Italian a form-material instance has)
+    const task = sides(part, "task", lang)
+    if (task) box.appendChild(block(renderMarkup(task.text), task.text, task.italian, ctx))
     const instance = sides(part, "instance_stem", lang)
     if (instance) {
       const holder = el("div", { class: "instance-stem", lang })
@@ -38,6 +41,7 @@ export function renderPrompt(part, ctx) {
       box.appendChild(passage)
     }
     if (part.stem_it) box.appendChild(renderMarkup(part.stem_it))
+    if (part.task_it) box.appendChild(renderMarkup(part.task_it))
     if (part.instance_stem_it) {
       const stem = el("div", { class: "instance-stem" })
       stem.appendChild(renderMarkup(part.instance_stem_it))

@@ -466,3 +466,13 @@ test("an item with a lang and no Italian at all draws the target text alone (no 
   assert.match(target(handle.element), /Elige\./)
   assert.match(target(handle.element), /¿___ vives\?/)
 })
+
+test("the task line of an instance is drawn above its sentence, with its translation, in a bilingual item and as one line in a legacy one", async () => {
+  const { renderPrompt } = await import("../../../app/javascript/items/prompt.js")
+  const bilingual = renderPrompt({ component: "normalized_text", lang: "en", task_en: "Make the question.", task_it: "Fai la domanda.", instance_stem_en: "He ___ a dog." }, ctx)
+  const text = bilingual.textContent
+  assert.ok(text.indexOf("Make the question.") < text.indexOf("He ___ a dog."), "the task comes first")
+  assert.match(text, /Fai la domanda\./)
+  const legacy = renderPrompt({ component: "normalized_text", task_it: "Fai la domanda.", instance_stem_it: "Lui ___ un cane." }, ctx)
+  assert.ok(legacy.textContent.indexOf("Fai la domanda.") < legacy.textContent.indexOf("Lui"))
+})

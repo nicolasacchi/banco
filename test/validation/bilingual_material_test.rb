@@ -66,6 +66,15 @@ class BilingualMaterialTest < ActiveSupport::TestCase
     assert_match(/form material/, run_item(item).findings.find { |f| f.code == "E-LANG-PAIR-ORPHAN" }.message)
   end
 
+  test "display.task_en + task_it is the paired task line of a material instance; one side alone is E-LANG-PAIR-MISSING" do
+    item = material
+    item["instances"][0]["display"]["task_en"] = "Choose the two forms."
+    item["instances"][0]["display"]["task_it"] = "Scegli le due forme."
+    assert_empty at(run_item(item), "E-SCHEMA") + at(run_item(item), "E-LANG-PAIR-MISSING") + at(run_item(item), "E-LANG-PAIR-ORPHAN")
+    item["instances"][0]["display"].delete("task_it")
+    assert_equal [ "/instances/0/display/task_en" ], at(run_item(item), "E-LANG-PAIR-MISSING")
+  end
+
   test "the instruction, the hints, the messages and the solution steps of a material item stay paired" do
     item = material
     item["hints_it"].pop
@@ -157,14 +166,16 @@ class BilingualMaterialTest < ActiveSupport::TestCase
     assert_empty VB.target_report("en", "Brujúla is quoted", known: known, level: false)[:unknown]
   end
 
-  test "W-ABSOLUTE on target text: always, never, only; siempre, nunca, solo; not «not only», not in quotes" do
+  test "W-ABSOLUTE on target text: always, never, nobody; siempre, nunca, nadie; not «only» or «solo» (the standard instruction), not in quotes" do
     assert_equal "always", VB.target_report("en", "We always add -s.")[:absolute]
-    assert_equal "only", VB.target_report("en", "Only he takes -s.")[:absolute]
-    assert_nil VB.target_report("en", "We do not only add -s: we also change the word.")[:absolute]
+    assert_equal "nobody", VB.target_report("en", "Nobody takes -s here.")[:absolute]
+    assert_nil VB.target_report("en", "Write only the missing words.")[:absolute]
+    assert_nil VB.target_report("en", "Only he takes -s. We do not only add -s: we also change the word.")[:absolute]
     assert_nil VB.target_report("en", "Write «always» and «never» in the gaps.")[:absolute]
     assert_equal "siempre", VB.target_report("es", "Siempre lleva tilde.")[:absolute]
-    assert_equal "solo", VB.target_report("es", "Solo lleva tilde la última.")[:absolute]
-    assert_nil VB.target_report("es", "No solo lleva tilde la última.")[:absolute]
+    assert_equal "nadie", VB.target_report("es", "Nadie lleva tilde aquí.")[:absolute]
+    assert_nil VB.target_report("es", "Escribe solo las palabras que faltan. Solo lleva tilde la última; no solo la última.")[:absolute]
+    assert_nil VB.target_report("es", "Escribe sólo o solamente las palabras que faltan.")[:absolute]
   end
 
   test "a bilingual item's hint with an absolute word is W-ABSOLUTE; a material sentence with one is not" do

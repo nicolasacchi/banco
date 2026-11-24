@@ -90,7 +90,7 @@ student text is written twice**, and both texts are yours to write: never leave 
   «acaba en n. Lleva» and inside a closing quote `.»` `?»`; a `;` splits), the instruction at most 60; the words of the first 3 000 of the language, plus the grammar words
   (`config/banco/lexicon/{en,es}_grammar.txt`: verb, noun, singular, plural, sílaba, tilde...) and the beginner words (`{en,es}_basic.txt`: thirteen, grandad, pen, lección...);
   any other word the item teaches goes in the item's optional `teaches_en` / `teaches_es` list (at most 40). Words inside «...» or `[[en:..]]` / `[[es:..]]`, syllable pieces
-  (`ja-mon`, `-es`) and form material are not read for the level. An absolute word (always, never, only; siempre, nunca, solo) is `W-ABSOLUTE` here too.
+  (`ja-mon`, `-es`) and form material are not read for the level. An absolute word (always, never, nobody; siempre, nunca, nadie) is `W-ABSOLUTE` here too; «only» and «solo» are not one, so «Write only the missing words» is fine.
   No Italian word in a `_en` or `_es` text; to quote one write it inside «...» or `[[it:..]]` (an item's page may print `[[it:..]]` as text, `E-ITEM-RENDER`: prefer «...»).
   English is British by default. Use **common given names** (Tom, Amy, Emma, Jack, Sophie; Lucía, Carlos, Marta, Pablo; the lists are in
   `config/banco/lexicon/{en,es}_names.txt`), never the student's or his household's, and no famous person unless the skill is about him. Invented, plausible contexts.
@@ -108,12 +108,16 @@ student text is written twice**, and both texts are yours to write: never leave 
 - **Stored and served as written.** An item with no `bilingual` flag is validated and served exactly as before, until a new revision opts in. `bilingual` with a
   `_en` text in a revision without the flag, or a `_es` text in english, is `E-LANG-BILINGUAL-FLAG`.
 
+### Contractions (D-398)
+
+The grader reads contractions both ways (D-398): `isn't` and `is not` are the same answer, so a contraction cannot be accepted when its full form is an error value (or the reverse); it is `E-ACCEPT-IS-ERROR`. Declare the contraction in `accept` only when its full form is also right.
+
 ### Form material is not translated (`translate_material: false`)
 
 In an exercise that tests a **form** of the language (choose the right form, fill a gap with a form, judge a sentence right or wrong, put forms in order, match a form to its
 name) the **material** stays target-only: the instance sentence with its blank (`display.stem_en`), the options, elements or rows that are forms
 (`display.options|elements|left|right[].text`) and the `final`. Its Italian would give the key away («Quante/Quanti» → Cuántas/Cuántos; «am/is/are» → «essere»: all the same, or the
-answer) or mislead. Say it once, at the item's root: `"translate_material": false` (next to `"bilingual": true`; a testlet's sub items inherit it; without `bilingual` it is
+answer) or mislead. A form-material instance has no Italian line of its own, so give each instance its task in `display.task_en|es` + `display.task_it` («Make the question.» / «Fai la domanda.»): one short paired instruction, drawn above the sentence, never the key. Say it once, at the item's root: `"translate_material": false` (next to `"bilingual": true`; a testlet's sub items inherit it; without `bilingual` it is
 `E-LANG-BILINGUAL-FLAG`). Then:
 
 - no `stem_it` in the instance's `display`, no `text_it` in an option, element or row, no `final_it`; an Italian text beside material is `E-LANG-PAIR-ORPHAN`;

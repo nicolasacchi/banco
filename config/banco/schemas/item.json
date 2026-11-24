@@ -532,6 +532,12 @@
           "minLength": 1,
           "maxLength": 800
         },
+        "task_it": {
+          "description": "What to do with THIS instance, one short line drawn above its sentence («Make the question.»), a pair in a bilingual item (D-402). It is for an item whose instance sentence is form material (translate_material: false), which has no Italian line of its own. No values: it never states the key (E-SOLUTION-IN-DISPLAY).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
         "passage_it": {
           "description": "The reading text of this instance, which overrides the item's own passage_it (D-402: three to five questions on each text, not ten on one). In a bilingual item the target text is passage_en|es beside it, and its Italian is shown only after the answer.",
           "type": "string",

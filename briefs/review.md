@@ -92,7 +92,9 @@ it can answer from the Italian alone, that is a `translation_leak`.
 before the item is used. `minor`: polish. The `quote` is an **exact substring** of
 the item (otherwise the server refuses it with `E-QUOTE-NOT-FOUND`); say where (`field`, `instance`).
 
-The author answers every blocker and major finding (`banco findings respond`): the item is right, with a short proof, or a new revision fixes it. The teacher reads both sides and decides. Write each `problem_it` so that the teacher can follow it without the item open: say what is wrong and why.
+The author answers every blocker and major finding (`banco findings respond`): the item is right, with a short proof, or a new revision fixes it. The note of the answer is Italian, at most 700 characters, in sentences of at most 25 words (`E-READ` refuses longer ones); it may name an error code such as `W-MATCHING-JUDGE-ROWS`. The teacher reads both sides and decides. Write each `problem_it` so that the teacher can follow it without the item open: say what is wrong and why.
+
+Check that no `accept` entry is a contraction whose full form is a declared error value, or the reverse. The grader reads contractions both ways (D-398): `isn't` and `is not` are the same answer, so a contraction cannot be accepted when its full form is an error value (or the reverse); it is `E-ACCEPT-IS-ERROR`.
 
 ## Rules (version 1)
 

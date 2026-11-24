@@ -33,7 +33,7 @@ module Grading
       display = h["display"].is_a?(Hash) ? h["display"] : {}
       solution = h["solution"].is_a?(Hash) ? h["solution"] : {}
       steps = Array(solution["steps"]).map { |step| Items::Text.step(step) }
-      [ Items::Text.stem(h["prompt"]), Items::Text.stem(display), Items::Text.pick(h, "answer_format"), Items::Text.pick(display, "answer_format"), *steps, solution["final"] ].grep(String)
+      [ Items::Text.stem(h["prompt"]), Items::Text.stem(display), Items::Text.pick(display, "task"), Items::Text.pick(h, "answer_format"), Items::Text.pick(display, "answer_format"), *steps, solution["final"] ].grep(String)
     rescue TypeError
       []
     end

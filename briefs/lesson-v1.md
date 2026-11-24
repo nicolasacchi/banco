@@ -147,7 +147,7 @@ skill out.
    `banco findings respond ID --file response.json` (use `--dry-run` first), D-313. One of two answers:
    `{"stance": "lesson_right", "note_it": "..."}` (the lesson is right; the note is a short proof the teacher can
    check) or `{"stance": "fixed", "revision_id": N, "note_it": "..."}` (a later revision of the same lesson fixes it;
-   the note says what changed). The note is Italian, at most 700 characters, short sentences. Use an author
+   the note says what changed). The note is Italian, at most 700 characters, sentences of at most 25 words (`E-READ`); it may name an error code. Use an author
    session that did not review the lesson. Your answer never closes the finding: the teacher decides.
 5. The lesson belongs to a topic (`banco topic submit`, see the topic brief). The teacher reads the
    whole topic and approves it in the browser.

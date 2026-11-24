@@ -115,6 +115,17 @@ func TestVersion(t *testing.T) {
 	}
 }
 
+func TestVersionFlagIsTheVersionCommand(t *testing.T) {
+	flag := runCLI(t, "", envToken(""), "--version")
+	word := runCLI(t, "", envToken(""), "version")
+	if flag.exit != ExitOK || flag.stdout != word.stdout {
+		t.Fatalf("--version: exit %d, %q; version: %q", flag.exit, flag.stdout, word.stdout)
+	}
+	if r := runCLI(t, "", envToken(""), "--version", "extra"); r.exit != ExitUsage {
+		t.Errorf("--version extra: exit %d, want usage", r.exit)
+	}
+}
+
 func TestUsageErrors(t *testing.T) {
 	for _, args := range [][]string{{}, {"nope"}, {"version", "extra"}, {"schema", "extra"}, {"version", "--bogus"}} {
 		r := runCLI(t, "", envToken(""), args...)

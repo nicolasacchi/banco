@@ -50,4 +50,16 @@ class ItemsPartFormMaterialTest < ActiveSupport::TestCase
     instance = Instance.new(Revision.new(JSON.generate(body.except("instances"))), nil, JSON.generate(body["instances"][0]["solution"]), JSON.generate(display))
     assert_equal served["solution"], json(Practice::Payload.solution(instance))
   end
+
+  # The per-instance task line: a paired `display.task_<lang>` + `task_it`, drawn above the sentence of a form-material instance (which has no Italian of its own).
+  test "an instance's task line is served as a pair next to a target-only sentence, and is not served when it has none" do
+    body = item("choice")
+    display = body["instances"][0]["display"].merge("task_en" => "Make the question.", "task_it" => "Fai la domanda.")
+    part = Items::Part.new(subject: Subject.new("english")).call(body, body["component"], display)
+    assert_equal [ "Make the question.", "Fai la domanda." ], part.values_at(:task_en, :task_it)
+    assert_nil part[:instance_stem_it], "the sentence below it stays material"
+    plain = Items::Part.new(subject: Subject.new("english")).call(body, body["component"], body["instances"][0]["display"])
+    assert_not plain.key?(:task_en)
+    assert_not plain.key?(:task_it)
+  end
 end

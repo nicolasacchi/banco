@@ -39,9 +39,15 @@ module Banco
         "lesson" => [ %w[$defs check_spec], %w[$defs exercise], %w[$defs b_table] ],
         "diagram" => [ %w[$defs table] ]
       }.freeze
-      # The `_it` that the schema requires of a text that can be form material (an option, an exercise's sentence, a mistake's wrong and right): there the
-      # target text is enough, `text_en` or `text_es` instead of `text_it` (the missing Italian of a text that is not material is E-LANG-PAIR-MISSING's).
-      MATERIAL_REQUIRED = { "lesson" => { "id_text" => %w[text_it], "exercise" => %w[text_it], "b_mistake" => %w[wrong_it right_it] } }.freeze
+      # The `_it` that the schema requires of a text that can be form material (an option, a mistake's wrong and right): there the target text is enough,
+      # `text_en` or `text_es` instead of `text_it` (the missing Italian of a text that is not material is E-LANG-PAIR-MISSING's).
+      MATERIAL_REQUIRED = { "lesson" => { "id_text" => %w[text_it], "b_mistake" => %w[wrong_it right_it] } }.freeze
+      # A `try` exercise of a bilingual course may have no text at all: a typed gap carries its sentence in `input_before` / `input_after`. The schema asks for
+      # none; Lessons::Blocks::Try says an exercise with no text and no such gap is E-LESSON-BLOCK.
+      OPTIONAL = { "lesson" => { "exercise" => %w[text_it] } }.freeze
+      # The sentence of a lesson check on form material (D-402): `sentence_en` or `sentence_es`, target-only, with no `sentence_it`. Drawn above the options, rows or tiles.
+      SENTENCE = { "type" => "string", "minLength" => 1, "maxLength" => 300, "description" => "D-402: the sentence this check is about (the sentence with its blank, the sentence to judge), in the target language only; there is no Italian twin." }.freeze
+      SENTENCE_AT = { "lesson" => [ %w[$defs check_spec] ] }.freeze
       # R2: schema => { $defs name => { property => the Italian twin's name, or [name, its own schema] when the twin is not a copy } }.
       R2 = {
         "item" => {
@@ -91,6 +97,17 @@ module Banco
             base = key.delete_suffix("_it")
             node["allOf"] = Array(node["allOf"]) + [ { "anyOf" => [ key, *LANGS.map { |l| "#{base}_#{l}" } ].map { |k| { "required" => [ k ] } } } ]
           end
+        end
+        OPTIONAL.fetch(name.to_s, {}).each do |def_name, keys|
+          node = out.dig("$defs", def_name) or raise ArgumentError, "#{name}: no $defs/#{def_name}"
+          node["required"] = Array(node["required"]) - keys
+          node.delete("required") if node["required"].empty?
+        end
+        SENTENCE_AT.fetch(name.to_s, []).each do |path|
+          target = out.dig(*path)
+          raise ArgumentError, "#{name}: no #{path.join('/')}" unless target.is_a?(Hash) && target["properties"].is_a?(Hash)
+
+          [ *LANGS, "it" ].each { |lang| target["properties"]["#{Lessons::Bilingual::SENTENCE}_#{lang}"] ||= SENTENCE.dup } # `sentence_it` is allowed so that E-LANG-PAIR-ORPHAN says why it is not wanted
         end
         TEACHES_AT.fetch(name.to_s, []).each do |path|
           target = path.empty? ? out : out.dig(*path)

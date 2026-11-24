@@ -34,7 +34,12 @@ const ORDERED_V2 = /^(\d+)\.\s+(.*)$/
 const BULLET_V2 = /^-\s+(.*)$/
 const SUB_V2 = /^ {2,4}-\s+(.*)$/
 
+// options.inline: the text is one run of inline markup (the text around the box of a typed gap): one paragraph, never a list, so «14.» or «- cm» is its text.
 function parseV2(text, options) {
+  if (options.inline) {
+    const joined = String(text ?? "").replace(/\r\n?/g, "\n").split("\n").map((line) => line.trim()).filter(Boolean).join(" ")
+    return joined === "" ? [] : [{ type: "p", children: inline(joined, options) }]
+  }
   const lines = String(text ?? "").replace(/\r\n?/g, "\n").split("\n")
   const blocks = []
   let current = []

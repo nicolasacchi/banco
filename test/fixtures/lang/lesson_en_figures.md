@@ -68,7 +68,6 @@ words:
   - form_en: 'a|bout'
     syllables: 'a-bout'
     stress: 2
-    label_en: "second"
     label_it: "seconda"
 states:
   - {op_en: "Two words", op_it: "Due parole"}
@@ -132,6 +131,21 @@ errors:
   - {answer: "cries", message_en: "After does the verb has no -s.", message_it: "Dopo does il verbo non ha -s."}
 explain_en: "The baby cries: the verb is in the base form."
 explain_it: "Il bambino piange: il verbo è alla forma base."
+:::
+
+::: check choice
+prompt_en: "Which form completes the sentence?"
+prompt_it: "Quale forma completa la frase?"
+sentence_en: "My dad ___ a car."
+translate_material: false
+options:
+  - {id: a, text_en: "has got"}
+  - {id: b, text_en: "have got"}
+answer: a
+errors:
+  - {answer: b, message_en: "My dad is he: has got.", message_it: "Mio padre è lui: has got."}
+explain_en: "My dad is he, so has got."
+explain_it: "Mio padre è lui, quindi has got."
 :::
 
 ::: example
@@ -269,6 +283,17 @@ exercises:
       answer: "has got"
     solution_en: "He has got a car."
     solution_it: "Lui ha una macchina."
+    final_en: "has got"
+    final_it: "ha"
+  - check:
+      component: normalized_text
+      prompt_en: "Write the missing words."
+      prompt_it: "Scrivi le parole che mancano."
+      input_before: "My sister"
+      input_after: "two dogs."
+      answer: "has got"
+    solution_en: "She has got two dogs."
+    solution_it: "Lei ha due cani."
     final_en: "has got"
     final_it: "ha"
 :::

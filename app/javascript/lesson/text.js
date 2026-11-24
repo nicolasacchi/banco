@@ -335,11 +335,12 @@ export function renderRich(text, ctx, options = {}) {
 
 // Inline only (labels, buttons, table cells): the first paragraph's content, into `target`. In a bilingual lesson `target` is target text and its
 // translation is a `span.tr` at its end, unless ctx says the place draws none (a button, a fragment: ctx.noTr). `options.italian` is the Italian of a text
-// that brings it along (a table cell: header_it, rows_it); without it the Italian is looked up in the scopes' `tr` tables.
+// that brings it along (a table cell: header_it, rows_it); without it the Italian is looked up in the scopes' `tr` tables. `options.inline`: the text is one run, never a
+// list (the text around the box of a typed gap: «14.» is the text, not a list marker).
 export function renderInlineRich(text, target, ctx, options = {}) {
   let blocks = null
   try {
-    blocks = parse(text, { lists: "v2", roles: true, target: ctx.translating ? null : targetOf(ctx.subject) })
+    blocks = parse(text, { lists: "v2", roles: true, target: ctx.translating ? null : targetOf(ctx.subject), inline: options.inline === true })
   } catch (_error) {
     target.textContent = String(text)
   }

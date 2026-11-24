@@ -7,7 +7,7 @@ module Teacher
   module FindingField
     # The words of an item.json that reviewers and the software use in `field`, by part.
     KEYS = {
-      stem: %w[stem stem_it prompt_stem_it prompt consegna question domanda],
+      stem: %w[stem stem_it prompt_stem_it prompt consegna question domanda task_it task],
       passage: %w[passage passage_it brano],
       material: %w[table quote figure caption_it alt_it asset assets header rows elements],
       options: %w[option options choices choice opzioni],

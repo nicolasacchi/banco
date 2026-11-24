@@ -293,7 +293,12 @@ body.student:has(.l2-top) #student-menu, body.student:has(.l2-top) .topbar, body
 
 /* checks */
 .check { border: 2px solid var(--rule); border-radius: 1em; padding: 0.7em 1em 0.9em; background: var(--surface); display: flex; flex-wrap: wrap; align-items: center; gap: 0.2em 0.9em; }
-.check > .check-prompt, .check > .hint, .check > .feedback, .check > .teacher-notes { flex: 1 0 100%; }
+.check > .check-prompt, .check > .hint, .check > .feedback, .check > .teacher-notes, .check > .check-sentence { flex: 1 0 100%; }
+/* a check's own sentence (D-402): the form material it is about, above the options */
+.check-sentence { margin: 0.2em 0; font-size: 1.15em; font-weight: 700; overflow-wrap: anywhere; }
+.check-sentence > p { margin: 0; }
+/* the accent keyboard of a typed gap with text around the box sits under the whole sentence, never inside it (D-402) */
+.check > .accent-keys { flex: 1 0 100%; margin: 0 0 0.3em; }
 .check > .check-actions { margin: 0; }
 .block-check { max-width: 42em; }
 .check-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4em 0.6em; margin: 0.4em 0; }

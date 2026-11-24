@@ -18,6 +18,7 @@ module Lessons
   # `mistake` block's `wrong` and `right` are always material. MATERIAL says which fields are material, `material?` decides, and a material field has no
   # pair: it is never an orphan, never missing, never folded into the `tr` table, never served with an Italian text (`translate_material` is served on the
   # check so the page does not look for one).
+  # A lesson check's own `sentence_<lang>` (SENTENCE) is material with no marker needed: a form check (choice, matching, tiles...) has nowhere else to put its sentence.
   module Bilingual
     # Keys (their base, without `_it`) that are never paired: the teacher's own words, what points at the Italian textbook, what is graded or
     # typed by a program. `rubric.points[].expected_it` and the short answer's `model_answer_it` follow Q5 of D-402: the rubric stays Italian, the
@@ -66,6 +67,9 @@ module Lessons
     }.freeze
     # What a `mistake` block holds is material with no marker: the wrong and the right form (a translation of either gives the same Italian for both).
     MISTAKE_MATERIAL = %w[wrong right].freeze
+    # The sentence of a lesson check on form material: `sentence_en|es`, drawn above the options (or the rows, the tiles...), target-only whatever the marker says. It
+    # has no Italian twin (a `sentence_it` is E-LANG-PAIR-ORPHAN) and is served in the `sentence_it` slot with no `tr` entry. Only a hash that is a check (`component`) has one.
+    SENTENCE = "sentence"
 
     # The levels of a served lesson that own a `tr` table: the body, each card, each block of a card.
     SCOPES = { "cards" => :body, "blocks" => :card }.freeze
@@ -147,6 +151,7 @@ module Lessons
     # Is +base+ of +hash+, at +pointer+, form material? +marker+: the marker is in force (material_in?).
     def material?(hash, base, pointer, marker)
       return true if hash["type"] == "mistake" && MISTAKE_MATERIAL.include?(base)
+      return true if base == SENTENCE && hash.key?("component")
       return hash["type"] == "table" if marker && %w[header rows].include?(base)
 
       marker && MATERIAL[base]&.match?(pointer) ? true : false

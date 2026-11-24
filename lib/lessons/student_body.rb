@@ -23,8 +23,10 @@ module Lessons
     end
     # D-402: the marker `translate_material: false` of a check, a `try` exercise, a `table` block or figure goes with the served text: the form material of it has
     # no Italian text (the fold serves it in the `_it` slot with no `tr` entry), and the page does not ask for a translation of it. Not in the whitelist fixture:
-    # like the siblings it is a column of the derived schema (Banco::Schemas::Bilingual::MATERIAL_AT).
+    # like the siblings it is a column of the derived schema (Banco::Schemas::Bilingual::MATERIAL_AT). The same goes for the check's own `sentence_<lang>`
+    # (Bilingual::SENTENCE, SENTENCE_AT): its column `sentence_it` is served with its siblings, and the fold puts the target text in that slot.
     MATERIAL = Bilingual::MARKER
+    SENTENCE = "sentence_it"
     FRONT = WIDE.call(%w[key kind subject title_it goals_it why_it minutes scope calculator book_it])
     CHECK_COLUMNS = {
       "choice" => %w[component prompt_it answer_format_it listen],
@@ -36,7 +38,7 @@ module Lessons
       "select" => %w[component prompt_it answer_format_it targets pick],
       "tiles" => %w[component prompt_it answer_format_it builds],
       "ordering" => %w[component prompt_it answer_format_it]
-    }.transform_values { |fields| (WIDE.call(fields) + [ MATERIAL ]).freeze }.freeze
+    }.transform_values { |fields| (WIDE.call(fields) + [ MATERIAL, *WIDE.call([ SENTENCE ]) ]).freeze }.freeze
     # Simple blocks: the fields served; nested lists: {field => the fields of each element}.
     BLOCKS = {
       "text" => [ %w[n type text_it], {} ],

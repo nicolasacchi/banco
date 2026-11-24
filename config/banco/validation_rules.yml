@@ -74,8 +74,10 @@ readability:
     - il tuo nome
     - la tua scuola
   absolute_words: [sempre, mai, solo, soltanto, ovunque, nessuno, tutti]   # W-ABSOLUTE
-  # W-ABSOLUTE on the target-language text of a bilingual revision (D-402): the same claims in the language taught (never, only, nobody; nunca, solo, nadie).
-  absolute_words_target: {en: [always, never, only, everywhere, nobody, everyone, everybody], es: [siempre, nunca, jamás, solo, sólo, solamente, nadie, todos, todas]}
+  # W-ABSOLUTE on the target-language text of a bilingual revision (D-402): the same claims in the language taught (always, never, nobody; siempre, nunca, nadie). «only» and
+  # «solo» are not in it: «Write only the missing words» is the standard instruction of a typed gap, and the word is as often «alone» as «nothing else» (the Italian
+  # list keeps «solo», where the phrases of D-094, D-189, D-197 sort out its other uses).
+  absolute_words_target: {en: [always, never, everywhere, nobody, everyone, everybody], es: [siempre, nunca, jamás, nadie, todos, todas]}
   negative_stem: ["\\bnon\\b", "\\btranne\\b", "\\beccetto\\b", "\\bnessun[oa]?\\b"]  # W-NEGATIVE-STEM
   self_cert: ["\\bho verificato\\b", "\\bgarantit[oa]\\b", "\\bcertificat[oa]\\b", "\\bsicuramente corrett[oa]\\b"]  # W-SELF-CERT
   calculator_subjects: [business, chemistry]   # W-CALCULATOR when the stem lacks the sentence

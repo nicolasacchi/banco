@@ -118,6 +118,16 @@ class ReadabilityTest < ActiveSupport::TestCase
     assert_equal %w[all_caps], rules("Il sistema (GPSX satellitare) dà la posizione.")
   end
 
+  test "the name of an error code passes the ALL-CAPS rule in a note (codes: true), nowhere else; the other capital words still fail" do
+    note = ->(text) { Validation::Findings.new.tap { |f| Validation::Readability.lint(text, field: "/note_it", role: :text, findings: f, codes: true) }.select { |f| f.code == "E-READ" }.map { |f| f.detail[:rule] } }
+    assert_equal [], note.call("Il codice W-MATCHING-JUDGE-ROWS avvisa se una riga resta sola.")
+    assert_equal [], note.call("Vedi E-LESSON-RENDER e W-ABSOLUTE, poi E-READ.")
+    assert_equal %w[all_caps], note.call("Il codice W-MATCHING-JUDGE-ROWS dice ASSOLUTAMENTE no.")
+    assert_equal %w[all_caps], note.call("Il codice MATCHING dice no."), "a capital word that is not shaped like a code"
+    assert_equal %w[all_caps], rules("Il codice W-MATCHING-JUDGE-ROWS avvisa."), "a student text has no codes"
+    assert_equal %w[sentence_length], note.call(([ "parola" ] * 25).join(" ") + " W-ABSOLUTE."), "the code is a word for the sentence limit"
+  end
+
   test "photography, maps and heritage acronyms are allowed bare (D-324)" do
     assert_equal [], rules("Scatta a ISO 100 in RAW sotto un LED. Il GPS e il GIS usano l'ora UTC. Il sito è UNESCO.")
   end

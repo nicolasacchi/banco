@@ -36,6 +36,17 @@ class BilingualEdgesTest < ActiveSupport::TestCase
     out
   end
 
+  # The `label_it` of every hash that has a `form_*` key (a word_parts word) and is not a folded pair (the fold has put the target text in `label_it` and made a tr entry).
+  def legacy_glosses(value, tr = value.is_a?(Hash) ? value["tr"].to_h : {}, out = [])
+    case value
+    when Hash
+      out << value["label_it"] if value["label_it"].is_a?(String) && value.keys.any? { |k| k.match?(/\Aform_(en|es|la|it)\z/) } && !tr.key?(value["label_it"])
+      value.each_value { |v| legacy_glosses(v, tr, out) }
+    when Array then value.each { |v| legacy_glosses(v, tr, out) }
+    end
+    out
+  end
+
   def italian_strings(value, key = nil, top = true, out = [])
     case value
     when String then out << value if key.to_s.end_with?("_it") && !%w[pieces_it form_it].include?(key) && !(top && %w[alt_it caption_it].include?(key))
@@ -144,6 +155,8 @@ class BilingualEdgesTest < ActiveSupport::TestCase
         missing = italian_strings(figure.except("tr", "diagram")).reject { |t| figure["tr"].key?(t) }
         # a table's cells are not folded: they hold the target text in `header` / `rows` and their own Italian in `header_it` / `rows_it`
         missing -= Array(figure["header_it"]) + Array(figure["rows_it"]).flatten
+        # a word_parts word's `label_it` beside its `form_*` and no `label_<lang>` is the legacy Italian gloss, written once: no pair, no entry in tr
+        missing -= legacy_glosses(figure)
         assert_empty missing, "#{figure['type']}: strings with no Italian in tr"
       end
     end

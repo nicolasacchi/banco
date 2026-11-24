@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -75,6 +76,20 @@ func TestFindingsRespondTakesALessonFindingId(t *testing.T) {
 		}
 		if want := map[int]string{0: "", 1: "1"}[i]; got.dry != want {
 			t.Errorf("request %d: dry run header %q, want %q", i, got.dry, want)
+		}
+	}
+}
+
+// With no finding id, `findings respond` says what goes in the response file: the three members.
+func TestFindingsRespondWithoutArgumentsNamesTheBodyFields(t *testing.T) {
+	r := runCLI(t, "", envToken(""), "findings", "respond")
+	if r.exit != ExitUsage {
+		t.Fatalf("exit %d, want usage", r.exit)
+	}
+	e := assertErrJSON(t, r.stderr, "E-USAGE")
+	for _, want := range []string{"stance", "revision_id", "note_it", "item_right", "lesson_right", "fixed"} {
+		if !strings.Contains(e.Message, want) {
+			t.Errorf("the usage message does not name %q: %s", want, e.Message)
 		}
 	}
 }

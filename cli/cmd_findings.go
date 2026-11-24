@@ -89,6 +89,9 @@ func runFindingsList(e *env, args []string) error {
 	return send(e, "findings list", "GET", path, nil, false)
 }
 
+// respondBody names the members of the --file of `findings respond`, for the usage error.
+const respondBody = `{"stance": "item_right" (an item) | "lesson_right" (a lesson) | "fixed", "revision_id": N (fixed only: a later revision of the same item or lesson), "note_it": "short Italian proof or change, at most 700 characters, sentences of at most 25 words"}`
+
 // runFindingsRespond sends the author's answer to a finding
 // (POST /api/v1/findings/:finding/responses). The file is
 // {"stance": "item_right" | "fixed", "revision_id": N (fixed only), "note_it": "..."};
@@ -105,7 +108,7 @@ func runFindingsRespond(e *env, args []string) error {
 	}
 	const next = "banco findings respond FINDING --file response.json"
 	if len(pos) != 1 || !(idRe.MatchString(pos[0]) || lessonFindingRe.MatchString(pos[0])) {
-		return newErr(ExitUsage, "E-USAGE", "finding", "findings respond takes one finding id: a number (an item's finding) or L<review>-<n> (a lesson review's)", next)
+		return newErr(ExitUsage, "E-USAGE", "finding", "findings respond takes one finding id: a number (an item's finding) or L<review>-<n> (a lesson review's); response.json is "+respondBody, next)
 	}
 	payload, err := fileBody(*file, "response", next)
 	if err != nil {

@@ -34,6 +34,7 @@ module Items
       out.merge!(Items::Text.pair(prompt, "stem"))
       out.merge!(Items::Text.pair(display, "stem", "instance_stem"))
       out.delete(:instance_stem_it) if Items::Text.material_off?(body) # the sentence with its blank is form material: target only
+      out.merge!(Items::Text.pair(display, "task")) # the instance's own task line (a pair), drawn above its sentence: the one line of Italian that a material instance has
       %w[table quote].each { |k| out[k.to_sym] = display[k] || prompt[k] }
       out[:figure] = figure(display["figure"] || prompt["figure"])
       %w[options elements left right].each { |k| out[k.to_sym] = Items::Text.shown_entries(display[k], body) if display[k] }
@@ -89,7 +90,7 @@ module Items
 
     # The language of the siblings of the texts served (nil for a legacy item): the first text of the part that has one.
     def lang_of(body, prompt, display)
-      Items::Text.lang(prompt, "stem") || Items::Text.lang(display, "stem") || Items::Text.lang(Items::Text.holder("passage", display, body), "passage") ||
+      Items::Text.lang(prompt, "stem") || Items::Text.lang(display, "stem") || Items::Text.lang(display, "task") || Items::Text.lang(Items::Text.holder("passage", display, body), "passage") ||
         Items::Text.lang(Items::Text.holder("answer_format", display, body), "answer_format") || Items::Text.lang(Items::Text.holder("steps", display, body), "steps")
     end
 

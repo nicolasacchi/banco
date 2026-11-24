@@ -126,3 +126,26 @@ test("a number check and a one-line fraction check draw one row of helper keys",
     assert.deepEqual(keys("fraction"), { rows: 1, labels: ["\u2212", "/"] })
   })
 })
+
+// D-402: the accent keyboard of a typed gap with text around the box sits below the sentence (before, box, after), not between the box and its `input_after`.
+test("a typed gap with input_before and input_after keeps the sentence whole: the accent keyboard is below the row, not inside it", async () => {
+  await withDom(() => {
+    const spanish = { ...ctx, subject: "spanish", items: { ...ctx.items, text_label: "Scrivi", accents_label: "Lettere con l'accento" } }
+    const root = render({ type: "try", exercises: [exercise({ component: "normalized_text", accents: "es", prompt_it: "Scrivi la parola.", input_before: "—¿", input_after: "vive tu tía?", answer: "Dónde" })] }, spanish, { card: 10, block: 1 })
+    const row = root.byClass("check-row")[0]
+    assert.equal(row.byClass("accent-keys").length, 0, "no keys between the box and input_after")
+    assert.deepEqual(row.children.map((c) => c.className.split(" ")[0]), ["check-before", "answer", "check-after"])
+    const form = row.parent
+    assert.equal(form.children[form.children.indexOf(row) + 1].className, "accent-keys", "the keyboard comes right under the sentence")
+  })
+})
+
+test("the text around the box of a typed gap is inline: «14. cm» after the box is text, not a list", async () => {
+  await withDom(() => {
+    const spanish = { ...ctx, subject: "spanish", items: { ...ctx.items, text_label: "Scrivi", accents_label: "Lettere" } }
+    const root = render({ type: "try", exercises: [exercise({ component: "normalized_text", prompt_it: "Scrivi.", input_before: "Hay", input_after: "14. cm", answer: "x" })] }, spanish, { card: 10, block: 1 })
+    const after = root.byClass("check-after")[0]
+    assert.equal(after.all((n) => n.tag === "ol" || n.tag === "ul").length, 0)
+    assert.match(after.textContent, /14\. cm/)
+  })
+})

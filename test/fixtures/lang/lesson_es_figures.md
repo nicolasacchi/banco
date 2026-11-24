@@ -62,6 +62,7 @@ words:
   - {form_es: 'sillón', label_es: "última", label_it: "ultima"}
   - {form_es: 'ventana', label_es: "penúltima", label_it: "penultima"}
   - {form_es: 'pájaro', label_es: "antepenúltima", label_it: "terzultima"}
+  - {form_es: 'plátano', label_it: "banana"}
 :::
 
 ::: check select
@@ -123,6 +124,21 @@ errors:
   - {answer: "botónes", message_es: "Sin tilde en el plural.", message_it: "Niente tilde al plurale."}
 explain_es: "Botones: suena en la penúltima y acaba en s."
 explain_it: "Botones: batte sulla penultima e finisce in s."
+:::
+
+::: check choice
+prompt_es: "¿Qué palabra completa la frase?"
+prompt_it: "Quale parola completa la frase?"
+sentence_es: "El libro de ___ es bonito."
+translate_material: false
+options:
+  - {id: a, text_es: "tú"}
+  - {id: b, text_es: "tu"}
+answer: a
+errors:
+  - {answer: b, message_es: "Tu sin tilde es «tuyo», no «de ti».", message_it: "Tu senza tilde è «tuo», non «di te»."}
+explain_es: "Tú es la persona: de ti."
+explain_it: "Tú è la persona: di te."
 :::
 
 ## Qué o cuál {idea short="Qué o cuál" short_it="Qué e cuál" it="Qué e cuál" icon=languages id=que}
@@ -224,4 +240,15 @@ exercises:
     solution_it: "Tú è la persona: di te."
     final_es: "tú"
     final_it: "tu"
+  - check:
+      component: normalized_text
+      prompt_es: "Escribe la palabra que falta."
+      prompt_it: "Scrivi la parola che manca."
+      input_before: "¿Dónde"
+      input_after: "tu tía?"
+      answer: "vive"
+    solution_es: "Vive es la forma de ella."
+    solution_it: "Vive è la forma di lei."
+    final_es: "vive"
+    final_it: "vive"
 :::

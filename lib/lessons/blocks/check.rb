@@ -6,6 +6,8 @@ module Lessons
     # wrong answers of the same shape. Used for check blocks, example blanks and try exercise checks.
     module Check
       TEXT_KEYS = %w[text_it text_en text_es].freeze
+      # The checks that have a place for their sentence already: a typed gap (input_before / input_after) and a span_select (its text).
+      HAS_SENTENCE = %w[number fraction normalized_text span_select].freeze
 
       module_function
 
@@ -23,6 +25,16 @@ module Lessons
         Truth.check(check, ctx)
         errors_common(check, ctx)
         answer_in_prompt(check, ctx)
+        sentence(check, ctx)
+      end
+
+      # D-402: a check's own `sentence_<lang>` (the form material it is about, drawn above its options) belongs to a check that has no place for it: a typed gap
+      # holds its sentence in input_before / input_after and a span_select in its text, so there it would be read twice.
+      def sentence(check, ctx)
+        return unless check["sentence_it"].is_a?(String) && HAS_SENTENCE.include?(check["component"])
+
+        where = check["component"] == "span_select" ? "its text" : "input_before / input_after"
+        ctx.add("E-LESSON-CHECK", "sentence_it", "a #{check['component']} check holds its sentence in #{where}: sentence_<lang> is for a check with options, rows, tiles or a figure", rule: "sentence")
       end
 
       def errors_common(check, ctx)
