@@ -26,6 +26,8 @@ target = File.join(root, "app/assets/stylesheets/lesson_roles.css")
 common = palette.fetch("common")
 subjects = palette.keys - %w[version rules common step_tags]
 
+texts = %w[label_it label_en label_es question_it question_en question_es] # a role's own names and questions (D-402: also in the language of the lesson)
+
 # Each subject's roles with same_as resolved: name => [owner subject, owner role, definition (the owner's, with own label/question)]
 resolved = subjects.to_h do |subject|
   roles = palette.fetch(subject).fetch("roles").to_h do |name, role|
@@ -33,7 +35,7 @@ resolved = subjects.to_h do |subject|
       owner_subject, owner_role = role["same_as"].split(".")
       owner = palette.fetch(owner_subject).fetch("roles").fetch(owner_role)
       abort "build-palette: #{subject}.#{name} copies #{role['same_as']}, which is itself a copy" if owner["same_as"]
-      [ name, [ owner_subject, owner_role, owner.merge(role.slice("label_it", "question_it")) ] ]
+      [ name, [ owner_subject, owner_role, owner.merge(role.slice(*texts)) ] ]
     else
       [ name, [ subject, name, role ] ]
     end
@@ -128,7 +130,7 @@ names.each { |name, defs| out << ".card-tone-#{name} { --band: var(--role-#{name
 
 # The same roles for the browser's code: names, labels, carriers, icons, shapes, questions and step tags (no colours),
 # the sprite of every icon, the centre role of a sentence and the home palettes a subject embeds.
-pick = ->(role) { role.slice("label_it", "carrier", "icon", "shape", "question_it") }
+pick = ->(role) { role.slice("label_it", "label_en", "label_es", "carrier", "icon", "shape", "question_it", "question_en", "question_es") }
 sprite_of = {}
 icons.fetch("structural").each_key { |n| sprite_of[n] = "banco-sprite.svg" }
 icons.fetch("ui").each_key { |n| sprite_of[n] ||= "banco-sprite.svg" }

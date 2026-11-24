@@ -14,7 +14,14 @@ module Lessons
   #
   # Pure: no database, no clock. +seed+ is the student's key ("preview" for the teacher's box).
   module StudentBody
-    FRONT = %w[key kind subject title_it goals_it why_it minutes scope calculator book_it].freeze
+    # D-402: a field `foo_it` of a bilingual revision has its target sibling `foo_en` / `foo_es`, and the projection serves it with it (the whitelist
+    # fixture lists the columns of the schema as it is; the siblings are derived from it, as Banco::Schemas::Bilingual derives the schema). A legacy
+    # revision has no sibling, so nothing more is served for it. The R2 twins (`header_it`, `rows_it` of a table: the bare key holds the target text) have none.
+    R2_TWINS = %w[header_it rows_it].freeze
+    WIDE = lambda do |fields|
+      fields.flat_map { |f| (base = f[/\A(.+)_it\z/, 1]) && !Bilingual::EXEMPT.include?(base) && !R2_TWINS.include?(f) ? [ f, "#{base}_en", "#{base}_es" ] : [ f ] }.uniq.freeze
+    end
+    FRONT = WIDE.call(%w[key kind subject title_it goals_it why_it minutes scope calculator book_it])
     CHECK_COLUMNS = {
       "choice" => %w[component prompt_it answer_format_it listen],
       "number" => %w[component prompt_it answer_format_it input_before input_after unit],
@@ -25,7 +32,7 @@ module Lessons
       "select" => %w[component prompt_it answer_format_it targets pick],
       "tiles" => %w[component prompt_it answer_format_it builds],
       "ordering" => %w[component prompt_it answer_format_it]
-    }.freeze
+    }.transform_values { |fields| WIDE.call(fields) }.freeze
     # Simple blocks: the fields served; nested lists: {field => the fields of each element}.
     BLOCKS = {
       "text" => [ %w[n type text_it], {} ],
@@ -35,7 +42,7 @@ module Lessons
       "legend" => [ %w[n type], { "roles" => %w[role note_it question_it] } ],
       "mistake" => [ %w[n type group_it wrong_it right_it why_it], {} ],
       "summary" => [ %w[n type points_it], {} ],
-      "table" => [ %w[n type caption_it header rows], {} ],
+      "table" => [ %w[n type caption_it header rows header_it rows_it], {} ],
       # wave 2, the docs family (T8): teaching content, served whole (L8); the oral and the compare of a source are special below
       "source" => [ %w[n type kind title_it ref open author_it year about_year for_whom_it where_it translation original], { "parts" => %w[text_it plain_it marks], "guide" => %w[span_it note_it] } ],
       "reveal" => [ %w[n type prompt_it answer_it year who_it situation_it real_it], { "options" => %w[id text_it then_it real] } ],
@@ -45,31 +52,44 @@ module Lessons
       "page" => [ %w[n type page revision caption_it], {} ],
       # release 2 (D-329): a whole program for S to copy; it is never graded and holds no answer, so every field is served
       "code" => [ %w[n type lang title_it text input_it output note_it], {} ]
-    }.freeze
-    SOURCE_COMPARE = %w[title_it author_it year about_year for_whom_it where_it translation original].freeze
-    CASE_FIELDS = %w[title_it icon tone condition_it text_it example_it].freeze
+    }.transform_values { |fields, nested| [ WIDE.call(fields), nested.transform_values { |keep| WIDE.call(keep) }.freeze ].freeze }.freeze
+    SOURCE_COMPARE = WIDE.call(%w[title_it author_it year about_year for_whom_it where_it translation original])
+    CASE_FIELDS = WIDE.call(%w[title_it icon tone condition_it text_it example_it])
 
     module_function
+
+    # The fields of +fields+ with their target siblings (WIDE), for the places that slice by name.
+    def wide(fields) = WIDE.call(fields)
 
     # Pure except for the page blocks (D-290): their `view` is read from the page revision (Pages::Served), the one place that
     # asks the database.
     def for(revision, seed:) = project(revision.body, revision_id: revision.id, seed: seed, pages: Pages::Served)
 
     # +pages+: an object with view(block, student:) -> Hash, or nil (a page block is then served without its view).
+    # A bilingual revision (D-402) is served with the target text in the `_it` slots the renderer reads and its Italian in the `tr` tables of the body,
+    # the card and the block (Lessons::Bilingual.fold), after the choice options are re-keyed (their ids and shown order are unchanged).
     def project(body, revision_id:, seed:, pages: nil)
       out = body.slice(*FRONT)
       out["hero"] = diagram(body["hero"]) if body["hero"]
-      out["parts"] = Array(body["parts"]).map { |p| p.slice("n", "title_it") } if body["parts"]
-      out["glossary"] = body["glossary"].map { |g| g.slice("term_it", "def_it", "example_it") } if body["glossary"]
+      out["parts"] = Array(body["parts"]).map { |p| p.slice(*WIDE.call(%w[n title_it])) } if body["parts"]
+      out["glossary"] = body["glossary"].map { |g| g.slice(*WIDE.call(%w[term_it def_it example_it])) } if body["glossary"]
       subject = body["subject"]
       out["cards"] = body["cards"].map { |card| card_json(card, subject, revision_id, seed) }
       if pages
         out["cards"].each { |card| card["blocks"].each { |b| b["view"] = pages.view(b, student: seed) if b["type"] == "page" } }
       end
-      out
+      folded(out, body)
     end
 
-    SCHEMA_FRONT = %w[key kind subject title_it minutes].freeze
+    # The language of a bilingual revision's text ("en", "es"), nil for a legacy one (its flag is the front matter's `bilingual`).
+    def lang_of(body) = body["bilingual"] == true ? Lang.target(body["subject"]) : nil
+
+    def folded(out, body)
+      lang = lang_of(body)
+      lang ? Bilingual.fold(out, lang) : out
+    end
+
+    SCHEMA_FRONT = WIDE.call(%w[key kind subject title_it minutes])
 
     # The schema page of a topic (D-372): the projection of the core summary card alone, the `summary` block and the `schema`, with the
     # glossary the card's words need. It is `project`'s own card (the same blocks, the same whitelist), so nothing more is served than
@@ -77,13 +97,13 @@ module Lessons
     def schema(body, revision_id:, seed:)
       card = body["cards"].find { |c| c["role"] == "summary" && c["level"] == "core" } or return nil
       out = body.slice(*SCHEMA_FRONT)
-      out["glossary"] = body["glossary"].map { |g| g.slice("term_it", "def_it", "example_it") } if body["glossary"]
+      out["glossary"] = body["glossary"].map { |g| g.slice(*WIDE.call(%w[term_it def_it example_it])) } if body["glossary"]
       out["cards"] = [ card_json(card, body["subject"], revision_id, seed) ]
-      out
+      folded(out, body)
     end
 
     def card_json(card, subject, revision_id, seed)
-      out = card.slice("n", "id", "role", "level", "title_it", "short_it", "icon", "tone", "part")
+      out = card.slice(*WIDE.call(%w[n id role level title_it short_it icon tone part]))
       out["blocks"] = card["blocks"].map { |b| block(b, subject, seed_for(seed, revision_id, card["n"], b["n"])) }
       out
     end
@@ -110,7 +130,7 @@ module Lessons
         when "check" then b.slice("n", "type").merge(check(b, subject, seed))
         when "example" then example(b, subject, seed)
         when "try" then try(b, subject, seed)
-        when "more" then b.slice("n", "type", "title_it").merge("blocks" => b["blocks"].map { |inner| block(inner, subject, "#{seed}|#{inner['n']}") })
+        when "more" then b.slice(*WIDE.call(%w[n type title_it])).merge("blocks" => b["blocks"].map { |inner| block(inner, subject, "#{seed}|#{inner['n']}") })
         else raise ArgumentError, "StudentBody does not serve a #{type.inspect} block"
         end
       end
@@ -118,21 +138,21 @@ module Lessons
 
     def compare(c)
       out = c.slice(*SOURCE_COMPARE)
-      out["parts"] = c["parts"].map { |part| part.slice("text_it", "plain_it", "marks") }
-      out["guide"] = c["guide"].map { |g| g.slice("span_it", "note_it") } if c["guide"]
+      out["parts"] = c["parts"].map { |part| part.slice(*WIDE.call(%w[text_it plain_it marks])) }
+      out["guide"] = c["guide"].map { |g| g.slice(*WIDE.call(%w[span_it note_it])) } if c["guide"]
       out
     end
 
     # An oral: the question, the outline tiles shuffled (ids e1..eN in shown order, like an ordering), the connectives and the terms to
     # say. The key, the typical errors and the model answer stay on the server; the check endpoint grades the outline.
     def oral(b, seed)
-      out = b.slice("n", "type", "question_it", "connectives", "terms")
+      out = b.slice(*WIDE.call(%w[n type question_it connectives terms]))
       out["outline"] = Checks.rekey(Oral.check(b), seed).display["elements"]
       out
     end
 
     def cases(b)
-      out = b.slice("n", "type", "title_it")
+      out = b.slice(*WIDE.call(%w[n type title_it]))
       out["cases"] = b["cases"].map do |c|
         item = c.slice(*CASE_FIELDS)
         item["diagram"] = diagram(c["diagram"]) if c["diagram"]
@@ -145,13 +165,22 @@ module Lessons
 
     # The declared drawing fields of a diagram with its states merged; the solution fields replaced by what the
     # drawing needs (balance: tilt, computed here, and x_value only when show_value is true).
-    def diagram(data) = Diagrams.served(data) || diagram_generic(data)
+    # D-402: a figure with pairs (`label_en` + `label_it`...) is served as the lesson is: the target text in the `_it` slots every type already reads, and
+    # the Italian in the figure's own `tr` table {target => Italian}, which the figure's translation panel lists. A legacy figure is served as it was.
+    def diagram(data) = translated_figure(data) { |view| Diagrams.served(view) || diagram_generic(view) }
+
+    def translated_figure(data)
+      folded = Bilingual.fold(data, nil)
+      out = yield folded.except("lang", "tr")
+      folded["tr"] ? out.merge("tr" => folded["tr"]) : out
+    end
 
     # What every type is served as unless its module serves it itself (Diagrams.served): the declared fields, the states merged, the
     # solution fields out.
     def diagram_generic(data)
       type = data["type"]
       declared = Diagrams.schema_def(type).fetch("properties").keys
+      declared += R2_TWINS if type == "table" # the Italian of a table's cells, next to the cells in the subject's language (D-402)
       solution = Diagrams.solution_fields(type)
       merged = Diagrams.merge_states(data)
       out = merged.slice(*declared).except(*solution)
@@ -221,28 +250,28 @@ module Lessons
       # the check's own target set goes with the figure: a type that offers more than one set (map: areas, places, bands...)
       # must serve and describe the set the check taps, not the first one it happens to have
       takes_set = mod.method(:served).parameters.any? { |kind, name| kind == :keyrest || name == :set }
-      takes_set ? mod.served(check["diagram"], mode: :select, set: check["targets"]) : mod.served(check["diagram"], mode: :select)
+      translated_figure(check["diagram"]) { |view| takes_set ? mod.served(view, mode: :select, set: check["targets"]) : mod.served(view, mode: :select) }
     end
 
     # An example: the steps up to the first blank; for that step its reason and the blank. Without a blank it is
     # served whole (result_it included). The diagram's states are cut the same way (a state shows what its step did).
     def example(b, subject, seed)
-      out = b.slice("n", "type", "problem_it")
+      out = b.slice(*WIDE.call(%w[n type problem_it]))
       cut = b["steps"].index { |s| s["blank"] }
       steps = b["steps"].each_with_index.map do |s, i|
         next if cut && i > cut
 
-        item = s.slice("tag", "why_it")
+        item = s.slice(*WIDE.call(%w[tag why_it]))
         if cut == i
           item["blank"] = check(s["blank"], subject, seed_for_step(seed, i))
         else
-          item["do_it"] = s["do_it"]
+          item.merge!(s.slice(*WIDE.call(%w[do_it])))
         end
         item
       end.compact
       out["steps"] = steps
       out["steps_total"] = b["steps"].size # the page's counter «passo N di M» counts every step, the ones after the blank included
-      out["result_it"] = b["result_it"] if b["result_it"] && cut.nil?
+      out.merge!(b.slice(*WIDE.call(%w[result_it]))) if cut.nil?
       if b["diagram"]
         d = diagram(b["diagram"])
         d = cut_states(d, cut) if cut && d["states"]
@@ -265,9 +294,9 @@ module Lessons
     def seed_for_exercise(seed, exercise, part = nil) = [ "#{seed}|ex#{exercise}", part ].compact.join("|")
 
     def try(b, subject, seed)
-      out = b.slice("n", "type", "intro_it")
+      out = b.slice(*WIDE.call(%w[n type intro_it]))
       out["exercises"] = b["exercises"].map do |e|
-        item = e.slice("n", "text_it")
+        item = e.slice(*WIDE.call(%w[n text_it]))
         item["diagram"] = diagram(e["diagram"]) if e["diagram"]
         item["check"] = check(e["check"], subject, seed_for_exercise(seed, e["n"])) if e["check"]
         item["checks"] = e["checks"].each_with_index.map { |c, k| check(c, subject, seed_for_exercise(seed, e["n"], k)) } if e["checks"]

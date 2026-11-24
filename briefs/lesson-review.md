@@ -69,6 +69,19 @@ of 12 to 1200 characters saying what you did:
     path is complete without `more` blocks and extra cards.
 11. Free pages pinned by the lesson: answer `na` (there are none in this release).
 
+**A bilingual lesson** (`bilingual: true`, english and spanish, D-402: every text is written in the language it teaches with its authored Italian translation; the
+file has `title_en` + `title_it`, the `::: it` fences, `it=` in headings) has **13 points**: the 11 above, read on the target text, and two more, 12 and 13,
+one for each side of the pair:
+
+12. The Italian translation: each `_it` text says what its target text says, no more and no less; no wrong meaning, nothing added or dropped, no translation
+    that gives a check's answer away (the student can always open it: an Italian prompt that is the answer, vocabulary whose Italian side gives the key). A fault
+    is a finding of kind `translation_fidelity` (meaning) or `translation_leak` (the answer); say the card, the block and the two texts.
+13. The target-language text: at the level of the lesson (first 3000 words, sentences of at most 12 words), clear, correct for the language (British English in
+    english), with no Italian words except the quoted `[[it:..]]` units, natural examples with common given names, never the student's or his household's.
+
+Rules 2 and 9 apply to both layers: a message, an explanation or a solution is correct in English (or Spanish) and in Italian. The machine already refuses a
+missing, copied, mismatched or wrong-language translation (`E-LANG-PAIR-*`, `E-LANG-TRANSLATION-*`); you read what it cannot: fidelity and leaks.
+
 `recomputed[]`: `{where, n, expression, value}` with `where` one of `example`, `try`, `solutions`, `idea`,
 `mistakes`, `check`, and `n` the number of the exercise, example or check block, or `null`.
 

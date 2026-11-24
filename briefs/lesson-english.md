@@ -59,8 +59,13 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 
 ## Rules of the subject
 
-- English text sits in keys ending `_en` and in `[[en:...]]` spans; the explanations stay Italian. One target language per figure.
-- A target-language sentence has at most 12 words; vocabulary beyond the first 3000 words is glossed or listed in `teaches_en`.
+- **Bilingual lessons (D-402, `bilingual: true`, the way new lessons are written; read `banco brief show lesson`, «Bilingual lessons»):** the lesson is in English,
+  every text with its authored Italian translation (`_en` + `_it`, the `::: it` fence, `it=` in headings). The explanations, the goals, the prompts, the
+  messages and the solutions are English; the Italian is the translation, faithful and plain, not a gloss. Italian words inside English text are `[[it:..]]`. A
+  lesson that passed before is Italian prose with `_en` keys and `[[en:...]]` spans and is served as it was. One target language per figure.
+- A target-language sentence has at most 12 words; vocabulary beyond the first 3000 words is glossed or listed in `teaches_en`. Use common given names in
+  sentences (Tom, Amy, Emma, Jack, Sophie), never the student's or his household's, and no famous people unless the topic is about them.
+- Grammar terms are English, with the Italian term in the glossary pair (`term_en: "modal verb"`, `term_it: "verbo modale"`). Invented but plausible contexts.
 - Every dialogue line has its Italian gloss one tap away (`gloss_it`).
 - British English by default (en-GB); contractions are accepted on both sides of a typed answer.
 - Same meaning, same colour as in Italian: `subject`, `verb`, `object`, `agent`, `time` are the Italian roles.

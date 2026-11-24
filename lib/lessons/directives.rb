@@ -17,7 +17,8 @@ module Lessons
       end
     end
 
-    OPENING = /\A(?<type>[a-z][a-z_0-9]*)(?: (?<arg>[a-z][a-z_0-9-]*))?(?: "(?<title>[^"\n]*)")?\z/
+    # D-402: in a bilingual lesson the title of a block is the target language's and the Italian one follows as it="..." (the tag of a card heading says it the same way).
+    OPENING = /\A(?<type>[a-z][a-z_0-9]*)(?: (?<arg>[a-z][a-z_0-9-]*))?(?: "(?<title>[^"\n]*)")?(?: it="(?<it>[^"\n]*)")?\z/
     # What each directive's opening line may carry besides the type: [argument required?, values or nil, title allowed?]
     SHAPE = {
       "callout" => [ true, %w[tip warning remember rule], true ],
@@ -30,17 +31,22 @@ module Lessons
 
     module_function
 
-    # Parses the opening line (without the fence) -> {type:, arg:, title:}; raises Refused.
+    # Parses the opening line (without the fence) -> {type:, arg:, title:, it:}; raises Refused.
     def opening(text, line)
-      m = text.match(OPENING) or raise Refused.new(line, "the directive line is `::: TYPE [ARG] [\"Title\"]`, here #{text.inspect}")
-      { type: m[:type], arg: m[:arg], title: m[:title] }
+      m = text.match(OPENING) or raise Refused.new(line, "the directive line is `::: TYPE [ARG] [\"Title\"] [it=\"Titolo\"]`, here #{text.inspect}")
+      raise Refused.new(line, "it=\"...\" is the Italian of a title: it follows a \"Title\"") if m[:it] && m[:title].nil?
+      raise Refused.new(line, "an empty it=\"\"") if m[:it]&.strip&.empty?
+
+      { type: m[:type], arg: m[:arg], title: m[:title], it: m[:it] }
     end
 
     # The block hash for a directive. +lines+: the body lines; +first_line+: the lesson line of the opening line.
     # +allow_reserved+ is the reserved dry run (WAVE2 1.2): a block, type or option that is reserved or a draft passes here
     # and is validated against its frozen or draft schema; the caller reports it (W-TYPE-RESERVED, W-TYPE-DRAFT), and passes an Array
     # as +allow_reserved+ to be handed each use.
-    def build(head, lines, first_line, in_more: false, allow_reserved: false)
+    # +lang+: the language of a bilingual lesson ("en", "es"), nil for every other lesson: its titles and prose go under `_<lang>` and the Italian
+    # (it="..." on the opening line, the `::: it` fence after a text, a callout or a summary) under `_it`.
+    def build(head, lines, first_line, in_more: false, allow_reserved: false, lang: nil)
       type = head[:type]
       raise Refused.new(first_line, "unknown block type #{type.inspect} (#{Types.names(:block, status: 'available').reject { |n| n == 'text' }.join(', ')})") unless Types.known?(:block, type) && type != "text"
       refuse_held_back(:block, type, "the #{type} block", first_line, allow_reserved)
@@ -51,11 +57,17 @@ module Lessons
       raise Refused.new(first_line, "#{type} takes no argument (here #{head[:arg].inspect})") if head[:arg] && !needs_arg
       raise Refused.new(first_line, "#{type} must be one of #{values.join(', ')}, not #{head[:arg].inspect}") if values && !values.include?(head[:arg])
       raise Refused.new(first_line, "#{type} takes no title") if head[:title] && !title_ok
+      raise Refused.new(first_line, "it=\"...\" belongs to a bilingual lesson (bilingual: true in the front matter)") if head[:it] && lang.nil?
+
+      target = lang || "it"
+      titles = {}
+      titles["title_#{target}"] = head[:title] if head[:title]
+      titles["title_it"] = head[:it] if head[:it]
 
       body = lines.join("\n")
       block = case type
-      when "callout" then { "type" => "callout", "kind" => head[:arg], "title_it" => head[:title], "text_it" => text(body, first_line) }.compact
-      when "summary" then summary(body, first_line)
+      when "callout" then { "type" => "callout", "kind" => head[:arg] }.merge(titles).merge("text_#{target}" => text(body, first_line))
+      when "summary" then summary(body, first_line, "points_#{target}")
       when "math" then math(body, first_line)
       when "diagram", "schema"
         refuse_held_back(:diagram, head[:arg], "the diagram type #{head[:arg]}", first_line, allow_reserved)
@@ -68,7 +80,7 @@ module Lessons
         Types.held_back_options(data).each { |name, spec| refuse_one(Types.describe_hold("the check option #{name}", spec["status"], spec["batch"]), spec, first_line, allow_reserved) }
         data
       else
-        data = yaml(body, first_line, type).merge("type" => type).merge(head[:title] ? { "title_it" => head[:title] } : {})
+        data = yaml(body, first_line, type).merge("type" => type).merge(titles)
         refuse_uses(Types.held_back_uses(:block, type, data), type, first_line, allow_reserved)
         data
       end
@@ -131,8 +143,8 @@ module Lessons
       stripped
     end
 
-    # A markup unordered list of 3 to 5 points becomes points_it (the count is the schema's).
-    def summary(body, line)
+    # A markup unordered list of 3 to 5 points becomes points_it (the count is the schema's); +key+ is points_en or points_es in a bilingual lesson.
+    def summary(body, line, key = "points_it")
       blocks = begin
         Markup.raw_blocks(body, line_offset: line + 1, roles: true)
       rescue Markup::Refused => e
@@ -141,7 +153,14 @@ module Lessons
       raise Refused.new(line, "summary is exactly one list of points (each line starts with - )") unless blocks.size == 1 && blocks.first.type == :ul
       raise Refused.new(line, "a summary point is one line, without a nested list") if blocks.first.items.any? { |i| i[:subs].any? }
 
-      { "type" => "summary", "points_it" => blocks.first.items.map { |i| i[:text] } }
+      { "type" => "summary", key => blocks.first.items.map { |i| i[:text] } }
+    end
+
+    # The Italian that a `::: it` fence adds to the text, callout or summary block before it (D-402): {"text_it" => ...} or {"points_it" => [...]}.
+    def translation(type, body, line)
+      return { "points_it" => summary(body, line)["points_it"] } if type == "summary"
+
+      { "text_it" => text(body, line) }
     end
 
     # One LaTeX formula, or a YAML `lines:` list.

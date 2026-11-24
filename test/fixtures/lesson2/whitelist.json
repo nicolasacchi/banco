@@ -1,5 +1,12 @@
 {
  "version": 2,
+ "bilingual": {
+  "description": "D-402: the columns below are the schema as it is. For a bilingual revision (`bilingual: true`, english or spanish) every served field `foo_it` is served with its target siblings `foo_en` and `foo_es` (Lessons::StudentBody::WIDE), then Lessons::Bilingual.fold puts the target text in the `foo_it` slot and the Italian in the `tr` table of the body, the card or the block. The siblings are derived (Banco::Schemas::Bilingual), never listed here; a field is dropped or served as its `_it` column says. Exceptions: the teacher's own words (Lessons::Bilingual::EXEMPT: description, notes, book, ...) have no sibling, and the R2 twins of a table (`header_it`, `rows_it`: the bare `header` and `rows` hold the target text) are served as they are, never folded.",
+  "siblings": ["en", "es"],
+  "r2_twins": {"table": ["header_it", "rows_it"]},
+  "figures": "a figure with pairs is folded by itself and carries its own `tr` (Lessons::StudentBody.diagram)",
+  "never_served": ["answer", "accept", "errors", "explain_it", "explain_en", "explain_es", "solution_it", "solution_en", "solution_es", "final_it", "final_en", "final_es", "message_it", "message_en", "message_es"]
+ },
  "description": "The StudentBody whitelist (D-248, A2): for each block type and each check component, the fields copied to the student's page ('serve') and the declared fields that are not ('drop'). Everything not named is dropped, so a field added to a schema later cannot leak: test/content/lesson2_fixtures_test.rb fails until a new field is listed here in one of the two columns. 'line' (the source line, for findings) is never served. Nested objects are listed under 'nested' with the same two columns. 'rekey' names the lists whose ids are re-keyed by Diagnosis::Rekey; 'computed' what the server adds. Version 2 (D-269): the always-dropped fields of every wave 2 piece are listed once under 'always_dropped'; each new check component, block and diagram type has its row (the diagram ones under diagram.types), final for the W2-1 pieces and 'provisional' for the W2-2 drafts, and the sentinel property test (A2) draws ANS-<hex> sentinels in every dropped, hidden, withheld and L8 field and asserts none reaches StudentBody.for(...), describe(), speechSegments() or the card's speech before its reveal.",
  "blocks": {
   "text": {

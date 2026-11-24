@@ -1423,12 +1423,60 @@
     "line": 1
   },
   {
-    "input": "Vedi [[it:ciao]] ora.",
+    "input": "Translate [[it:ho fame]] now.",
+    "options": {
+      "roles": true,
+      "target": "en"
+    },
+    "note": "D-402: [[it:..]] is Italian words quoted inside target-language text",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Translate "
+          },
+          {
+            "t": "lang",
+            "lang": "it",
+            "v": "ho fame"
+          },
+          {
+            "t": "text",
+            "v": " now."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Say [[it:]] now.",
+    "options": {
+      "roles": true,
+      "target": "en"
+    },
+    "note": "",
+    "error": "an empty [[it: language span",
+    "line": 1
+  },
+  {
+    "input": "Say [[it:ciao now.",
+    "options": {
+      "roles": true,
+      "target": "en"
+    },
+    "note": "",
+    "error": "an unclosed [[it: language span",
+    "line": 1
+  },
+  {
+    "input": "Say [[it:**ciao**]] now.",
     "options": {
       "roles": true
     },
     "note": "",
-    "error": "it is reserved for a span of its own ([[it:...]]): it cannot be a colour role",
+    "error": "markup inside a [[it: language span (it holds plain words)",
     "line": 1
   },
   {
@@ -1537,5 +1585,32 @@
         ]
       }
     ]
+  },
+  {
+    "input": "Complete: I ___ my bed ___.",
+    "options": {
+      "roles": true
+    },
+    "note": "D-402: the blank of an exercise sentence (three underscores on their own) is text, in the target text and in its translation",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Complete: I ___ my bed ___."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Say x___ now.",
+    "options": {
+      "roles": true
+    },
+    "note": "a blank is never glued to a word (italics)",
+    "error": "an underscore outside $...$ (italics or bare math)",
+    "line": 1
   }
 ]

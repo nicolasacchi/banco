@@ -28,7 +28,10 @@ module Banco
         "item" => {
           "id_text" => { "text" => "text_it" }, "quote" => { "text" => "text_it" },
           "table" => { "header" => "header_it", "rows" => "rows_it" }, "solution" => { "final" => "final_it" }
-        }
+        },
+        # D-402, slice 3: the table block of a lesson and a figure of type `table` hold their cells in the subject's language, the Italian in `header_it` / `rows_it`.
+        "lesson" => { "b_table" => { "header" => "header_it", "rows" => "rows_it" } },
+        "diagram" => { "table" => { "header" => "header_it", "rows" => "rows_it" } }
       }.freeze
 
       module_function

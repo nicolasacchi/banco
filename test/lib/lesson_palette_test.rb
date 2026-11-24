@@ -158,7 +158,7 @@ class LessonPaletteTest < ActiveSupport::TestCase
         owner = PALETTE.fetch(owner_subject).fetch("roles").fetch(owner_role)
         assert_nil owner["same_as"], "#{subject}.#{name}: a copy of a copy"
         assert_equal(owner.slice("carrier", "icon", "shape", "fg", "mark", "tint"), roles(subject).fetch(name).slice("carrier", "icon", "shape", "fg", "mark", "tint"))
-        assert_empty role.keys - %w[same_as label_it question_it], "#{subject}.#{name} sets only same_as, label_it and question_it"
+        assert_empty role.keys - %w[same_as] - Lessons::Palette::TEXTS, "#{subject}.#{name} sets only same_as and its names and questions"
       end
       centre = Lessons::Palette.centre_role(subject)
       assert roles(subject).key?(centre), "#{subject}: centre_role #{centre}" if centre
@@ -196,6 +196,21 @@ class LessonPaletteTest < ActiveSupport::TestCase
         assert_includes allowed, t["icon"], "#{subject}.#{tag}"
       end
     end
+  end
+
+  test "D-402: every role and step tag of english and spanish has its name in the language of the lesson, and an icon role its question" do
+    { "english" => "en", "spanish" => "es" }.each do |subject, lang|
+      roles(subject).each do |name, role|
+        assert role["label_#{lang}"].to_s.size.positive?, "#{subject}.#{name}: label_#{lang}"
+        assert role["question_#{lang}"].to_s.size.positive?, "#{subject}.#{name}: question_#{lang}" if role["question_it"]
+        refute_match(/\A\s*\z/, role["label_#{lang}"].to_s, name)
+      end
+      PALETTE.fetch("step_tags").fetch(subject).each { |tag, t| assert t["label_#{lang}"].to_s.size.positive?, "#{subject}.#{tag}: label_#{lang}" }
+    end
+    PALETTE.fetch("common").each { |name, role| %w[label_en label_es].each { |k| assert role[k].to_s.size.positive?, "common.#{name}: #{k}" } }
+    js = File.read(Rails.root.join("app/javascript/lesson/palette.js"))
+    assert_includes js, '"label_en":"verb"'
+    assert_includes js, '"label_es":"raíz"'
   end
 
   test "icon roles name icons of their subject's list or the structural list, and the ui list is ours only" do
