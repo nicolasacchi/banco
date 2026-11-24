@@ -163,8 +163,8 @@ module Validation
         next if NOT_TEXT.include?(key.sub(/_(en|es)\z/, ""))
 
         message = if sibling != lang then "#{key} holds #{sibling == 'es' ? 'Spanish' : 'English'} text in a #{subject} revision (#{subject} teaches #{lang == 'es' ? 'Spanish' : 'English'}): use _#{lang}"
-                  elsif !bilingual?(doc) then "#{key} is a target-language sibling in a revision without bilingual: true: add the marker, every text then has its translation"
-                  end
+        elsif !bilingual?(doc) then "#{key} is a target-language sibling in a revision without bilingual: true: add the marker, every text then has its translation"
+        end
         next unless message
 
         findings.add("E-LANG-BILINGUAL-FLAG", "#{prefix}#{pointer}", message, rule: "flag-#{prefix}#{pointer}", **(line ? { line: line.call(pointer) }.compact : {}))

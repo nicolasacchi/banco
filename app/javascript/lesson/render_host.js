@@ -363,8 +363,11 @@ async function inspect(n, state = null) {
       for (const figure of api.figures()) if (scope.contains(figure.element) && shown(figure.element)) figure.relayout?.()
       await frames()
       overflowFindings(card, findings, scope)
-      translationOverflow(card, findings)
-      translationEmpty(card, findings)
+      // the findings about the Italian are asked of a bilingual lesson only (body.lang): a legacy lesson draws target spans with lang=en|es as it always did
+      if (body.lang) {
+        translationOverflow(card, findings)
+        translationEmpty(card, findings)
+      }
     } else if (state === "open" || match?.[2]) {
       // a disclosure lays out at once (nothing in one is a figure that waits for a redraw): measured as soon as it is open
       openParts(scope)
@@ -390,7 +393,7 @@ async function inspect(n, state = null) {
       }
     }
     if (!state) {
-      translationMissing(card, findings) // a text in the target language with no translation unit (D-402), once
+      if (body.lang) translationMissing(card, findings) // a text in the target language with no translation unit (D-402), once
       katexFindings(card, findings) // a formula is drawn (or refused) when the card is built, shown or not: once is enough
       markupFindings(card, findings) // markup printed as text (D-310), likewise once
       segments.push(...fixedIn(body.cards.find((c) => c.n === n) ?? null, card)) // dialogues, listening checks and speakers: they do not depend on the state

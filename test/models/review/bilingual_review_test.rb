@@ -141,6 +141,10 @@ class Review::BilingualReviewTest < ActiveSupport::TestCase
     plain = Review::ItemText.new(revision_of(item_body("short-answer"), { "display" => { "stem_it" => "x" }, "answer" => "1" }))
     assert_empty Review::Intake.call(review_doc((1..11).to_a), plain).map(&:code)
     assert_equal [ "E-REVIEW-CHECKLIST" ], Review::Intake.call(review_doc((1..11).to_a + [ 14, 15 ]), plain).map(&:code)
+    # the schema now allows up to 15 points; the exact count of a legacy (not bilingual) item is Intake's
+    [ (1..12).to_a, (1..13).to_a, (1..14).to_a, (1..15).to_a ].each do |ids|
+      assert_equal [ "E-REVIEW-CHECKLIST" ], Review::Intake.call(review_doc(ids), plain).map(&:code), "#{ids.size} points on a legacy item"
+    end
 
     other = item_body("short-answer").merge("bilingual" => true, "subject" => "english")
     non_practice = Review::ItemText.new(revision_of(other, { "display" => { "stem_it" => "x" }, "answer" => "1" }))

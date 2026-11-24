@@ -50,6 +50,9 @@ class LessonPolishGalleryTest < ActiveSupport::TestCase
         row.shots.each { |s| File.binwrite(File.join(ENV["BANCO_SHOT_DIR"], "#{name}-#{s['viewport']}-card#{s['card']}.webp"), LessonShots.read(s["sha256"])) }
       end
       assert_equal "passed", row.status, row.result["errors"].map { |e| "#{e['code']} card #{e['card']} #{e['viewport']}: #{e['message']}" }.join("\n")
+      # D-402: a legacy lesson (target spans with lang=en|es, no `lang` in its body) gets no finding about an Italian translation, and no `tr` state
+      assert_empty row.result["errors"].select { |e| e["message"].to_s.start_with?("translation") }
+      assert_empty row.shots.select { |s| s["state"].to_s.end_with?("tr") }
     ensure
       ENV.delete("BANCO_LESSON_SHOTS_DIR")
       FileUtils.rm_rf(shots) if shots
