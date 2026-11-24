@@ -10,6 +10,8 @@ require_relative "../support/student_session"
 # each kind of exercise the course practises. Then the list of the topic's exercises (D-337): the statuses, «Salta» keeping the typed
 # answer, the autosave and a reload that resumes the last exercise, another entry, «Rifai», a link to another skill, the phone's panel.
 # Any JavaScript error, console error or CSP violation fails the test.
+# D-402: a bilingual exercise (target text with its authored Italian, the golden test/fixtures/lang/served_item.json) is drawn with «Traduzione» in the action bar;
+# the practice endpoints are answered by the page's own stand-in (BILINGUAL_MOCK) so that this half of the walk does not depend on the serving side.
 class PracticeFlowTest < ApplicationSystemTestCase
   include StudentCourseWorld
   include StudentUiRows
@@ -42,6 +44,42 @@ class PracticeFlowTest < ApplicationSystemTestCase
       document.addEventListener("securitypolicyviolation", (e) => note("csp", e.violatedDirective + " " + e.blockedURI));
     })();
   JS
+
+  # The practice endpoints of a bilingual exercise, answered inside the page (fetch is replaced before the page's own script runs). The shapes are the golden
+  # served fixture's (test/fixtures/lang/served_item.json): `part`, `hint`, `feedback`, `reminder`, `solution`. FIXTURE and EXTRA are JSON text.
+  BILINGUAL_MOCK = <<~JS.freeze
+    (() => {
+      const real = window.fetch.bind(window);
+      const fx = %<fixture>s;
+      const extra = %<extra>s;
+      const kind = extra.kind;
+      const posts = window.__trPosts = [];
+      const json = (body, status = 200) => Promise.resolve(new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } }));
+      const served = fx[kind];
+      let tries = 0;
+      window.fetch = (url, init = {}) => {
+        const path = new URL(url, location.href).pathname;
+        if (path === "/translations") { posts.push(JSON.parse(init.body)); return Promise.resolve(new Response(null, { status: 204 })); }
+        if (!/\\/practice\\//.test(path)) return real(url, init);
+        if (/\\/practice\\/serves$/.test(path)) {
+          return json({ type: "item", serve_id: 9001, next_try_number: 1, actions: [], rating: null, exercise: { item: "flow-bilingual" }, item: extra.part || served.part,
+                        skill: { state: "in_study", state_it: "In studio", why_it: "Ne servono tre giuste.", missing_it: null, clean: 0 },
+                        hints: { total: 3, shown: [] }, draft: null, reason_it: null, ...served.reminder });
+        }
+        if (/\\/practice\\/answers$/.test(path)) {
+          tries += 1;
+          return json({ status: "graded", outcome: "typical_error", try_number: tries, ...served.feedback, actions: ["retry", "show_solution"], hint: null });
+        }
+        if (/\\/hint$/.test(path)) return json({ ...served.hint });
+        if (/\\/solution$/.test(path)) return json({ solution: { ...served.solution, ...(extra.solution || {}) }, actions: ["next", "back"] });
+        if (/\\/draft$/.test(path)) return json({ status: "saved" });
+        if (/\\/practice\\/exercises/.test(path)) return json({ skills: [], done: false, known: false });
+        return real(url, init);
+      };
+    })();
+  JS
+  PASSAGE_EN = "Tom has a dog. The dog is brown.".freeze
+  PASSAGE_IT = "Tom ha un cane. Il cane è marrone.".freeze
 
   setup do
     @saved_users = ENV["BANCO_STUDENT_USERS"]
@@ -240,6 +278,124 @@ class PracticeFlowTest < ApplicationSystemTestCase
   end
 
   # ---- the flows ----------------------------------------------------------------------------------------
+
+  # ---- a bilingual exercise (D-402) ---------------------------------------------------------------------
+
+  def bilingual_fixture = File.read(Rails.root.join("test/fixtures/lang/served_item.json"))
+
+  # Opens the practice page of the number skill with the stand-in endpoints for `kind` ("choice" or "blank" of the golden fixture); `part` and `solution` replace
+  # what the fixture serves (a testlet with a passage). The stand-in goes in before the page's own script and goes out again when the block ends.
+  def with_bilingual_page(kind, part: nil, solution: nil)
+    build_flow_world
+    as_student
+    extra = { kind: kind, part: part, solution: solution }.compact
+    source = format(BILINGUAL_MOCK, fixture: bilingual_fixture, extra: JSON.generate(extra))
+    id = page.driver.browser.page.command("Page.addScriptToEvaluateOnNewDocument", source: source)["identifier"]
+    page.driver.resize(390, 844)
+    visit "/topics/#{TOPIC}/practice/#{SKILL}"
+    assert_selector "#check:not([disabled])", wait: 30
+    yield
+  ensure
+    begin
+      page.driver.browser.page.command("Page.removeScriptToEvaluateOnNewDocument", identifier: id) if id
+    rescue StandardError
+      nil
+    end
+  end
+
+  def assert_no_sideways_scroll
+    assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth + 1"), "the page scrolls sideways on a 390 px phone"
+  end
+
+  # the target text, «Traduzione» next to «Controlla» and no Italian until it is asked; then the Italian under every text, the hint and the verdict joining it
+  def walk_bilingual_choice
+    with_bilingual_page("choice") do
+      assert_selector ".prompt", text: "Choose the two words that fill the gaps"
+      assert_selector ".instance-stem", text: "On Saturdays I ___ my bed"
+      assert_selector "fieldset.options .option-text", count: 4
+      assert_selector ".reminder", text: "Look at the nouns again."
+      assert_selector "#translation-button", text: "Traduzione", count: 1
+      assert_equal "false", find("#translation-button")["aria-pressed"]
+      assert_equal %w[check translation-button], all("[data-practice-target=controls] > button").first(2).map { |b| b[:id] }, "«Traduzione» sits next to «Controlla»"
+      assert_no_selector ".tr"
+      assert_no_text "Scegli le due parole"
+      assert_no_text "Il sabato io"
+      assert_no_selector ".option .tr-toggle"
+      assert_no_sideways_scroll
+      # open: the Italian of the instruction, the sentence, each option, the steps and the format
+      find("#translation-button").click
+      assert_equal "true", find("#translation-button")["aria-pressed"]
+      assert_selector ".prompt .tr", text: "Scegli le due parole che completano la frase"
+      assert_selector ".instance-stem .tr", text: "Il sabato io ___ il letto"
+      assert_selector "label.option .tr", text: "fare / fare", count: 4
+      assert_selector ".do-steps .tr", text: "Leggi tutta la frase."
+      assert_selector ".answer-format + .tr", text: "Ogni opzione ha due parti"
+      assert_selector ".reminder .tr", text: "Guarda di nuovo i nomi."
+      assert_equal "it", find(".prompt .tr", match: :first)["lang"]
+      assert_no_sideways_scroll
+      # a hint that arrives later joins the open scope
+      click_button "Mostra un aiuto (1 di 3)"
+      assert_selector "#hints li", text: "Some verbs go with fixed nouns"
+      assert_selector "#hints li .tr", text: "Alcuni verbi stanno con nomi fissi"
+      # closing hides every line, the later ones too
+      find("#translation-button").click
+      assert_no_selector ".tr"
+      assert_equal "false", find("#translation-button")["aria-pressed"]
+      # a wrong try: the catalogue message is a pair, and the verdict joins the scope when it is open again
+      find("fieldset.options").find(".option-text", text: "do / do", exact_text: true).click
+      click_button "Controlla"
+      assert_selector "#feedback .feedback-text[lang=en]", text: "Look at the nouns again. Which verb is the partner of each one?"
+      assert_no_selector "#feedback .tr"
+      find("#translation-button").click
+      assert_selector "#feedback .tr", text: "Guarda di nuovo i nomi. Quale verbo è il compagno di ciascuno?"
+      # the solution: steps and final with their Italian; the button goes on after the exercise is over
+      click_button "Mostrami la soluzione"
+      assert_selector "#solution li", text: "We say «make the bed»."
+      assert_selector "#solution li .tr", text: "Si dice «make the bed»."
+      assert_selector "#solution .tr", text: "make / do: il sabato rifaccio il letto e faccio la spesa."
+      assert_selector "#next-actions #translation-button", text: "Traduzione"
+      assert_no_selector "#check", visible: :visible
+      find("#next-actions #translation-button").click
+      assert_no_selector ".tr"
+      assert_equal [ { "surface" => "practice", "scope" => "item", "topic" => TOPIC, "serve_id" => 9001 } ], page.evaluate_script("window.__trPosts").first(1).map { |b| b.slice("surface", "scope", "topic", "serve_id") }
+      assert_no_sideways_scroll
+      assert_clean "the bilingual exercise"
+    end
+  end
+
+  # the reading rule: the passage's Italian is not on the page before the answer, and comes with the solution
+  def walk_bilingual_passage
+    part = { component: "testlet", lang: "en", passage_en: PASSAGE_EN,
+             sub_items: [ { id: "s1", component: "choice", stem_en: "Who has a dog?", stem_it: "Chi ha un cane?", options: [ { id: "a", text: "Tom", text_it: "Tom" }, { id: "b", text: "Amy", text_it: "Amy" } ] } ] }
+    with_bilingual_page("choice", part: part, solution: { passage_it: PASSAGE_IT }) do
+      assert_selector ".passage[lang=en]", text: PASSAGE_EN
+      assert_no_selector ".passage .tr", visible: :all
+      find("#translation-button").click
+      assert_selector ".sub-item .prompt .tr", text: "Chi ha un cane?"
+      assert_no_text "Tom ha un cane"
+      assert_not_includes page.html, "Tom ha un cane", "the passage's Italian is not in the page before the answer"
+      click_button "Mostrami la soluzione"
+      assert_selector "#solution h2"
+      assert_selector ".passage .tr", text: PASSAGE_IT
+      assert_equal "it", find(".passage .tr")["lang"]
+      find("#next-actions #translation-button").click
+      assert_no_selector ".passage .tr"
+      find("#next-actions #translation-button").click
+      assert_selector ".passage .tr", text: PASSAGE_IT
+      assert_no_sideways_scroll
+      assert_clean "the bilingual passage"
+    end
+  end
+
+  # a legacy exercise is drawn as before: no scope, no button
+  def walk_legacy_has_no_translation
+    open_practice("choice")
+    assert_no_selector "#translation-button", visible: :all
+    assert_no_selector "[data-tr-scope]", visible: :all
+    assert_no_selector ".tr", visible: :all
+    assert_clean "the legacy exercise"
+  end
+
 
   # serve -> wrong -> «Controlla» -> hint offered -> «Mostra un aiuto» -> right -> solution -> next, on one skill of each kind.
   def walk_each_kind
@@ -1028,5 +1184,19 @@ class PracticeFlowTest < ApplicationSystemTestCase
     assert_selector "#preview-view-name", text: "Vista: Con le bozze"
     walk_each_kind
     walk_solution
+  end
+
+  test "a bilingual exercise on a 390 px phone: «Traduzione» next to «Controlla», the Italian under every text, the hint, the verdict and the solution join it" do
+    walk_bilingual_choice
+  end
+
+  test "a bilingual reading passage: its Italian reaches the page only with the solution" do
+    walk_bilingual_passage
+  end
+
+  test "a legacy exercise has no «Traduzione» button and no translation scope" do
+    build_flow_world
+    as_student
+    walk_legacy_has_no_translation
   end
 end

@@ -4,8 +4,13 @@
 // The raw answer is JSON text: the shown ids in the order the student chose.
 import { announceChange, el, handle } from "items/dom"
 import { renderInline } from "items/markup"
+import { bare, langOf, trNode } from "items/bilingual"
+
+// An element shorter than this many words is a fragment (a word, a chunk), not a sentence: it has no translation line (D-402, design §3.1).
+const FRAGMENT_WORDS = 3
 
 export function render(part, ctx) {
+  const lang = langOf(part)
   const list = el("ol", { class: "ordering", "aria-label": ctx.t.ordering_label })
   const live = el("p", { class: "sr-only", role: "status", "aria-live": "polite" })
   const rows = (part.elements || []).map((element, index) => {
@@ -13,7 +18,10 @@ export function render(part, ctx) {
     const up = el("button", { type: "button", class: "button secondary small", text: ctx.t.ordering_up })
     const down = el("button", { type: "button", class: "button secondary small", text: ctx.t.ordering_down })
     const moves = el("span", { class: "row-moves" }, up, down)
-    const row = el("li", { class: "order-row", tabindex: "0", "data-id": element.id, "data-comment-anchor": `row:${index + 1}` }, text, moves)
+    const { italian } = bare(element, "text", lang)
+    const sentence = italian && String(element.text).trim().split(/\s+/).length >= FRAGMENT_WORDS
+    if (lang) text.setAttribute("lang", lang)
+    const row = el("li", { class: "order-row", tabindex: "0", "data-id": element.id, "data-comment-anchor": `row:${index + 1}` }, text, moves, sentence ? trNode(italian, { tag: "span" }) : null)
     up.addEventListener("click", () => move(row, -1, up))
     down.addEventListener("click", () => move(row, 1, down))
     row.addEventListener("keydown", (event) => {

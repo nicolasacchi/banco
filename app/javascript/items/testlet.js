@@ -5,6 +5,7 @@
 import { DONT_KNOW, announceChange, el, handle, parseDraft } from "items/dom"
 import { renderMarkup } from "items/markup"
 import { renderPart } from "items/render"
+import { langOf, passageBox, trNode } from "items/bilingual"
 
 function clearMark(section) {
   section.classList.remove("missing")
@@ -14,13 +15,22 @@ function clearMark(section) {
 export async function render(part, ctx) {
   const wrapper = el("div", { class: "answer testlet" })
   wrapper.appendChild(el("h2", { class: "passage-title", text: ctx.t.passage }))
-  const passage = el("div", { class: "passage" })
-  passage.appendChild(renderMarkup(part.passage_it || ""))
+  // A bilingual testlet (D-402): the passage is the target text, and its Italian is not drawn (a reading text: the student must not answer from it).
+  // The page adds it with reveal() once the exercise is over; ctx.passageTranslation (the teacher's frozen slot) draws it at once.
+  const lang = langOf(part)
+  let passage
+  if (lang) {
+    passage = passageBox(part[`passage_${lang}`] || "", lang)
+    if (ctx.passageTranslation && part.passage_it) passage.appendChild(trNode(part.passage_it))
+  } else {
+    passage = el("div", { class: "passage" })
+    passage.appendChild(renderMarkup(part.passage_it || ""))
+  }
   wrapper.appendChild(passage)
 
   const subs = []
   for (const [index, sub] of (part.sub_items || []).entries()) {
-    const handleOfSub = await renderPart(sub, ctx)
+    const handleOfSub = await renderPart(lang && !sub.lang ? { ...sub, lang } : sub, ctx)
     const give_up = el("input", { type: "checkbox", class: "give-up" })
     const section = el("section", { class: "sub-item", "data-sub": sub.id, "data-comment-anchor": `part:${index + 1}` },
       el("h3", { text: ctx.t.question_of.replace("%{n}", String(index + 1)) }),

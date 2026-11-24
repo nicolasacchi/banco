@@ -239,6 +239,14 @@ math-field.math-input {
 .sub-item { border-top: 1px solid var(--line); padding: 1rem 0; }
 .sub-item.given-up .answer { opacity: 0.5; }
 .passage { background: var(--surface); padding: 0.5rem 1rem; margin-bottom: 1rem; }
+/* The Italian translation of a bilingual item (D-402; the node, its state and the buttons are translation.css). Always stacked under the target text. In an option
+   the Italian sits under the option's text inside the same label (the tap target is unchanged); in a matching or an ordering row it takes a line of its own. */
+.option-body { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.match-row > .tr, .order-row > .tr { flex: 1 1 100%; margin-top: 0; }
+.tr-block { min-width: 0; }
+.passage > .tr { margin: var(--space-2, 0.5rem) 0 0; }
+figure > figcaption.tr { margin-top: var(--space-1, 0.25rem); }
+.do-steps li > .tr { margin-top: 0.15rem; }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;

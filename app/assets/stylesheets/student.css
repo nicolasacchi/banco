@@ -346,6 +346,11 @@ article.solution.card { margin-top: var(--space-4); }
   /* The bar covers the bottom of the screen: the box that takes the focus is scrolled above it, not under it. */
   html:has(.exercise-card .sticky-actions), html:has(.sitting-card .sticky-actions) { scroll-padding-bottom: 15rem; }
 }
+/* «Traduzione» (D-402) sits next to «Controlla» in the action bar of a bilingual exercise, on one row: «Controlla» takes the rest of the row, never a row more. */
+.exercise-card .sticky-actions .tr-toggle, .sitting-card .sticky-actions .tr-toggle { min-height: var(--tap); flex: 0 0 auto; }
+@media (max-width: 40rem) {
+  .exercise-card .sticky-actions:has(.tr-toggle) #check { flex: 1 1 0; min-width: 0; }
+}
 
 /* Search, settings and comments on the shared base. ----------------------------------------------------------------------------- */
 .search-input { min-height: var(--tap); border-radius: var(--radius-m); }

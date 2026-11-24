@@ -12,6 +12,7 @@
 import { renderItem } from "items/render"
 import { ensureChem } from "items/markup"
 import { rawMarkupIn } from "lesson/raw_markup"
+import { refresh } from "items/translation"
 
 const errors = []
 const note = (message) => errors.push(String(message).slice(0, 300))
@@ -26,6 +27,9 @@ for (const level of ["error", "warn"]) {
 const presentation = JSON.parse(document.getElementById("item-presentation").textContent)
 const config = JSON.parse(document.getElementById("item-config").textContent)
 const box = document.getElementById("item-box")
+// ?tr=1 (D-402): the item as the student sees it with «Traduzione» open: the item box is a translation scope that is on. Without it the Italian is drawn but
+// hidden, as the student first sees the exercise.
+const translationOpen = new URLSearchParams(location.search).get("tr") === "1"
 
 // A bound on every wait: a page that never settles answers by name instead of leaving the server's Chrome to give up on it.
 const READY_LIMIT_MS = Math.min(Number(new URLSearchParams(location.search).get("ready_ms")) || 20000, 20000)
@@ -113,9 +117,13 @@ const ready = (async () => {
     await waitFor("the fonts", document.fonts?.ready)
     // a web font is fetched when text first wears it: every face is loaded before the instance is measured, or its text is measured in the fallback
     if (document.fonts) await waitFor("the fonts", Promise.allSettled([...document.fonts].map((face) => face.load())))
-    const handle = await waitFor("the item", renderItem(presentation, { t: config.texts }))
+    // The reviewer is not answering: the passage's Italian (withheld from the student until the answer) is drawn too, so that it is checked and pictured.
+    const handle = await waitFor("the item", renderItem(presentation, { t: config.texts, passageTranslation: true }))
+    box.setAttribute("data-tr-scope", "item")
+    box.setAttribute("data-translation", translationOpen ? "on" : "off")
     box.appendChild(handle.element)
     handle.mounted()
+    refresh(box)
     // a chemistry formula is drawn as plain text until mhchem arrives (items/markup.js); the redraw is queued on the same promise
     if (uses(/\\(?:ce|pu)\{/)) await waitFor("mhchem", ensureChem().catch(() => {}))
     // MathLive's field is a custom element that draws once defined; its fonts come from the app origin

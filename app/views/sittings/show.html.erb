@@ -59,7 +59,8 @@
         <h2 id="formula-sheet-title"><%= t("sitting.sheet.title") %></h2>
         <div data-sitting-target="sheetBody"></div>
       </section>
-      <div class="actions button-row sticky-actions">
+      <%# The button «Traduzione» of a bilingual item is put first in this bar by sitting_controller.js (D-402). %>
+      <div class="actions button-row sticky-actions" data-sitting-target="actions">
         <button type="button" class="button" data-sitting-target="sendButton" data-action="sitting#send"><%= t("sitting.send") %></button>
         <button type="button" class="button secondary" data-sitting-target="unknownButton" data-action="sitting#dontKnow"><%= t("sitting.dont_know") %></button>
         <button type="button" class="button secondary" id="sheet-button" data-sitting-target="sheetButton" data-action="sitting#toggleSheet"

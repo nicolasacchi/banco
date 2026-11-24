@@ -5,6 +5,8 @@ import { Refusals } from "items/refusals"
 import { showRefusalNotice } from "items/refusal_notice"
 import { renderItem } from "items/render"
 import { renderInline } from "items/markup"
+import { langOf, reveal, sides, trNode } from "items/bilingual"
+import { refresh as refreshTranslation, toggleButton } from "items/translation"
 import { spriteUrl } from "lesson/sprite"
 
 // The practice page (A9): one page, no Turbo. It asks the server for a serve as JSON, draws the item with the
@@ -32,7 +34,7 @@ const DRAFT_TIMEOUT_MS = 4000
 const STATE_TONES = { demonstrated: "success", consolidated: "success", in_study: "info", to_recover: "nearly", to_review: "nearly", to_learn: "nearly", not_seen: "muted" }
 
 export default class extends Controller {
-  static targets = ["skillState", "skillWhy", "skillMissing", "dots", "reason", "reminder", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
+  static targets = ["scope", "skillState", "skillWhy", "skillMissing", "dots", "reason", "reminder", "work", "itemBox", "hints", "hintList", "controls", "check", "hintButton", "solutionButton",
                     "feedback", "solutionBox", "nextActions", "done", "doneTitle", "doneOffer", "doneActions", "doneExtra", "skip", "list", "listPanel", "listCount", "listBody"]
   static values = { topic: String, skill: String, baseUrl: String, backUrl: String, texts: Object, labels: Object }
 
@@ -53,6 +55,8 @@ export default class extends Controller {
     this.busy = false
     this.hintsTotal = 0
     this.hintsShown = 0
+    this.itemLang = null // "en" or "es" for a bilingual exercise (D-402), null for a legacy one
+    this.trButton = null
     this.serving = false
     this.contesting = false
     // The half-typed answer (D-337): `drafting` while the open exercise may take a draft; `lastSaved` is what the server holds
@@ -117,7 +121,8 @@ export default class extends Controller {
   sayEarlier(reply) {
     const right = reply.outcome === "correct" || reply.outcome === "correct_aided"
     const tone = right && reply.note_it ? "nearly" : (TONES[reply.outcome] || "info")
-    this.say(reply.message_it, { tone, title: this.labels.earlier, note: [reply.note_it, reply.count_it].filter(Boolean).join(" ") })
+    const { text, ...pair } = this.verdict(reply)
+    this.say(text, { tone, title: this.labels.earlier, note: [reply.note_it, reply.count_it].filter(Boolean).join(" "), ...pair })
     this.offerContest(this.serveActions) // D-395: what the server allows now on the exercise on the screen, which the line above has just wiped
   }
 
@@ -153,6 +158,39 @@ export default class extends Controller {
     this.nextActionsTarget.textContent = ""
     this.solutionBoxTarget.hidden = true
     this.solutionBoxTarget.textContent = ""
+    this.endTranslation()
+  }
+
+  // ---- the Italian translation (D-402) ---------------------------------------------------------------
+
+  // A bilingual exercise is a translation scope: the card (item, feedback, hints, solution, next actions) opens or closes every Italian line in it, the
+  // ones that arrive later included; its «Traduzione» button sits in the action bar next to «Controlla». A legacy exercise has no scope and no button.
+  beginTranslation(serveId) {
+    this.endTranslation()
+    this.scopeTarget.setAttribute("data-tr-scope", "item")
+    this.scopeTarget.setAttribute("data-translation", "off")
+    this.scopeTarget.setAttribute("data-tr-serve", String(serveId))
+    this.trButton = toggleButton({ text: this.texts.translation_toggle })
+    this.trButton.id = "translation-button"
+    this.checkTarget.after(this.trButton)
+  }
+
+  endTranslation() {
+    this.trButton?.remove()
+    this.trButton = null
+    for (const name of ["data-tr-scope", "data-translation", "data-tr-serve"]) this.scopeTarget.removeAttribute(name)
+  }
+
+  // Once the exercise is over the action bar is put away; «Traduzione» goes on with the buttons that follow, so the solution and the verdict can still be read.
+  keepTranslationButton() {
+    if (this.trButton) this.nextActionsTarget.appendChild(this.trButton)
+  }
+
+  translatable() { return this.scopeTarget.hasAttribute("data-tr-scope") }
+
+  // The passage's Italian (a reading text) reaches the page only now that the exercise is over.
+  revealPassage(italian) {
+    if (italian && this.translatable() && reveal(this.itemBoxTarget, italian)) refreshTranslation(this.scopeTarget)
   }
 
   // What POST /practice/serves answers: an exercise, the pool that ran out, or the end of the topic.
@@ -242,7 +280,8 @@ export default class extends Controller {
     this.itemKey = reply.exercise?.item ?? null // the exercise on the page keeps its place in the list when it is answered and closed
     // "Commenta" (D-304): a comment on this exercise names the serve; the server checks it is this student's.
     this.itemBoxTarget.dataset.commentServeId = String(reply.serve_id)
-    this.itemFormat = reply.item?.answer_format_it
+    this.itemLang = langOf(reply.item)
+    this.itemFormat = sides(reply.item, "answer_format", this.itemLang)?.text
     this.itemBoxTarget.inert = false
     this.itemBoxTarget.textContent = ""
     try {
@@ -253,13 +292,15 @@ export default class extends Controller {
     }
     this.itemBoxTarget.appendChild(this.handle.element)
     this.handle.mounted()
+    if (this.itemLang) this.beginTranslation(reply.serve_id)
+    else this.endTranslation()
     this.showSkill(reply.skill)
     this.showReason(reply)
     this.showReminder(reply)
     this.hintsTotal = reply.hints.total
     this.hintsShown = 0
     this.hintListTarget.textContent = ""
-    reply.hints.shown.forEach((h) => this.addHint(h.n, h.hint_it))
+    reply.hints.shown.forEach((h) => this.addHint(h.n, h))
     this.updateHintButton()
     this.setQuestionServe()
     this.workTarget.hidden = false
@@ -267,6 +308,7 @@ export default class extends Controller {
     this.solutionButtonTarget.hidden = false
     this.setControls(true)
     this.say("")
+    refreshTranslation(this.scopeTarget)
     this.handle.focus()
     this.drafting = true
     this.lastSaved = ""
@@ -314,7 +356,8 @@ export default class extends Controller {
   // D-358: «Ricorda: …», one quiet line above the answer when the server sent one (the item's own message for a typical error made lately).
   // Not a hint: it is not counted and not listed with the hints.
   showReminder(reply) {
-    const text = reply.reminder_it
+    const said = sides(reply, "reminder", this.itemLang)
+    const text = said?.text
     this.reminderTarget.hidden = !text
     this.reminderTarget.textContent = ""
     if (!text) return
@@ -322,6 +365,9 @@ export default class extends Controller {
     label.className = "reminder-label"
     label.textContent = this.labels.reminder_label
     this.reminderTarget.append(label, ` ${text}`)
+    if (said.lang) this.reminderTarget.setAttribute("lang", said.lang)
+    else this.reminderTarget.removeAttribute("lang")
+    if (said.italian && this.translatable()) this.reminderTarget.appendChild(trNode(said.italian, { tag: "span" }))
   }
 
   setQuestionServe() {
@@ -400,8 +446,9 @@ export default class extends Controller {
       if (reply.skill.changed) extra.push(this.labels.skill_now.replace("%{state}", reply.skill.state_it.toLowerCase()))
     }
     this.sayOutcome(reply, extra)
-    if (reply.hint) this.addHint(reply.hint.n, reply.hint.hint_it)
+    if (reply.hint) this.addHint(reply.hint.n, reply.hint)
     this.offerContest(reply.actions)
+    this.revealPassage(reply.passage_it)
     if (reply.solution) this.showSolution(reply.solution)
     this.applyActions(reply.actions)
     return null
@@ -414,7 +461,18 @@ export default class extends Controller {
     if (right && reply.note_it) tone = "nearly"
     const title = tone === "nearly" && !right ? this.labels.nearly : null
     const note = [reply.note_it, reply.count_it, ...extra].filter(Boolean).join(" ") // count_it (D-363): «Giuste: N su M.» after a try that is not right
-    this.say(reply.message_it, { tone, title, note })
+    const { text, ...pair } = this.verdict(reply)
+    this.say(text, { tone, title, note, ...pair })
+  }
+
+  // { text, lang, italian } for say(): the message of a graded reply. An item's own message is a pair, target text and its Italian under it (D-402); a
+  // sentence of the engine is one `message_it` in the interface language and goes as it always did. A pair goes as Italian alone when the page has no scope to open
+  // it with (the verdict of an earlier exercise shown over a legacy one).
+  verdict(reply) {
+    const said = sides(reply, "message")
+    if (!said?.lang) return { text: reply.message_it }
+    if (!this.translatable()) return { text: said.italian ?? said.text }
+    return { text: said.text, lang: said.lang, italian: said.italian }
   }
 
   // ---- hints and solution --------------------------------------------------------------------------
@@ -424,8 +482,8 @@ export default class extends Controller {
     const n = this.hintsShown + 1
     this.setControls(false)
     const { status, body } = await this.post(this.urls.hint(this.serveId), { n })
-    if (status === 200 && body?.hint_it) {
-      this.addHint(body.n, body.hint_it)
+    if (status === 200 && sides(body, "hint", this.itemLang)) {
+      this.addHint(body.n, body)
       this.hintListTarget.lastElementChild?.focus?.()
     } else if (status === 409) {
       this.close()
@@ -444,6 +502,7 @@ export default class extends Controller {
     const { status, body } = await this.post(this.urls.solution(this.serveId), {})
     if (status === 200 && body?.solution) {
       this.say("")
+      this.revealPassage(body.passage_it)
       this.showSolution(body.solution)
       this.offerContest(body.actions)
       this.applyActions(body.actions)
@@ -493,6 +552,7 @@ export default class extends Controller {
       if (status === 200 && body?.status === "contested") {
         this.close(body.actions || ["next", "back"])
         this.say(body.message_it, { tone: "info" })
+        this.revealPassage(body.passage_it)
         if (body.solution) this.showSolution(body.solution)
         this.showActions(body.actions || ["next", "back"])
         this.refreshList()
@@ -510,13 +570,20 @@ export default class extends Controller {
     }
   }
 
-  addHint(n, text) {
+  // `hint` is what the server sent: `hint_<lang>` + `hint_it` for a bilingual exercise (the Italian goes under it, shown when the exercise's translation
+  // is open), `hint_it` alone for a legacy one.
+  addHint(n, hint) {
     if (n <= this.hintsShown) return
     this.hintsShown = n
     this.hintsTarget.hidden = false
+    const said = sides(hint, "hint", this.itemLang)
     const li = document.createElement("li")
     li.tabIndex = -1
-    renderInline(text, li)
+    renderInline(said.text, li)
+    if (said.lang) {
+      li.setAttribute("lang", said.lang)
+      if (said.italian) li.appendChild(trNode(said.italian, { tag: "span" }))
+    }
     this.hintListTarget.appendChild(li)
     this.updateHintButton()
   }
@@ -529,6 +596,7 @@ export default class extends Controller {
   }
 
   showSolution(solution) {
+    this.revealPassage(solution.passage_it)
     const box = this.solutionBoxTarget
     box.textContent = ""
     const title = document.createElement("h2")
@@ -537,11 +605,15 @@ export default class extends Controller {
     const list = document.createElement("ol")
     for (const step of solution.steps || []) {
       const li = document.createElement("li")
-      renderInline(step.text_it, li)
+      const said = sides(step, "text", this.itemLang)
+      renderInline(said?.text ?? "", li)
+      if (said?.lang) li.setAttribute("lang", said.lang)
       if (step.math) {
         li.appendChild(document.createTextNode(" "))
         renderInline(step.math, li.appendChild(document.createElement("span")))
       }
+      // The Italian of the step goes last, under the formula too.
+      if (said?.lang && said.italian) li.appendChild(trNode(said.italian, { tag: "span" }))
       list.appendChild(li)
     }
     box.appendChild(list)
@@ -550,8 +622,11 @@ export default class extends Controller {
       const label = document.createElement("strong")
       label.textContent = `${this.labels.final}: `
       p.appendChild(label)
-      renderInline(solution.final, p.appendChild(document.createElement("span")))
+      const final = renderInline(solution.final, p.appendChild(document.createElement("span")))
+      // `final` is the target text; `final_it` is its Italian (D-402, rule R2).
+      if (this.itemLang) final.setAttribute("lang", this.itemLang)
       box.appendChild(p)
+      if (this.itemLang && solution.final_it) box.appendChild(trNode(solution.final_it))
     }
     box.hidden = false
   }
@@ -635,6 +710,7 @@ export default class extends Controller {
       box.appendChild(a)
       keep(a)
     }
+    this.keepTranslationButton()
     box.hidden = false
     first?.focus()
   }
@@ -799,10 +875,13 @@ export default class extends Controller {
     name.className = "exercise-n"
     name.textContent = this.labels.exercise_n.replace("%{n}", exercise.n)
     text.appendChild(name)
-    if (exercise.title_it) {
+    const said = sides(exercise, "title")
+    if (said?.text) {
       const title = document.createElement("span")
       title.className = "exercise-title"
-      renderInline(exercise.title_it, title)
+      renderInline(said.text, title)
+      // The entry is a button or a link: it holds the target title alone, never a translation node or a button of its own (D-310).
+      if (said.lang) title.setAttribute("lang", said.lang)
       text.appendChild(title)
     }
     const pill = document.createElement("span")
@@ -852,7 +931,8 @@ export default class extends Controller {
 
   // A plain status line (loading, saving, a refusal) or, with a tone, a notice: icon, an optional short title, the sentence
   // and an optional note. The element stays the one polite live region of the page.
-  say(text, { tone = null, title = null, note = null } = {}) {
+  // A message that is a pair (D-402) passes `lang` and `italian`: the sentence is drawn as target text and its translation node follows it.
+  say(text, { tone = null, title = null, note = null, lang = null, italian = null } = {}) {
     const box = this.feedbackTarget
     box.textContent = ""
     box.className = tone ? `feedback notice ${tone}` : "feedback"
@@ -866,7 +946,12 @@ export default class extends Controller {
     const body = document.createElement("div")
     body.className = "notice-body"
     if (title) body.appendChild(Object.assign(document.createElement("span"), { className: "notice-title", textContent: title }))
-    if (text) body.appendChild(Object.assign(document.createElement("span"), { className: "feedback-text", textContent: text }))
+    if (text) {
+      const sentence = Object.assign(document.createElement("span"), { className: "feedback-text", textContent: text })
+      if (lang) sentence.setAttribute("lang", lang)
+      body.appendChild(sentence)
+      if (lang && italian) body.appendChild(trNode(italian, { tag: "span" }))
+    }
     if (note) body.appendChild(Object.assign(document.createElement("span"), { className: "feedback-note", textContent: ` ${note}` }))
     box.append(icon, body)
   }

@@ -3,6 +3,7 @@
 // keyboard has no easy accents must not fail an item for that (E-03).
 import { announceChange, el, handle, uid } from "items/dom"
 import { insertAtCaret } from "items/helper_keys"
+import { langOf } from "items/bilingual"
 
 const ACCENTS = { es: ["á", "é", "í", "ó", "ú", "ñ", "ü", "¿", "¡"], it: ["à", "è", "é", "ì", "ò", "ù"] }
 
@@ -10,7 +11,7 @@ export function render(part, ctx) {
   const id = uid("text")
   const input = el("input", {
     id, type: "text", autocomplete: "off", autocapitalize: "off", spellcheck: "false", class: "answer-input wide",
-    lang: part.accents === "es" ? "es" : "it"
+    lang: langOf(part) ?? (part.accents === "es" ? "es" : "it")
   })
   const wrapper = el("div", { class: "answer" },
     el("label", { for: id, class: "hint", text: ctx.t.text_label }), input)
