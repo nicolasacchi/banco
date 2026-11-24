@@ -188,6 +188,17 @@ export default class extends Controller {
 
   translatable() { return this.scopeTarget.hasAttribute("data-tr-scope") }
 
+  // The closing screen of a topic whose next topic has a title pair: the card is a scope (no serve), the button goes in the row of the screen's buttons.
+  beginClosingTranslation(actions) {
+    this.endTranslation()
+    this.scopeTarget.setAttribute("data-tr-scope", "block")
+    this.scopeTarget.setAttribute("data-translation", "off")
+    this.trButton = toggleButton({ text: this.texts.translation_toggle })
+    this.trButton.id = "translation-button"
+    actions.appendChild(this.trButton)
+    refreshTranslation(this.scopeTarget)
+  }
+
   // The passage's Italian (a reading text) reaches the page only now that the exercise is over.
   revealPassage(italian) {
     if (italian && this.translatable() && reveal(this.itemBoxTarget, italian)) refreshTranslation(this.scopeTarget)
@@ -247,7 +258,14 @@ export default class extends Controller {
     const offer = this.doneOfferTarget
     offer.textContent = ""
     offer.hidden = !(reply.next && reply.offer_it)
-    if (!offer.hidden) offer.append(`${reply.offer_it} `, Object.assign(document.createElement("strong"), { className: "topic-done-next", textContent: reply.next.title_it }))
+    // the next topic is named in the language it teaches, its Italian under it (D-402); a legacy title is the one `title_it`
+    const next = reply.next && sides(reply.next, "title")
+    if (!offer.hidden) {
+      const name = Object.assign(document.createElement("strong"), { className: "topic-done-next", textContent: next.text })
+      if (next.lang) name.setAttribute("lang", next.lang)
+      offer.append(`${reply.offer_it} `, name)
+      if (next.italian) offer.appendChild(trNode(next.italian, { tag: "span" }))
+    }
     const actions = this.doneActionsTarget
     actions.textContent = ""
     const link = (spec, primary) => {
@@ -259,6 +277,8 @@ export default class extends Controller {
     }
     if (reply.next) link(reply.next, true)
     link(reply.today, !reply.next)
+    // with a translation to offer the closing screen is a scope of its own, and its «Traduzione» sits with the other buttons
+    if (next?.italian) this.beginClosingTranslation(actions)
     const extra = this.doneExtraTarget
     extra.textContent = ""
     if (reply.schema) {
@@ -785,7 +805,10 @@ export default class extends Controller {
       if (skills.length > 1) {
         const heading = document.createElement("h3")
         heading.className = "exercise-skill"
-        heading.textContent = skill.label_it
+        const label = sides(skill, "label")
+        heading.textContent = label.text
+        if (label.lang) heading.setAttribute("lang", label.lang)
+        if (label.italian) heading.appendChild(trNode(label.italian, { tag: "span" })) // the page is its scope: «Traduzione» at the top
         group.appendChild(heading)
       }
       // D-390: every exercise «Fatto» and the skill still not shown: the one line that says what to do, here and under the skill's state.

@@ -69,6 +69,12 @@ module Course
       italian if target && italian
     end
 
+    # The label as the browser is told it (D-402): `{label_<lang>:, label_it:}` for a skill with the pair, `{label_it:}` (the one text) otherwise.
+    def label_pair(skill)
+      target, italian, lang = labels[skill]
+      target && italian ? { "label_#{lang}": target, label_it: italian } : { label_it: label(skill) }
+    end
+
     # The skill graph's description of one of the skill's typical errors (nil when it has none), for the reminder's fallback (D-358).
     def error_description(skill, code)
       subjects.each do |sv|
@@ -86,7 +92,7 @@ module Course
     def labels
       @labels ||= subjects.each_with_object({}) do |sv, all|
         lang = Lessons::Lang.target(sv.subject.key)
-        graph_skills(sv).each { |s| all[s["key"]] = [ (s["label_#{lang}"] if lang) || s["label_it"], (s["label_it"] if lang && s["label_#{lang}"]) ] }
+        graph_skills(sv).each { |s| all[s["key"]] = [ (s["label_#{lang}"] if lang) || s["label_it"], (s["label_it"] if lang && s["label_#{lang}"]), lang ] }
       end
     end
 

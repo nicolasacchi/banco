@@ -310,7 +310,7 @@ class PracticeFlowTest < ApplicationSystemTestCase
   # the target text, «Traduzione» next to «Controlla» and no Italian until it is asked; then the Italian under every text, the hint and the verdict joining it
   def walk_bilingual_choice
     with_bilingual_page("choice") do
-      assert_selector ".prompt", text: "Choose the two words that fill the gaps"
+      assert_selector ".prompt", text: "Choose the two words for the gaps"
       assert_selector ".instance-stem", text: "On Saturdays I ___ my bed"
       assert_selector "fieldset.options .option-text", count: 4
       assert_selector ".reminder", text: "Look at the nouns again."

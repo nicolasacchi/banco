@@ -26,6 +26,9 @@ module Course
 
       # Whether the Italian title is a translation to offer (the entry holds both texts).
       def title_paired? = title_target.present? && title_it.present?
+
+      # The title as the browser is told it (D-402): `{title_<lang>:, title_it:}` for an entry with the pair, `{title_it:}` (the one text) otherwise.
+      def title_pair = title_paired? ? { "title_#{lang}": title_target, title_it: title_it } : { title_it: title }
     end
 
     module_function

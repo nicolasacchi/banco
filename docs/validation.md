@@ -212,3 +212,26 @@ An `arbiter` session reads a finding with the item, its instances and the author
 
 The effective opinion is the latest counting assessment of the first model (`FindingOpinion`): none, clear (`author_right` or `finding_right`) or unclear. For blocker and major findings the teacher follows a clear opinion with one click, one finding or all of them; each is a normal `dispose_finding` decision. A minor finding is decided by the opinion alone (D-239, the operator's "Opus decides minors"): `author_right` closes it, `finding_right` marks it to fix, `unclear` or no opinion leaves it open; an old second opinion stays on the card as history ("secondo parere, non più richiesto (D-316)"). This is a derived state, never a decision row; a teacher decision wins. Assessments are not read by `Review::Gate` or `Approval::BlueprintGate`.
 
+
+## The bilingual courses (D-402)
+
+A revision of `english` or `spanish` with `bilingual: true` writes every student text twice: the language it teaches under `<base>_en|_es`, its Italian under `<base>_it`
+(an option's `text`, `final`, a table's `header`/`rows` and `quote.text` keep the target text and take `<key>_it`). `Validation::Bilingual` is the one checker; the item and
+lesson checks run on two layers, the target layer (the target text under its legacy key, so every pre-D-402 check reads it unchanged, findings mapped back to `stem_en`) and the
+Italian layer (leak scans: E-SOLUTION-IN-DISPLAY, E-SUPPORT-LEAK, E-HINT-KEY, W-HINT-OPTION, W-STEPS-METHOD, in the finding's message «in the Italian translation»).
+
+- **Codes:** E-LANG-BILINGUAL-REQUIRED / -FLAG, E-LANG-PAIR-MISSING / -ORPHAN / -SHAPE / -CONFLICT, E-LANG-TRANSLATION-LANG / -COPY, E-LESSON-LANG (Italian in a `_en` text),
+  W-LANG-SPAN-REDUNDANT, W-LANG-LEVEL (now on items too), W-TOPIC-LANG-MIXED (a warning only), W-LANG-FRAME-BLANK. `lang.bilingual_required` is empty until the cut-over.
+- **W-LANG-FRAME-BLANK:** a bilingual typed-answer instance whose shown stems hold a second line with `___` that `Grading::Frame` does not read as the instruction
+  («in place of ___», «en lugar de ___», «al posto di ___») switches the whole-sentence acceptance off; two gaps in one line are not a second line.
+- **Lints:** the Italian lint now reaches `passage_it` of a bilingual item; in a legacy english or spanish item `passage_it` and `model_answer_it` stay target text and are skipped.
+  The target lint (12-word sentences, 60-word stem, W-LANG-LEVEL with `config/banco/lexicon/{en,es}_names.txt` and `teaches_en|_es` on an item) runs on every `_en|_es` text.
+- **A reading text per instance:** an instance may carry its own passage in `display` (`passage_it` legacy, `passage_<lang>` + `passage_it` bilingual), which overrides the item's;
+  three to five questions on each text. It is linted, paired and checked like any text; it is read for the key apart from the display's other strings (a comprehension key may be a
+  word of its text; a long key option, 20 characters or more, stated word for word is E-SOLUTION-IN-DISPLAY, in both layers); a sub item of a testlet has none (E-GEN-SCHEMA). Two
+  instances on different passages are not alike (W-INSTANCES-ALIKE). Pool rules are unchanged. The blind solver never gets the Italian of a passage, the item's or the instance's.
+- **Stored hints:** a bilingual instance stores its effective hints as `{hints_en|hints_es: [...], hints_it: [...]}`; a legacy item keeps an Italian array.
+- **Review:** `Review::Checklist::TRANSLATION_POINTS` are ids 14 and 15 for a bilingual item (positions 12 and 13 accept either id); a bilingual lesson review has 13 points
+  (`Review::LessonChecklist`, `lesson_review.json`, `briefs/lesson-review.md`). Findings: `translation_fidelity`, `translation_leak`.
+- **Lessons:** the budgets count the target text, Gulpease runs on the Italian; the render check adds the states `tr` and `exN-tr` (the cover too) and the findings
+  «translation missing», «translation empty», «translation overflow» (all E-LESSON-RENDER). A target text outside a translation unit means the author left a field unpaired.

@@ -21,12 +21,12 @@ module TranslationHelper
   end
 
   # The attributes that make an element the scope of a list or topic page: closed (the preference opens it), the context of the event it
-  # reports and the student's own address to post it to; the preview and the teacher have no address, so nothing is written.
-  # Nothing at all when the page has no translation to offer (`offered` false): no scope, no button.
-  def tr_scope_attrs(offered, topic: nil)
+  # reports (`surface`: «topics» for the list and topic pages, «practice» for a skill's practice page) and the student's own address to post it to;
+  # the preview and the teacher have no address, so nothing is written. Nothing at all when the page has no translation to offer (`offered` false).
+  def tr_scope_attrs(offered, topic: nil, surface: "topics")
     return "" unless offered
 
-    tag.attributes(data: { tr_scope: "page", translation: "off", tr_surface: "topics", tr_topic: topic&.key, tr_url: (spath("/translations") unless preview?) }.compact)
+    tag.attributes(data: { tr_scope: "page", translation: "off", tr_surface: surface, tr_topic: topic&.key, tr_url: (spath("/translations") unless preview?) }.compact)
   end
 
   # The scope's «Traduzione» button (nothing when the page has no translation to offer): the page's own `data-controller="translation"` flips it.

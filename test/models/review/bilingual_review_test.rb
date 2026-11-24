@@ -60,6 +60,24 @@ class Review::BilingualReviewTest < ActiveSupport::TestCase
     assert_equal "An English text.", shown.solver_instances.first[:display]["passage_it"], "in a legacy revision passage_it is the target text, as before"
   end
 
+  test "an instance's own passage (display.passage_*) follows the same rule: the solver reads its target text only, the reviewer both, and it overrides the item's" do
+    body = item_body("short-answer").merge("bilingual" => true, "subject" => "english", "passage_en" => "The item's text.", "passage_it" => "Il testo dell'esercizio.",
+                                           "prompt" => { "stem_en" => "Say when.", "stem_it" => "Di' quando." })
+    own = { "passage_en" => "Tom wakes up at seven.", "passage_it" => "Tom si sveglia alle sette.", "stem_en" => "When?", "stem_it" => "Quando?" }
+    text = Review::ItemText.new(create_instance(body, { "display" => own, "answer" => "7" }).item_revision)
+    solver = text.solver_instances.first[:display]
+    assert_equal "Tom wakes up at seven.", solver["passage_en"], "the instance's text replaces the item's"
+    assert_not solver.key?("passage_it")
+    assert_not_includes JSON.generate(solver), "Il testo dell'esercizio", "nor does the item's Italian reach the solver"
+    assert_not_includes JSON.generate(solver), "si sveglia"
+    reviewer = text.review_instances.first[:display]
+    assert_equal [ "Tom wakes up at seven.", "Tom si sveglia alle sette." ], reviewer.values_at("passage_en", "passage_it")
+
+    legacy = item_body("short-answer").merge("passage_it" => "The item's text.")
+    shown = Review::ItemText.new(create_instance(legacy, { "display" => { "stem_it" => "Q", "passage_it" => "Tom wakes up at seven." }, "answer" => "1" }).item_revision)
+    assert_equal "Tom wakes up at seven.", shown.solver_instances.first[:display]["passage_it"], "in a legacy revision the instance's passage_it is the target text, as before"
+  end
+
   test "a quote may be taken from either layer" do
     body = golden
     text = Review::ItemText.new(revision_of(body, body["instances"].first))
@@ -94,6 +112,18 @@ class Review::BilingualReviewTest < ActiveSupport::TestCase
     assert_equal (1..13).to_a, bilingual.map { |p| p[:id] }
     assert_equal Review::Checklist::TRANSLATION_POINTS, bilingual.last(2).map { |p| p[:text] }
     assert_equal 8, Review::LessonChecklist.for(revision.call({ "schema" => "banco.lesson/1", "bilingual" => true })).size
+  end
+
+  test "the count of a bilingual lesson's checklist is the same in the code, the schema and the brief" do
+    revision = Struct.new(:body).new({ "schema" => "banco.lesson/2", "bilingual" => true })
+    count = Review::LessonChecklist.for(revision).size
+    schema = Banco::Schemas.read("lesson_review")
+    assert_equal count, schema.dig("properties", "checklist", "maxItems"), "the schema allows up to the bilingual count (Ruby tells the exact one)"
+    assert_equal 13, count
+    brief = Rails.root.join("briefs/lesson-review.md").read
+    assert_match(/has \*\*#{count} points\*\*/, brief)
+    assert_match(/12\. The Italian translation/, brief)
+    assert_match(/13\. The target-language text/, brief)
   end
 
   def review_doc(ids)

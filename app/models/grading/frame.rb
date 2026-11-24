@@ -37,6 +37,12 @@ module Grading
         from_stem(instance) || from_stem([ spec.prompt_stem, instance ].grep(String).join("\n"))
       end
 
+      # How many lines of +stem+ hold a blank, the instruction line («… in place of ___») not counted. More than one means that the frame cannot tell
+      # the sentence from a line that names the blank in words it does not know (D-402: validation warns, W-LANG-FRAME-BLANK).
+      def blank_lines(stem)
+        stem.is_a?(String) ? plain(stem).lines.grep_v(INSTRUCTION).count { |l| l.match?(BLANK) } : 0
+      end
+
       # The frame of a stem, or nil when the stem does not hold exactly one blank or the sentence has no word besides it.
       def from_stem(stem)
         return nil unless stem.is_a?(String)

@@ -117,8 +117,8 @@ const ready = (async () => {
     await waitFor("the fonts", document.fonts?.ready)
     // a web font is fetched when text first wears it: every face is loaded before the instance is measured, or its text is measured in the fallback
     if (document.fonts) await waitFor("the fonts", Promise.allSettled([...document.fonts].map((face) => face.load())))
-    // The reviewer is not answering: the passage's Italian (withheld from the student until the answer) is drawn too, so that it is checked and pictured.
-    const handle = await waitFor("the item", renderItem(presentation, { t: config.texts, passageTranslation: true }))
+    // The shots are the solver's pictures too: the passage's Italian (withheld from the student until the answer) is not in the presentation, so it is not drawn.
+    const handle = await waitFor("the item", renderItem(presentation, { t: config.texts }))
     box.setAttribute("data-tr-scope", "item")
     box.setAttribute("data-translation", translationOpen ? "on" : "off")
     box.appendChild(handle.element)

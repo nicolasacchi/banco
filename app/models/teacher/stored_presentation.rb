@@ -8,7 +8,7 @@ module Teacher
 
     def call(instance, rev)
       served = ItemServed.new(item_instance: instance, skill_key: "", shown_order_json: stored_order(instance, rev).to_json)
-      Diagnosis::ItemPresenter.new(served: served, number: 1, subject: rev.item.subject).as_json[:item]
+      Diagnosis::ItemPresenter.new(served: served, number: 1, subject: rev.item.subject, after_answer: true).as_json[:item] # the teacher reads the passage's Italian too
     end
 
     def stored_order(instance, rev)

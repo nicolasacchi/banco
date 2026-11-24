@@ -116,7 +116,7 @@ module Attempts
     # The serve and the display as the sitting drew it (Diagnosis::ItemPresenter over the logged shown order, the same call the sitting page makes).
     def served_of(served, row, shown)
       event = DiagnosisEvent.find(served.diagnosis_event_id)
-      item = Diagnosis::ItemPresenter.new(served: served, number: 1, subject: served.item_instance.item_revision.item.subject).as_json[:item]
+      item = Diagnosis::ItemPresenter.new(served: served, number: 1, subject: served.item_instance.item_revision.item.subject, after_answer: true).as_json[:item]
       { served_event_id: event.id, run_id: row[:run_id], sitting: row[:sitting], at: event.at.utc.iso8601, reason: JSON.parse(event.payload_json || "{}")["reason"],
         skill: served.skill_key, formula_sheet_available: served.formula_sheet_available, shown_order: shown.shown_order, id_map: shown.id_map, item: item }.compact
     end

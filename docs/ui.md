@@ -187,3 +187,15 @@ Styles: `app/assets/stylesheets/teacher.css` (page layouts only; the parts are t
 - **Quote block:** `.answer-quote` for the student's words.
 - **Actions menu:** `details.report-actions > details.action-row`, one row per action, each opens its own form (a danger button).
 - The lesson's `.badge` is a square in a lesson; on a teacher page it is a rounded label (`body.teacher .badge`).
+
+## The Italian translation of the english and spanish courses (D-402)
+
+- **State machine:** `.tr[lang=it][data-nospeech]` shows when its nearest scope (`data-tr-scope` card, block, item or page) is open, or always for «Sempre visibile» and for the
+  teacher's pages and the preview. «Traduzione» (`button.tr-toggle`) flips its scope; a small unit button on a long block flips that block. No translation button inside a control.
+- **Lessons:** «Traduzione» is in the card head; every text has its Italian under it as a `.tr`, never read by «Ascolta»; a table cell has its Italian under it (`header_it`/`rows_it`);
+  a figure has one translation panel under the drawing, from the figure's own `tr`; tiles, span chips and the `listen` text are target fragments with no translation of their own.
+  The lesson review point count for a bilingual lesson is 13.
+- **Practice:** a bilingual exercise is a scope: «Traduzione» sits beside «Controlla» and later moves to the next-actions row, so the solution stays readable in both. The Italian of a
+  reading passage (the item's or the instance's own) reaches the page only with the solution or a closing reply (`passage_it`). Match-right options and ordering fragments under three
+  words have no translation line. The skill name (page header) and the exercise list's skill names are a page scope with their own «Traduzione»; the closing screen names the next topic
+  in the language it teaches, with its Italian and a «Traduzione» of its own. Oggi, the subject page, civics, the topic page and the schemas pages carry a page-scope button when a title is paired.

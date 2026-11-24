@@ -12,7 +12,9 @@ export function semantic(data) {
 }
 
 function build(data, ctx) {
-  return { width: ctx.width, height: 0, shapes: [], labels: [], states: 1, state: 0, table: { header: data.header, rows: data.rows } }
+  // a bilingual lesson's table (D-402) brings its Italian cells (header_it, rows_it), which tableNode draws under the target text
+  const italian = data.header_it ? { header_it: data.header_it, rows_it: data.rows_it } : {}
+  return { width: ctx.width, height: 0, shapes: [], labels: [], states: 1, state: 0, table: { header: data.header, rows: data.rows, ...italian } }
 }
 
 export function describe(data) {

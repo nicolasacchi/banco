@@ -38,16 +38,17 @@ export function keepsGrid(table) {
   return widest.reduce((sum, chars) => sum + chars * CHAR_PX + CELL_PX, 0) <= KEEP_MAX_PX
 }
 
-// { caption_it?, header, rows } -> <table class="dg-table"> (with "dg-keep" when it keeps its grid on a phone); draw.js uses it for the
-// `table` figure (A8) too.
+// { caption_it?, header, rows, header_it?, rows_it? } -> <table class="dg-table"> (with "dg-keep" when it keeps its grid on a phone); draw.js uses it for the
+// `table` figure (A8) too. In a bilingual lesson (D-402) the cells hold the target text and `header_it` / `rows_it` (the same shape) its Italian: each cell
+// is drawn with its translation under it, which the card's «Traduzione» shows (no button in a cell). The caption has its own pair, looked up in `tr`.
 export function tableNode(table, ctx) {
   const node = el("table", { class: keepsGrid(table) ? "dg-table dg-keep" : "dg-table" })
   if (table.caption_it) node.appendChild(renderInlineRich(table.caption_it, el("caption"), ctx))
   const head = el("tr")
-  table.header.forEach((h) => head.appendChild(renderInlineRich(h, el("th", { scope: "col" }), ctx)))
+  table.header.forEach((h, i) => head.appendChild(renderInlineRich(h, el("th", { scope: "col" }), ctx, { italian: table.header_it?.[i] })))
   node.appendChild(el("thead", {}, head))
   const body = el("tbody")
-  for (const row of table.rows) {
+  for (const [r, row] of table.rows.entries()) {
     const tr = el("tr")
     row.forEach((cell, i) => {
       // the row header carries its column's name too when rows stack (an empty corner header has none)
@@ -57,7 +58,7 @@ export function tableNode(table, ctx) {
         label.appendChild(document.createTextNode(": "))
         td.appendChild(label)
       }
-      tr.appendChild(renderInlineRich(cell, td, ctx))
+      tr.appendChild(renderInlineRich(cell, td, ctx, { italian: table.rows_it?.[r]?.[i] }))
     })
     body.appendChild(tr)
   }

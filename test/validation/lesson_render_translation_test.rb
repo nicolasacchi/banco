@@ -22,7 +22,7 @@ class LessonRenderTranslationTest < ActiveSupport::TestCase
   end
 
   def render_golden
-    body = JSON.parse(Rails.root.join("test/fixtures/lang/projected_lesson.json").read).merge("bilingual" => true)
+    body = JSON.parse(Rails.root.join("test/fixtures/lang/projected_lesson.json").read).merge("bilingual" => true, "schema" => "banco.lesson/2")
     subject = Subject.find_by(key: "english") || Subject.create!(key: "english", name_it: "Inglese", position: 2)
     lesson = Lesson.create!(subject: subject, key: body["key"], kind: "lezione")
     md = "---\nkey: #{body['key']}\n---\n"
@@ -39,7 +39,7 @@ class LessonRenderTranslationTest < ActiveSupport::TestCase
     assert_equal "passed", row.status, dump(row)
     assert_empty row.result["errors"].select { |e| e["message"].to_s.start_with?("translation") }, dump(row)
     pictured = row.shots.select { |s| s["state"] == "tr" }
-    assert_equal [ 1, 2 ], pictured.map { |s| s["card"] }.sort, "the cards with a translation"
+    assert_equal [ 0, 1, 2 ], pictured.map { |s| s["card"] }.sort, "the cover (title, goals, why) and the cards with a translation"
     assert(pictured.all? { |s| s["viewport"] == PHONE }, "pictured at the phone only")
   end
 end

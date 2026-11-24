@@ -28,7 +28,7 @@ module Validation
           a = rows[i]
           b = rows[j]
           next if a[:rows].empty? || b[:rows].empty?
-          next unless a[:stem] == b[:stem]
+          next unless a[:stem] == b[:stem] && a[:passage] == b[:passage]
 
           shared = (a[:rows] & b[:rows]).size
           out << [ i, j ] if shared > share * [ a[:rows].size, b[:rows].size ].max
@@ -40,7 +40,8 @@ module Validation
     def rows_of(component, display)
       d = display.is_a?(Hash) ? display : {}
       stem = component == "choice" ? norm(Lessons::Lang.pick(d, "stem")) : nil
-      { stem: stem, rows: Array(d[KEYS.fetch(component)]).map { |e| norm(e.is_a?(Hash) ? e["text"] : e) }.reject(&:empty?).uniq }
+      # an instance with a reading text of its own (D-402) is another question than one on a different text, whatever its options
+      { stem: stem, passage: norm(Lessons::Lang.pick(d, "passage")), rows: Array(d[KEYS.fetch(component)]).map { |e| norm(e.is_a?(Hash) ? e["text"] : e) }.reject(&:empty?).uniq }
     end
 
     def norm(text) = text.is_a?(String) ? Grading::Closed::Text.normalize(text) : ""

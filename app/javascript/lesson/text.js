@@ -61,15 +61,21 @@ export const translationOf = (text, ctx) => (ctx.lang && !ctx.noTr && ctx.trScop
 // The ctx the Italian is drawn with: no lookup, no language of the target (its role spans are Italian, its spans keep their speaker).
 const italianCtx = (ctx) => ({ ...ctx, lang: null, noTr: true, translating: true })
 
-// A translation node for `text` in `ctx`, or null: `block` draws paragraphs and lists (a div), else the inline content (a span), both `.tr`.
-export function translationFor(text, ctx, { block = false, tag = block ? "div" : "span" } = {}) {
-  const italian = translationOf(text, ctx)
-  if (italian === null) return null
+// A translation node holding `italian` in `ctx`, or null when the place draws none (a legacy lesson, a button, an empty text): `block` draws paragraphs and
+// lists (a div), else the inline content (a span), both `.tr`. The cell of a table brings its Italian with it (header_it, rows_it), so it is drawn from here.
+export function translationWith(italian, ctx, { block = false, tag = block ? "div" : "span" } = {}) {
+  if (!ctx.lang || ctx.noTr || typeof italian !== "string" || italian.trim() === "") return null
   const holder = translationNode(null, { tag })
   const inner = italianCtx(ctx)
   if (block) holder.appendChild(renderRich(italian, inner))
   else renderInlineRich(italian, holder, inner)
   return holder
+}
+
+// A translation node for `text` in `ctx` (its Italian looked up in the tables of the scopes), or null.
+export function translationFor(text, ctx, options = {}) {
+  const italian = translationOf(text, ctx)
+  return italian === null ? null : translationWith(italian, ctx, options)
 }
 
 // Says what a drawn node is: target text (`lang`), with its translation (`data-translated`), or text that draws none on purpose (`data-tr-exempt`:
@@ -323,7 +329,8 @@ export function renderRich(text, ctx, options = {}) {
 }
 
 // Inline only (labels, buttons, table cells): the first paragraph's content, into `target`. In a bilingual lesson `target` is target text and its
-// translation is a `span.tr` at its end, unless ctx says the place draws none (a button, a fragment: ctx.noTr).
+// translation is a `span.tr` at its end, unless ctx says the place draws none (a button, a fragment: ctx.noTr). `options.italian` is the Italian of a text
+// that brings it along (a table cell: header_it, rows_it); without it the Italian is looked up in the scopes' `tr` tables.
 export function renderInlineRich(text, target, ctx, options = {}) {
   let blocks = null
   try {
@@ -338,7 +345,7 @@ export function renderInlineRich(text, target, ctx, options = {}) {
     }
     else build(blocks, target, ctx, !!options.tiles)
   }
-  const translation = translationFor(text, ctx)
+  const translation = options.italian !== undefined ? translationWith(options.italian, ctx) : translationFor(text, ctx)
   markTarget(target, ctx, translation !== null)
   if (translation) target.appendChild(translation)
   return target

@@ -326,6 +326,98 @@ class BilingualItemsTest < ActiveSupport::TestCase
     assert_equal [ "/passage_en" ], at(run_item(broken), "E-LANG-TRANSLATION-LANG")
   end
 
+  # ---- a reading text per instance (display.passage_*) --------------------------------------------------------------------------------------
+
+  # The golden blank item with a passage in each instance's display (D-402: three to five questions on each text, not ten on one).
+  EACH_PASSAGES = [ [ "She goes to school by bus. It takes ten minutes.", "Lei va a scuola in autobus. Ci vogliono dieci minuti." ],
+                    [ "My brother plays football on Fridays. He likes it.", "Mio fratello gioca a calcio il venerdì. Gli piace." ] ].freeze
+
+  def with_passages(item)
+    item["instances"].each_with_index { |inst, i| inst["display"].merge!("passage_en" => EACH_PASSAGES[i][0], "passage_it" => EACH_PASSAGES[i][1]) }
+    item
+  end
+
+  test "a bilingual instance's own passage validates clean, its key may be a word of the text, and it is stored with both layers" do
+    result = run_item(with_passages(blank))
+    assert_equal "passed", result.status, result.findings.select { |f| f.severity == "error" }.map(&:to_h).inspect
+    assert_empty codes(result) & %w[E-SOLUTION-IN-DISPLAY E-LANG-PAIR-MISSING E-LANG-PAIR-ORPHAN E-SCHEMA E-GEN-SCHEMA W-LANG-FRAME-BLANK]
+    assert_equal EACH_PASSAGES[0], result.instances.first[:display].values_at("passage_en", "passage_it")
+    assert_empty Banco::Schemas.validate("item", with_passages(blank)).map(&:message)
+  end
+
+  test "the target lint, the pair and the translation checks reach the instance's own passage" do
+    item = with_passages(blank)
+    item["instances"][0]["display"].delete("passage_it")
+    assert_equal [ "/instances/0/display/passage_en" ], at(run_item(item), "E-LANG-PAIR-MISSING")
+    item = with_passages(blank)
+    item["instances"][0]["display"]["passage_en"] = "She goes to school by bus and then she plays with all of her friends in the big park."
+    assert_equal [ "/instances/0/display/passage_en" ], at(run_item(item), "E-READ")
+    item = with_passages(blank)
+    item["instances"][1]["display"]["passage_en"] = "Scegli le parole che sono giuste per questo brano."
+    assert_includes at(run_item(item), "E-LESSON-LANG"), "/instances/1/display/passage_en"
+    item = with_passages(blank)
+    item["instances"][0]["display"]["passage_it"] = "She goes to the school with her bus and she is happy."
+    assert_equal [ "/instances/0/display/passage_en" ], at(run_item(item), "E-LANG-TRANSLATION-LANG")
+    item = with_passages(blank)
+    item["instances"][0]["display"]["passage_it"] = item["instances"][0]["display"]["passage_en"]
+    assert_equal [ "/instances/0/display/passage_en" ], at(run_item(item), "E-LANG-TRANSLATION-COPY")
+  end
+
+  test "the leak scan reads the instance's own passage in both layers: a long key option stated word for word is E-SOLUTION-IN-DISPLAY" do
+    item = choice
+    first = item["instances"][0]["display"]
+    first["options"][0].merge!("text" => "make the bed every morning", "text_it" => "rifare il letto ogni mattina")
+    first.merge!("passage_en" => "Tom has to make the bed every morning before school.", "passage_it" => "Tom deve rifare il letto ogni mattina prima della scuola.")
+    result = run_item(item)
+    assert_equal [ "/instances/0/display/passage_en", "/instances/0/display/passage_it" ], at(result, "E-SOLUTION-IN-DISPLAY").sort
+    assert(result.findings.any? { |f| f.field == "/instances/0/display/passage_it" && f.message.start_with?("in the Italian translation") })
+    first.merge!("passage_en" => "Tom likes to make beds.", "passage_it" => "A Tom piace rifare i letti.")
+    assert_empty at(run_item(item), "E-SOLUTION-IN-DISPLAY"), "a short key is a word of any text"
+  end
+
+  test "a legacy instance's own passage_it (the language of the course under its legacy key) is not linted as Italian and breaks nothing" do
+    legacy = { "schema" => "banco.item/1", "schema_version" => 1, "kind" => "practice_item", "subject" => "english", "skill" => "english.present-simple", "component" => "normalized_text", "level" => 1,
+               "prompt" => { "stem_it" => "Scrivi la parola." }, "hints_it" => [ "Uno qui.", "Due qui.", "Tre qui." ],
+               "error_catalogue" => [ { "code" => "en_missing_third_s", "description_it" => "Manca la s.", "message_it" => "Con she serve la s.", "implicates" => [] } ],
+               "instances" => EACH_PASSAGES.map { |text, _| { "display" => { "stem_it" => "She ___ to school by bus.", "passage_it" => "#{text} She is happy to go there with her friends every day." }, "answer" => "goes",
+                                                                "errors" => [ { "code" => "en_missing_third_s", "value" => "go" } ], "solution" => { "steps" => [ { "text_it" => "Con she il verbo prende la s." } ], "final" => "goes" } } },
+               "sources" => blank["sources"], "tests" => blank["tests"] }
+    result = run_item(legacy)
+    assert_equal "passed", result.status, result.findings.select { |f| f.severity == "error" }.map(&:to_h).inspect
+    assert_empty codes(result) & %w[E-READ E-SCHEMA E-GEN-SCHEMA E-SOLUTION-IN-DISPLAY]
+    assert_equal EACH_PASSAGES[0][0] + " She is happy to go there with her friends every day.", result.instances.first[:display]["passage_it"]
+  end
+
+  test "a sub item of a testlet shows the testlet's passage: one of its own is E-GEN-SCHEMA" do
+    testlet = JSON.parse(Rails.root.join("test/fixtures/content/item/good/testlet.json").read)
+    testlet["sub_items"][0]["instances"][0]["display"]["passage_it"] = "Un altro brano."
+    result = Validation::ItemRunner.new(files: F.files_for(testlet), context: context("italian")).call
+    assert_includes at(result, "E-GEN-SCHEMA"), "/sub_items/0/instances/0/display/passage_it"
+  end
+
+  test "two instances with the same options and stem but another passage are not alike; on the same passage they are" do
+    shown = ->(passage) { { "display" => { "stem_en" => "Which colour?", "passage_en" => passage, "options" => %w[red blue green grey].map { |t| { "id" => t, "text" => t } } } } }
+    assert_empty Validation::AlikeInstances.pairs("choice", [ shown.call("Tom has a red bike."), shown.call("Amy has a blue kite.") ])
+    assert_equal [ [ 0, 1 ] ], Validation::AlikeInstances.pairs("choice", [ shown.call("Tom has a red bike."), shown.call("Tom has a red bike.") ])
+  end
+
+  # ---- W-LANG-FRAME-BLANK (§4.3) ------------------------------------------------------------------------------------------------------------
+
+  test "W-LANG-FRAME-BLANK: an instruction line with a ___ that the frame does not know switches the whole-sentence grading off; the known wordings do not" do
+    stem = lambda do |en, it|
+      item = blank
+      item["instances"][0]["display"].merge!("stem_en" => en, "stem_it" => it)
+      run_item(item)
+    end
+    assert_equal [ "/instances/0/display/stem_en" ], at(stem.call("Fill ___ with one word.\nShe ___ to school by bus.", "Riempi ___ con una parola.\nLei ___ a scuola in autobus."), "W-LANG-FRAME-BLANK")
+    assert_empty at(stem.call("Write the word in place of ___.\nShe ___ to school by bus.", "Scrivi la parola al posto di ___.\nLei ___ a scuola in autobus."), "W-LANG-FRAME-BLANK")
+    assert_empty at(stem.call("She ___ to school by bus and he ___ to work.", "Lei ___ a scuola in autobus e lui ___ al lavoro."), "W-LANG-FRAME-BLANK"), "two gaps in one sentence are not a second line"
+    assert_empty at(run_item(blank), "W-LANG-FRAME-BLANK")
+    assert_equal "warning", Validation::Codes.all.fetch("W-LANG-FRAME-BLANK")["severity"]
+    es = Grading::Frame.blank_lines("Escribe la palabra en lugar de ___.\nAna ___ en Madrid.")
+    assert_equal 1, es
+  end
+
   # ---- the topic status --------------------------------------------------------------------------------------------------------------------
 
   test "W-TOPIC-LANG-MIXED: some parts bilingual and some not; nothing for a topic that is all one or the other, or for another subject" do

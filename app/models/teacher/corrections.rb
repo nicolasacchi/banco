@@ -85,7 +85,7 @@ module Teacher
 
     def prompt_of(body, instance)
       display = JSON.parse(instance.display_json)
-      [ Items::Text.both_of(body["prompt"], "stem"), Items::Text.both_of(display, "stem"), Items::Text.both_of(body, "passage") ].compact.join(" ")
+      [ Items::Text.both_of(body["prompt"], "stem"), Items::Text.both_of(display, "stem"), Items::Text.both_of(Items::Text.holder("passage", display, body), "passage") ].compact.join(" ")
     end
 
     def short_answer(attempt)

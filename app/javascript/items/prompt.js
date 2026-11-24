@@ -7,9 +7,9 @@ import { softBreaks } from "items/soft_breaks"
 import { bare, block, cell, langOf, passageBox, sides, trNode } from "items/bilingual"
 
 // A bilingual item (part.lang, D-402) draws the target text with its Italian translation after it, hidden until the exercise's «Traduzione» (or the
-// unit's own button) opens it; a legacy item draws its `_it` text exactly as before. The passage is a reading text: its Italian is never drawn here
-// (the server does not send it with the part, and ctx.passageTranslation is only set where nobody answers: the teacher's frozen slot); the page adds
-// it with reveal() once the exercise is over.
+// unit's own button) opens it; a legacy item draws its `_it` text exactly as before. The passage is a reading text, the instance's own (`display.passage_*`)
+// or else the item's, and the server puts it in the part either way: its Italian is never drawn here (the server does not send it with the part, and
+// ctx.passageTranslation is only set where nobody answers: the teacher's frozen slot); the page adds it with reveal() once the exercise is over.
 export function renderPrompt(part, ctx) {
   const lang = langOf(part)
   const box = el("div", { class: "prompt", "data-comment-anchor": "prompt" })

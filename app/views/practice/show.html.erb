@@ -1,6 +1,9 @@
 <% content_for :title, @skill_label %>
 <% clean = Practice::Messages.clean_count(@state.why) %>
-<main class="page course practice" data-controller="practice"
+<%# A skill of the english or spanish courses is named in the language it teaches, its Italian one tap away (D-402): the page is a translation scope of its own
+    (the heading, the list's skill names, the closing screen's next topic); the exercise card inside keeps its own. %>
+<% offered = @skill_label_translation.present? %>
+<main class="page course practice" data-controller="practice" <%= tr_scope_attrs(offered, topic: @topic, surface: "practice") %>
       data-practice-topic-value="<%= @topic.key %>"
       data-practice-skill-value="<%= @skill %>"
       data-practice-base-url-value="<%= spath("/practice") %>"
@@ -9,8 +12,10 @@
       data-practice-labels-value="<%= practice_labels.to_json %>">
   <header class="page-header">
     <a class="back" href="<%= spath("/topics/#{@topic.key}") %>"><%= ui_icon("back") %><%= t("practice.back") %></a>
-    <h1 id="skill-name"><%= @skill_label %></h1>
+    <h1 id="skill-name"<%= " lang=#{@topic.lang}".html_safe if offered %>><%= @skill_label %></h1>
+    <%= tr_node(@skill_label_translation, tag: :p) if offered %>
   </header>
+  <% if offered %><p class="tr-bar"><%= tr_page_button(offered) %></p><% end %>
   <% if draft? %><%= ui_notice :info, t("draft.notice"), html: { id: "draft-notice" } %><% end %>
   <div class="skill-status" data-comment-anchor="skill_status">
     <span class="pill <%= skill_state_tone(@state.state) %>" id="skill-state" data-practice-target="skillState"><%= Practice::Messages.skill_state_it(@state) %></span>

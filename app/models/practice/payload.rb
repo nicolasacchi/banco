@@ -20,10 +20,12 @@ module Practice
       out.merge(passage(instance))
     end
 
-    # The Italian of the passage of a bilingual item, for the replies that come after the answer; {} for any other item. The part never carries it.
+    # The Italian of the passage of a bilingual item (the instance's own, else the item's), for the replies that come after the answer; {} for any other
+    # item. The part never carries it.
     def passage(instance)
-      body = Instances.body(instance)
-      Lessons::Lang.pair?(body, "passage") ? { passage_it: body["passage_it"] } : {}
+      display = instance.display_json.present? ? JSON.parse(instance.display_json) : {}
+      holder = Items::Text.holder("passage", display, Instances.body(instance))
+      Lessons::Lang.pair?(holder, "passage") ? { passage_it: holder["passage_it"] } : {}
     end
 
     def skill(key, states_before, states_after)

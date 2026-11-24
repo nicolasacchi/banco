@@ -13,6 +13,7 @@ class PracticeController < ApplicationController
     return page_not_found unless @topic.skills.include?(@skill)
 
     @skill_label = course_view.label(@skill)
+    @skill_label_translation = course_view.label_translation(@skill) # the Italian of the heading, for a skill that has the pair (D-402)
     @state = course_view.state(@skill)
   end
 
@@ -149,7 +150,7 @@ class PracticeController < ApplicationController
     pick = course_view.next_topic(subject_view)
     { type: "topic_done", skill: skill_block(skill, course_view.state(skill)), title_it: I18n.t("practice.topic_done.title"),
       offer_it: pick && I18n.t("practice.topic_done.offer"),
-      next: pick && { topic: pick.topic.key, title_it: pick.topic.title_it, label_it: I18n.t("practice.topic_done.next"), url: "#{student_root}/topics/#{pick.topic.key}" },
+      next: pick && { topic: pick.topic.key, **pick.topic.title_pair, label_it: I18n.t("practice.topic_done.next"), url: "#{student_root}/topics/#{pick.topic.key}" },
       today: { label_it: I18n.t("practice.topic_done.today"), url: "#{student_root}/today" } }.tap do |body|
       body[:schema] = { label_it: I18n.t("practice.topic_done.schema"), url: helpers.schema_href(topic.key) } if Course::Schemas.new(course_view).exists?(topic)
     end
@@ -210,7 +211,7 @@ class PracticeController < ApplicationController
   end
 
   def skill_block(key, state)
-    { key: key, label_it: course_view.label(key), state: state.state, state_it: Practice::Messages.skill_state_it(state),
+    { key: key, **course_view.label_pair(key), state: state.state, state_it: Practice::Messages.skill_state_it(state),
       why_it: Practice::Messages.why_it(state.why), clean: Practice::Messages.clean_count(state.why) }
   end
 

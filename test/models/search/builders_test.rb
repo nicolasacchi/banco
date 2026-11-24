@@ -66,6 +66,23 @@ class SearchBuildersTest < ActiveSupport::TestCase
     assert_equal "staff", item.audience
   end
 
+  test "a bilingual lesson (D-402) is indexed in both layers: a card is found by its target-language words and by its Italian, and its glossary term by both" do
+    body = Lessons::Parser2.call(Rails.root.join("test/fixtures/lang/lesson_en.md").read, Validation::Findings.new).body
+    context = { key: TOPIC, subject: "math", revision_table: "lesson_revisions", revision_id: @lesson_revision.id, status: "approved", lang: "en", topic_key: TOPIC }
+    docs = Search::Builders::Lessons.lesson2(body, @lesson_revision, "Modals", context)
+    first = docs[1]
+    assert_equal "Can + the base verb", first.title
+    assert_includes first.body, "After a modal verb the next verb does not change", "the target text"
+    assert_includes first.body, "Dopo un verbo modale il verbo che segue non cambia", "its Italian"
+    assert_includes first.body, "Can + il verbo base", "the Italian of the card title"
+    assert_includes docs[0].body, "I modali", "the Italian title of the cover"
+    glossary = Search::Builders::Lessons.glossary(body.merge("cards" => []), "Modals", context)
+    assert_includes glossary.first.body, "modal verb"
+    assert_includes glossary.first.body, "A verb that helps another verb."
+    assert_equal "verbo modale", glossary.first.title
+    assert_not_includes JSON.generate(docs.map(&:body)), "After can the verb stays as it is", "the explanation of a check stays out, in either layer"
+  end
+
   test "a question's title is its case text or stem, first sentence, not the prompt every question of a kind shares (D-308)" do
     headline = ->(text) { Search::Builders::Items.headline(text) }
     assert_equal "Una bilancia ha due piatti.", headline.call("Una bilancia ha due piatti. Quanto pesa il secondo?")

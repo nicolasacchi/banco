@@ -30,9 +30,7 @@ module Teacher
       exercise = @revision.exercise(params[:n].to_i)
       return render(json: { status: "not_found" }, status: :not_found) unless exercise
 
-      answer = { n: exercise["n"], solution_it: exercise["solution_it"] }
-      answer = { n: exercise["n"], steps: exercise["solution_steps"].map { |s| s.slice("tag", "do_it", "why_it") } } if exercise["solution_steps"]
-      render json: answer
+      render json: Lessons::CheckAnswer.solution(exercise)
     end
 
     private

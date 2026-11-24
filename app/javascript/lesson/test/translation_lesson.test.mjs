@@ -285,3 +285,43 @@ test("withUnitButton stays out of a mistake, a reveal and a block with a short t
 test("plainText of a target title is the title (its names stay the target's)", () => {
   assert.equal(plainText("Can + the **base** verb"), "Can + the base verb")
 })
+
+const { render: renderTable } = await import("lesson/blocks/table")
+
+test("a table's cells are target text with their Italian under them (header_it, rows_it); the stacked column names draw none", () => {
+  const body = fixture("served_lesson.json")
+  const ctx = scoped(contextOf(body), body.cards[0])
+  const block = { type: "table", n: 3, header: ["Verb", "Meaning"], rows: [["make", "to build"], ["do", "to carry out"]], header_it: ["Verbo", "Significato"], rows_it: [["fare", "costruire"], ["fare", "eseguire"]] }
+  const node = renderTable(block, ctx)
+  assert.deepEqual(trNodes(node).map((n) => n.textContent), ["Verbo", "Significato", "fare", "costruire", "fare", "eseguire"])
+  for (const tr of trNodes(node)) assert.equal(tr.getAttribute("lang"), "it")
+  for (const cell of [...node.querySelectorAll("th"), ...node.querySelectorAll("td")]) {
+    assert.equal(cell.getAttribute("lang"), body.lang)
+    assert.equal(cell.hasAttribute("data-translated"), true, "the render check finds no cell without its translation")
+  }
+  for (const label of node.querySelectorAll(".cell-label")) assert.equal(trNodes(label).length, 0, "a column name in a stacked cell draws no translation")
+  const legacy = renderTable(block, { ...ctx, lang: null, trScopes: null })
+  assert.equal(trNodes(legacy).length, 0, "a legacy lesson draws its table as it did")
+  assert.equal(renderTable({ ...block, header_it: undefined, rows_it: undefined }, ctx).querySelectorAll("th")[0].hasAttribute("data-translated"), false, "an unpaired cell is what the render check reports")
+})
+
+test("a figure's own tr table is looked up for its panel, in front of the block's", () => {
+  const body = fixture("served_lesson.json")
+  const data = { type: "flow", alt_it: "A short flow", caption_it: "Two steps", nodes: [{ id: "a", label_it: "Start" }], tr: { "A short flow": "Un breve flusso", Start: "Inizio", "Two steps": "Due passi" } }
+  const block = contextOf(body)
+  const panel = translationPanel(data, scoped(block, data))
+  assert.equal(panel.querySelector(".dg-tr-alt").textContent, "Un breve flusso")
+  assert.equal(panel.querySelector("li").textContent, "Start → Inizio")
+  assert.equal(translationPanel(data, block), null, "without the figure's scope nothing is found: the table is nested in the figure, not in the block")
+  const caption = renderInlineRich(data.caption_it, el("figcaption"), scoped(block, data))
+  assert.equal(caption.querySelector(".tr").textContent, "Due passi")
+})
+
+test("a colour role in a translation is Italian text: parsed with no target, its words are not the target's", () => {
+  const body = fixture("served_lesson.json")
+  const ctx = scoped(contextOf(body), { tr: { "The [[subject:cat]] sleeps.": "Il [[subject:gatto]] dorme." } })
+  const node = renderInlineRich("The [[subject:cat]] sleeps.", el("p"), ctx)
+  const italian = node.querySelector(".tr")
+  assert.equal(italian.textContent, "Il gatto dorme.")
+  assert.equal(italian.querySelectorAll("[lang=en], [lang=es]").length, 0, "the role word of the translation is not drawn as target-language text")
+})

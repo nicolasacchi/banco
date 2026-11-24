@@ -9,7 +9,7 @@ import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { FAMILY, HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
 import { buildChips, buildStrip, buildValueControls, declared, overlay } from "lesson/diagrams/controls"
-import { plainText, renderInlineRich, renderMath, renderRich, translationOf, unglued } from "lesson/text"
+import { plainText, renderInlineRich, renderMath, renderRich, scoped, translationOf, unglued } from "lesson/text"
 import { node as translationNode } from "items/translation"
 import { tableNode } from "lesson/blocks/table"
 import { defaultSegments } from "lesson/diagrams/contract"
@@ -211,10 +211,12 @@ export function mountDiagram(data, ctx, options = {}) {
   const op = el("p", { class: "dg-op", "aria-live": "polite" })
   const question = el("p", { class: "dg-question", "aria-live": "polite" })
   const caption = data?.caption_it ? el("figcaption", { class: "dg-caption" }) : null
-  if (caption) renderInlineRich(data.caption_it, caption, ctx)
+  // a bilingual lesson's figure carries its own translation table `tr` (StudentBody folds it apart from the block's): its caption and its panel look in it first
+  const figureCtx = ctx.lang && data?.tr ? scoped(ctx, data) : ctx
+  if (caption) renderInlineRich(data.caption_it, caption, figureCtx)
   // a bilingual lesson's figure: its text is drawn in the drawing (SVG and labels), where a translation line cannot sit, so one panel under it says the
   // alt's translation and then «target → italiano» for every text of the figure that has one (D-402)
-  const panel = ctx.lang ? translationPanel(data, ctx) : null
+  const panel = ctx.lang ? translationPanel(data, figureCtx) : null
   if (ctx.lang) {
     for (const node of [labelsLayer, alt]) {
       node.setAttribute("lang", ctx.lang)

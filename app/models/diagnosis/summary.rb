@@ -142,13 +142,13 @@ module Diagnosis
       display = JSON.parse(instance.display_json)
       return Items::Text.passage(body).to_s if body["kind"] == "testlet"
 
-      [ Items::Text.passage(body), *Items::Text.stems(body, display) ].compact.join(" ")
+      [ Items::Text.passage(Items::Text.holder("passage", display, body)), *Items::Text.stems(body, display) ].compact.join(" ")
     end
 
     # The Italian of what prompt_text says, for a bilingual item (the sitting is over, so the passage's translation is no longer a way to the answer); nil for a legacy one.
     def prompt_translation(body, instance)
       display = JSON.parse(instance.display_json)
-      parts = [ Items::Text.translation(body, "passage"), Items::Text.translation(body["prompt"], "stem") ]
+      parts = [ Items::Text.translation(Items::Text.holder("passage", display, body), "passage"), Items::Text.translation(body["prompt"], "stem") ]
       parts << Items::Text.translation(display, "stem") unless body["kind"] == "testlet"
       parts = parts.compact
       parts.any? ? parts.join(" ") : nil

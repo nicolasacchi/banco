@@ -130,6 +130,56 @@ class TranslatedTitlesTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "the practice page names the skill in the language it teaches with its Italian under it, in a page scope of its own" do
+    pair!
+    as_english do
+      page(OFFICIAL, "/topics/#{TOPIC}/practice/#{SKILL}")
+      assert_response :success
+      assert_select "title", /#{LABEL_EN}/
+      assert_select "h1#skill-name[lang=en]", LABEL_EN
+      assert_select "header.page-header p.tr[lang=it][data-nospeech]", "Equazioni lineari intere"
+      assert_select "main.practice[data-tr-scope=page][data-translation=off][data-tr-surface=practice][data-tr-topic='#{TOPIC}'][data-tr-url='/translations']", 1
+      assert_select "p.tr-bar button.tr-toggle[data-controller=translation]", text: "Traduzione"
+      assert_select ".exercise-card[data-tr-surface=practice]", 1, "the exercise card keeps its own scope"
+    end
+  end
+
+  test "the practice page of a skill without the pair is as before: the Italian name, no translation node, no page scope" do
+    pair!(label: false)
+    as_english do
+      page(OFFICIAL, "/topics/#{TOPIC}/practice/#{SKILL}")
+      assert_select "h1#skill-name:not([lang])", "Equazioni lineari intere"
+      assert_select "header.page-header .tr", 0
+      assert_select "main.practice[data-tr-scope]", 0
+      assert_select "p.tr-bar", 0
+    end
+  end
+
+  test "the exercise list is told the skill as a pair, and the views give the pairs the serve and the closing screen carry" do
+    pair!
+    as_english do
+      on(:web, "/practice/exercises?topic=#{TOPIC}", headers: OFFICIAL.merge("Accept" => "application/json"), remote_addr: EDGE)
+      listed = response.parsed_body["skills"].first
+      assert_equal [ LABEL_EN, "Equazioni lineari intere" ], listed.values_at("label_en", "label_it")
+      view = Course::StudentView.new(Student.find_by!(key: "student"))
+      assert_equal({ label_en: LABEL_EN, label_it: "Equazioni lineari intere" }, view.label_pair(SKILL))
+      assert_equal({ title_en: TITLE_EN, title_it: TOPIC_TITLE }, view.find_topic(TOPIC).last.title_pair)
+    end
+  end
+
+  test "an entry or a skill without the pair is told as the one Italian text" do
+    pair!(title: false, label: false, intro: false)
+    as_english do
+      on(:web, "/practice/exercises?topic=#{TOPIC}", headers: OFFICIAL.merge("Accept" => "application/json"), remote_addr: EDGE)
+      listed = response.parsed_body["skills"].first
+      assert_equal "Equazioni lineari intere", listed["label_it"]
+      assert_not listed.key?("label_en")
+      view = Course::StudentView.new(Student.find_by!(key: "student"))
+      assert_equal({ label_it: "Equazioni lineari intere" }, view.label_pair(SKILL))
+      assert_equal({ title_it: TOPIC_TITLE }, view.find_topic(TOPIC).last.title_pair)
+    end
+  end
+
   test "the API and the teacher keep the Italian: label_italian and the topic's title_it" do
     pair!
     as_english do

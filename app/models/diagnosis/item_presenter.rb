@@ -12,13 +12,15 @@ module Diagnosis
   # Agent text travels as plain strings; the browser renders it escaped, with the
   # restricted markup of app/javascript/items/markup.js.
   class ItemPresenter
-    def initialize(served:, number:, subject:, not_studied: false, expression_input: "mathlive", formula_sheet_it: nil)
+    # after_answer: the reader is the teacher (the frozen slot, the log) and not the student: a bilingual passage carries its Italian too (Items::Part).
+    def initialize(served:, number:, subject:, not_studied: false, expression_input: "mathlive", formula_sheet_it: nil, after_answer: false)
       @served = served
       @number = number
       @subject = subject
       @not_studied = not_studied
       @expression_input = expression_input
       @formula_sheet_it = formula_sheet_it
+      @after_answer = after_answer
     end
 
     def as_json(*)
@@ -67,7 +69,7 @@ module Diagnosis
 
     def figure(figure) = parts.figure(figure)
 
-    def parts = @parts ||= Items::Part.new(subject: @subject, expression_input: @expression_input,
+    def parts = @parts ||= Items::Part.new(subject: @subject, expression_input: @expression_input, after_answer: @after_answer,
                                            revision: @served&.item_instance&.item_revision)
   end
 end

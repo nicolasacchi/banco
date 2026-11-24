@@ -871,6 +871,11 @@ Not API calls: the student's browser posts them to the web listener (`POST /tran
   A body of another shape is 422 and no row. It is **not an aid**: no counter, no `aided`, no skill state reads it. The teacher reads it as `served.translations` of `banco attempts show`
   and as «Traduzione aperta in N esercizi su M» on the practice and topic review pages.
 
+- **Served items (D-402):** a bilingual exercise is served with `lang` (`en`|`es`) and every text as a pair, `stem_<lang>` + `stem_it`, `instance_stem_*`, `hint_*`, `message_*`, `reminder_*`,
+  solution steps `text_*`, an option's `text` + `text_it`, `final` + `final_it`, `exercise.title_*`; a skill is `label_<lang>` + `label_it` and the next topic of the closing screen
+  `title_<lang>` + `title_it` (a legacy name is the one `*_it`). The reading passage is `passage_<lang>` in the part, the instance's own (`display.passage_*`) else the item's;
+  its `passage_it` is only in the replies after the answer and in the solution, never in the serve. The shots never carry it.
+
 ## Item shots
 
 The pictures of an item as the student sees it on a 390 px phone (D-336): one WebP of the whole page for each stored instance, drawn on demand in

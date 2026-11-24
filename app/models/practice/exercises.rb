@@ -107,7 +107,7 @@ module Practice
       revisions = ItemRevision.where(id: pins.map { |p| p["revision"] }).index_by(&:id)
       facts = Facts.new(rows, drafts_for(rows))
       exercises = pins.each_with_index.map { |pin, i| exercise(pin, i + 1, revisions[pin["revision"]], facts) }
-      block = { key: skill, label_it: @view.label(skill), state: state&.state, state_it: state ? Messages.skill_state_it(state) : Messages.state_it(nil),
+      block = { key: skill, **@view.label_pair(skill), state: state&.state, state_it: state ? Messages.skill_state_it(state) : Messages.state_it(nil),
                 url: "#{@root}/topics/#{@topic.key}/practice/#{skill}", exercises: exercises }
       line = all_done_it(state, exercises)
       line ? block.merge(all_done_it: line) : block

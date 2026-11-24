@@ -80,6 +80,8 @@ module Validation
 
       keys = Answers.display_keys(display)
       keys.each { |path, name| f.add("E-DISPLAY-KEY", "#{label}/display#{path}", "the display carries a field that reveals the answer (#{name})", seed: seed) }
+      passage_rules(display, label, seed, f)
+      frame_blank(display, label, seed, f) if layered
       SchemaCheck.generated(inst, f, seed: seed, subject: @subject) if generated && keys.empty? && !layered
       size_rules(display, label, seed, f)
       problems = Answers.shape_problems(@unit.component, answer, display)
@@ -317,7 +319,7 @@ module Validation
     # choice): table cells, captions, figure text.
     def readable_strings(display, include_stem:, include_options:)
       Canonical.strings(display).reject do |path, _|
-        path == "/quote/text" || path == "/quote/ref" || SUPPORT_PATH.match?(path) ||
+        path == "/quote/text" || path == "/quote/ref" || path == "/passage_it" || SUPPORT_PATH.match?(path) ||
           (!include_stem && path == "/stem_it") ||
           (!include_options && path.start_with?("/options/"))
       end + svg_strings(display)
@@ -353,7 +355,7 @@ module Validation
           f.add("W-ANSWER-IN-STEM", field, "the expected answer appears in the instruction", seed: seed)
         end
       end
-      passage_leak(needles, label, seed, f) if component == "choice"
+      passage_leak(needles, display, label, seed, f) if component == "choice"
       final = inst.dig("solution", "final").to_s
       needles += [ final ] if Answers.plain(final).length >= Answers::MIN_LEAK_CHARS && component != "choice"
       needles.each do |n|
@@ -366,15 +368,37 @@ module Validation
       end
     end
 
-    # A long key option stated word for word in the testlet passage (D-094). Short keys (a name
-    # in the story) are too common in a passage to be an error.
-    def passage_leak(needles, label, seed, f)
-      return if @passage.to_s.empty?
+    # A long key option stated word for word in a reading text (D-094): the testlet's passage, and the instance's own (display.passage_*, D-402: the
+    # target text in the target layer, its Italian in the Italian layer). Short keys (a name in the story) are too common in a passage to be an error.
+    # The instance's passage is read here and not with the display's other strings: a comprehension question's key may well be a word of its text.
+    def passage_leak(needles, display, label, seed, f)
+      [ [ @passage, "#{label}/passage_it" ], [ display["passage_it"], "#{label}/display/passage_it" ] ].each do |passage, field|
+        next if passage.to_s.empty?
 
-      needle = needles.find { |n| Answers.plain(n).length >= PASSAGE_LEAK_MIN_CHARS && Answers.contains?(@passage, n) }
-      return unless needle
+        needle = needles.find { |n| Answers.plain(n).length >= PASSAGE_LEAK_MIN_CHARS && Answers.contains?(passage, n) }
+        f.add("E-SOLUTION-IN-DISPLAY", field, "the key option appears word for word in the passage (#{needle.to_s[0, 30].inspect})", seed: seed) if needle
+      end
+    end
 
-      f.add("E-SOLUTION-IN-DISPLAY", "#{label}/passage_it", "the key option appears word for word in the passage (#{needle.to_s[0, 30].inspect})", seed: seed)
+    # D-402: a reading text of the instance's own belongs to an item with instances of its own; a sub item of a testlet is read with the testlet's one passage.
+    def passage_rules(display, label, seed, f)
+      return unless @unit.path.start_with?("/sub_items") && Items::Text.passage_keys(display).values.any?(&:present?)
+
+      f.add("E-GEN-SCHEMA", "#{label}/display/passage_it", "a sub item of a testlet has no passage of its own: the student reads the testlet's one passage", rule: "passage_sub_item", seed: seed)
+    end
+
+    # W-LANG-FRAME-BLANK (D-402, §4.3): Grading::Frame reads the sentence of a typed answer from the one `___` of what the student was shown, the instruction
+    # line («in place of ___», «en lugar de ___», «al posto di ___») aside. A bilingual stem whose instruction is worded otherwise, with a second line that
+    # holds a `___`, makes the frame see two blanks, and the whole-sentence acceptance (D-339, D-352) silently goes off for that instance. Read on the
+    # target layer, as the grader reads it: the instance's stem when it holds one blank line, else the item's stem and the instance's together.
+    def frame_blank(display, label, seed, f)
+      return unless @unit.component == "normalized_text"
+
+      instance = display["stem_it"]
+      return if Grading::Frame.blank_lines(instance) == 1
+      return unless Grading::Frame.blank_lines([ @unit.body.dig("prompt", "stem_it"), instance ].grep(String).join("\n")) > 1
+
+      f.add("W-LANG-FRAME-BLANK", "#{label}/display/stem_it", "the stem has a second line with ___ that is not the instruction: the grader reads two blanks and does not accept the whole sentence; word the instruction «in place of ___» or «en lugar de ___»", seed: seed)
     end
 
     # ---- the supports: answer format and steps (D-216) -----------------------------

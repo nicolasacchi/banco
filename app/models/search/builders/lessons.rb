@@ -5,6 +5,9 @@ module Search
     # the statements of the exercises, never their solutions or final answers.
     module Lessons
       SECTION_KEYS = %w[why_it idea_it example_it mistakes_it book_it summary_it].freeze
+      # D-402: a bilingual lesson holds each text in the language it teaches (`_en|_es`) and its Italian (`_it`).
+      LAYERS = %w[it en es].freeze
+      PAIR = %w[en es].freeze
 
       module_function
 
@@ -24,12 +27,14 @@ module Search
         docs + glossary(body, title, context)
       end
 
+      # A bilingual body is served folded (the target text in the `_it` slots, the Italian in the `tr` tables of the body, the card and the block): the
+      # document of a card holds the target text of its title and blocks and the Italian that goes with them, so the teacher finds a card by either (D-402).
       def lesson2(body, revision, title, context)
         student = ::Lessons::StudentBody.project(body, revision_id: revision.id, seed: "search")
-        cover = Doc.build(kind: "lesson_card", title: title, body: Text.join(Text.strings(student.slice("goals_it", "why_it"))), anchor: nil, **context)
+        cover = Doc.build(kind: "lesson_card", title: title, body: Text.join((Text.plain(student["title_it"]) if student["lang"]), Text.strings(student.slice("goals_it", "why_it", "tr"))), anchor: nil, **context)
         cards = student["cards"].map do |card|
           Doc.build(kind: "lesson_card", title: Text.plain(card["title_it"]), anchor: "scheda-#{card['n']}",
-                    body: Text.join(Text.plain(card["short_it"]), Text.strings(card["blocks"])), **context)
+                    body: Text.join(Text.plain(card["short_it"]), Text.strings(card["tr"]), Text.strings(card["blocks"])), **context)
         end
         [ cover ] + cards
       end
@@ -51,10 +56,13 @@ module Search
       def glossary(body, title, context)
         Array(body["glossary"]).filter_map do |entry|
           term = entry["term_it"].to_s.strip.presence or next
-          Doc.build(kind: "glossary_term", title: term, body: Text.join(Text.plain(entry["def_it"]), Text.plain(entry["example_it"]), Array(entry["synonyms_it"]).join(" ")),
+          Doc.build(kind: "glossary_term", title: term, body: Text.join(layers(entry, "term", from: PAIR).map { |t| Text.plain(t) }, layers(entry, "def").map { |t| Text.plain(t) }, layers(entry, "example").map { |t| Text.plain(t) }, Array(entry["synonyms_it"]).join(" ")),
                     anchor: card_of(body, term), unique: term, **context)
         end
       end
+
+      # The texts of +base+ in the layers +hash+ holds (`def_it`, `def_en`, ...); +from+ narrows the layers.
+      def layers(hash, base, from: LAYERS) = from.filter_map { |l| hash["#{base}_#{l}"].presence }
 
       def card_of(body, term)
         marker = "[[g:#{term.downcase}]]"

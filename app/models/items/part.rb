@@ -30,7 +30,7 @@ module Items
       out = { component: component }
       lang = lang_of(body, prompt, display)
       out[:lang] = lang if lang
-      out.merge!(passage(body))
+      out.merge!(passage(body, display))
       out.merge!(Items::Text.pair(prompt, "stem"))
       out.merge!(Items::Text.pair(display, "stem", "instance_stem"))
       %w[table quote].each { |k| out[k.to_sym] = display[k] || prompt[k] }
@@ -49,14 +49,16 @@ module Items
       out.compact
     end
 
-    # The passage of +body+: `passage_it` as before for a legacy item; for a bilingual one `passage_<lang>` only, and `passage_it` with it when
-    # the reader asked for the after-answer layer. {} when there is none.
-    def passage(body)
-      lang = Items::Text.lang(body, "passage")
-      return { passage_it: body["passage_it"] }.compact unless lang
+    # The passage of an instance (D-402): its own `display.passage_*` when it has one (a reading text per instance, three to five questions on each), else
+    # the item's. `passage_it` alone for a legacy item; for a bilingual one `passage_<lang>` only, and `passage_it` with it when the reader asked for the
+    # after-answer layer. {} when there is none.
+    def passage(body, display = {})
+      holder = Items::Text.holder("passage", display, body)
+      lang = Items::Text.lang(holder, "passage")
+      return { passage_it: holder["passage_it"] }.compact unless lang
 
-      out = { "passage_#{lang}": body["passage_#{lang}"] }
-      out[:passage_it] = body["passage_it"] if @after_answer
+      out = { "passage_#{lang}": holder["passage_#{lang}"] }
+      out[:passage_it] = holder["passage_it"] if @after_answer
       out.compact
     end
 
@@ -86,7 +88,7 @@ module Items
 
     # The language of the siblings of the texts served (nil for a legacy item): the first text of the part that has one.
     def lang_of(body, prompt, display)
-      Items::Text.lang(prompt, "stem") || Items::Text.lang(display, "stem") || Items::Text.lang(body, "passage") ||
+      Items::Text.lang(prompt, "stem") || Items::Text.lang(display, "stem") || Items::Text.lang(Items::Text.holder("passage", display, body), "passage") ||
         Items::Text.lang(Items::Text.holder("answer_format", display, body), "answer_format") || Items::Text.lang(Items::Text.holder("steps", display, body), "steps")
     end
 

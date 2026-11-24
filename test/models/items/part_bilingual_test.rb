@@ -118,6 +118,40 @@ class ItemsPartBilingualTest < ActiveSupport::TestCase
     assert_not Practice::Payload.solution(instance).key?(:passage_it)
   end
 
+  test "a bilingual instance's own passage overrides the item's: the target text in the part, its Italian only after the answer" do
+    body = { "component" => "normalized_text", "bilingual" => true, "passage_en" => "The item's text.", "passage_it" => "Il testo dell'esercizio.",
+             "prompt" => { "stem_en" => "What colour is the bike?", "stem_it" => "Di che colore è la bici?" } }
+    own = { "passage_en" => "Tom has a red bike.", "passage_it" => "Tom ha una bici rossa." }
+    part = Items::Part.new(subject: Subject.new("english")).call(body, "normalized_text", own.merge("stem_en" => "It is ___.", "stem_it" => "È ___."))
+    assert_equal "Tom has a red bike.", part[:passage_en]
+    assert_equal "en", part[:lang]
+    assert_not part.key?(:passage_it)
+    assert_not_includes part.to_json, "bici rossa"
+    assert_not_includes part.to_json, "The item's text"
+
+    after = Items::Part.new(subject: Subject.new("english"), after_answer: true).call(body, "normalized_text", own)
+    assert_equal [ "Tom has a red bike.", "Tom ha una bici rossa." ], after.values_at(:passage_en, :passage_it)
+
+    # an instance with none of its own reads the item's
+    assert_equal "The item's text.", Items::Part.new(subject: Subject.new("english")).call(body, "normalized_text", {})[:passage_en]
+
+    instance = Instance.new(Revision.new(JSON.generate(body)), nil, JSON.generate(steps: [], final: "red"), JSON.generate(own))
+    assert_equal({ passage_it: "Tom ha una bici rossa." }, Practice::Payload.passage(instance))
+    assert_equal "Tom ha una bici rossa.", Practice::Payload.solution(instance)[:passage_it]
+    own_less = Instance.new(Revision.new(JSON.generate(body)), nil, JSON.generate(steps: [], final: "red"), "{}")
+    assert_equal({ passage_it: "Il testo dell'esercizio." }, Practice::Payload.passage(own_less))
+  end
+
+  test "a legacy instance's own passage_it overrides the item's, served as before" do
+    body = { "component" => "normalized_text", "passage_it" => "The item's text.", "prompt" => { "stem_it" => "What colour?" } }
+    part = Items::Part.new(subject: Subject.new("english")).call(body, "normalized_text", { "passage_it" => "Tom has a red bike." })
+    assert_equal "Tom has a red bike.", part[:passage_it]
+    assert_nil part[:lang]
+    assert_equal "The item's text.", Items::Part.new(subject: Subject.new("english")).call(body, "normalized_text", {})[:passage_it]
+    instance = Instance.new(Revision.new(JSON.generate(body)), nil, JSON.generate(steps: [], final: "red"), JSON.generate("passage_it" => "Tom has a red bike."))
+    assert_equal({}, Practice::Payload.passage(instance), "a legacy passage has no Italian layer to add")
+  end
+
   test "the sitting's presenter serves the golden items, and a bilingual testlet's passage without its Italian" do
     body = item("choice")
     stored = body["instances"][0]["display"]

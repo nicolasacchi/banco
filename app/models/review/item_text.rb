@@ -49,8 +49,8 @@ module Review
     end
 
     # {instance, display} for the blind solver: nothing that holds the key. The solver stands for the student with the translation open, so it
-    # reads both layers, except the Italian of a reading passage: the student has no translation of the passage before he has answered
-    # (a bilingual passage is `passage_<lang>` + `passage_it`), so the solver does not either.
+    # reads both layers, except the Italian of a reading passage, the item's or the instance's own (display.passage_*): the student has no translation of
+    # the passage before he has answered (a bilingual passage is `passage_<lang>` + `passage_it`), so the solver does not either.
     def solver_instances
       instances.each_with_index.map { |row, i| { instance: i + 1, display: figures.mark(student_view(with_passage(JSON.parse(row.display_json))), i + 1) } }
     end

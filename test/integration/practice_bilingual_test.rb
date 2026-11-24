@@ -19,13 +19,19 @@ class PracticeBilingualTest < ActionDispatch::IntegrationTest
   PASSAGE_B = "bil-passage-b".freeze
   PASSAGE_EN = "Tom has a red bike. He rides it to the park.".freeze
   PASSAGE_IT = "Tom ha una bici rossa. La usa per andare al parco.".freeze
+  # A reading text per instance (D-402): three instances on each of two texts, the item holding none of its own (bilingual) or one the instances override (legacy).
+  EACH = "bil-passage-each".freeze
+  LEGACY_EACH = "leg-passage-each".freeze
+  EACH_TEXTS = [ { en: "Amy has a green kite. She flies it on the hill.", it: "Amy ha un aquilone verde. Lo fa volare sulla collina." },
+                 { en: "Ben has a grey cat. It sleeps on the sofa.", it: "Ben ha un gatto grigio. Dorme sul divano." } ].freeze
   # What may never be a key of the student's JSON before the answer, on either layer.
   FORBIDDEN_KEYS = %w[answer answers accept errors error_catalogue solution final final_it id_map shown_order verdict rubric model_answer_it grading evidence].freeze
 
   setup do
     build_text_world
     @bilingual = [ bilingual_item(CHOICE, LANG.("item_choice")), bilingual_item(BLANK, LANG.("item_blank"), own_hints: true),
-                   bilingual_item(BLANK_TWIN, LANG.("item_blank")), passage_item(PASSAGE_A), passage_item(PASSAGE_B) ]
+                   bilingual_item(BLANK_TWIN, LANG.("item_blank")), passage_item(PASSAGE_A), passage_item(PASSAGE_B), each_item(EACH, bilingual: true),
+                   each_item(LEGACY_EACH, bilingual: false) ]
     approve_topic!(make_topic(@lesson_revision, { SKILL => [ @sentence, @word, *@bilingual ] }, course: @course))
   end
 
@@ -40,6 +46,25 @@ class PracticeBilingualTest < ActionDispatch::IntegrationTest
       ItemInstance.create!(item_revision: revision, seed: i + 1, display_json: JSON.generate(inst["display"]), answer_json: JSON.generate(inst["answer"]),
                            errors_json: JSON.generate(inst["errors"]), hints_json: hints, solution_json: JSON.generate(inst["solution"]),
                            fingerprint: Digest::SHA256.hexdigest("#{key}-#{i}"))
+    end
+    revision
+  end
+
+  # A reading item whose instances carry their own passage in `display` (three on each of two texts). bilingual: `passage_en` + `passage_it` and no passage
+  # in the body; legacy: `passage_it` alone (the English text under its legacy key), the body holding one the instances override.
+  def each_item(key, bilingual:)
+    item = Item.create!(subject: @subject, key: key, kind: "practice_item")
+    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: @subject.key, skill: SKILL, component: "normalized_text", level: 1, expected_seconds: 60 }
+    body.merge!(bilingual ? { bilingual: true, prompt: { stem_en: "What colour is it?", stem_it: "Di che colore è?" }, hints_en: [ "Read the first line." ], hints_it: [ "Leggi la prima riga." ] }
+                          : { passage_it: "The item's own text, which no instance shows.", prompt: { stem_it: "What colour is it?" }, hints_it: [ "Read the first line." ] })
+    revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemValidation.create!(item_revision: revision, seq: 1, status: "passed", codes_json: "[]")
+    steps = bilingual ? [ { text_en: "The first line says it.", text_it: "La prima riga lo dice." } ] : [ { text_it: "The first line says it." } ]
+    6.times do |i|
+      text = EACH_TEXTS[i / 3]
+      display = bilingual ? { passage_en: text[:en], passage_it: text[:it] } : { passage_it: text[:en] }
+      ItemInstance.create!(item_revision: revision, seed: i + 1, display_json: JSON.generate(display), answer_json: JSON.generate("green"), errors_json: "[]",
+                           solution_json: JSON.generate(steps: steps, final: "green"), fingerprint: Digest::SHA256.hexdigest("#{key}-#{i}"))
     end
     revision
   end
@@ -177,6 +202,44 @@ class PracticeBilingualTest < ActionDispatch::IntegrationTest
     shown = solution_for(other)
     assert_equal PASSAGE_IT, shown.dig("solution", "passage_it")
     assert_equal "red: rossa", shown.dig("solution", "final_it")
+  end
+
+  test "a bilingual instance's own passage is served in its target language, its Italian only once the exercise is over" do
+    serve = serve_for(EACH)
+    own = JSON.parse(ItemInstance.find(PracticeServe.find(serve["serve_id"]).item_instance_id).display_json)
+    part = serve["item"]
+    assert_equal own["passage_en"], part["passage_en"], "the instance's text, not another one"
+    assert_not part.key?("passage_it")
+    refute_includes serve.to_json, own["passage_it"]
+    refute_includes hint_for(serve, 1).to_json, own["passage_it"]
+
+    wrong = answer_for(serve, "blue")
+    assert_not wrong.key?("passage_it"), "the serve is still open"
+    refute_includes wrong.to_json, own["passage_it"]
+
+    right = answer_for(serve, "green")
+    assert_equal own["passage_it"], right["passage_it"], "the exercise is over: the Italian of this instance's text"
+    assert_equal own["passage_it"], right.dig("solution", "passage_it")
+  end
+
+  test "a bilingual instance's solution asked for carries the Italian of its own passage" do
+    serve = serve_for(EACH)
+    own = JSON.parse(ItemInstance.find(PracticeServe.find(serve["serve_id"]).item_instance_id).display_json)
+    assert_equal own["passage_it"], solution_for(serve).dig("solution", "passage_it")
+  end
+
+  test "a legacy instance's own passage overrides the item's and is served as it always was; no reply adds an Italian layer" do
+    serve = serve_for(LEGACY_EACH)
+    own = JSON.parse(ItemInstance.find(PracticeServe.find(serve["serve_id"]).item_instance_id).display_json)
+    part = serve["item"]
+    assert_equal own["passage_it"], part["passage_it"]
+    assert_not part.key?("lang")
+    assert_not part.key?("passage_en")
+    refute_includes serve.to_json, "which no instance shows"
+    right = answer_for(serve, "green")
+    assert_includes %w[correct correct_aided], right["outcome"]
+    assert_not right.key?("passage_it")
+    assert_not right.fetch("solution", {}).key?("passage_it")
   end
 
   test "the teacher's topic review shows the catalogue message of a bilingual item in both layers, and a legacy one as it was" do

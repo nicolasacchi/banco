@@ -28,7 +28,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
   # run by the lesson/2 checks (R1) and the render check (R4). Until then they are registered and have a fixture file.
   # (and the wave 2 codes whose fixture is only described under `pending` until their track writes it, rules version 9)
   LESSON2 = (Lesson2Fixtures::MANIFEST["bad"].map { |b| b["code"] } + Lesson2Fixtures::MANIFEST.dig("pending", "entries").map { |e| e["code"] } +
-             %w[E-LESSON-RENDER E-LESSON-OVERFLOW E-DIAGRAM-LAYOUT E-DIAGRAM-SMALL-TEXT E-ITEM-RENDER E-ITEM-OVERFLOW W-LANG-SPAN-REDUNDANT] + Validation::Codes.all.keys.grep(/PAGE|FREEPAGE/)).uniq.freeze
+             %w[E-LESSON-RENDER E-LESSON-OVERFLOW E-DIAGRAM-LAYOUT E-DIAGRAM-SMALL-TEXT E-ITEM-RENDER E-ITEM-OVERFLOW] + Validation::Codes.all.keys.grep(/PAGE|FREEPAGE/)).uniq.freeze
   LATER = (%w[E-VERIFY-AUTHOR E-SESSION-NOT-INDEPENDENT] + PHASE_1B + LESSON2).freeze
 
   test "every Phase 1b code of this list has a bad fixture in the lesson or the course tests" do
@@ -48,11 +48,11 @@ class CodeFixturesTest < ActiveSupport::TestCase
     Validation::ItemRunner.new(files: files || F.files_for(doc), context: context).call.findings.map(&:code).uniq
   end
 
-  # The codes of the golden bilingual item (test/fixtures/lang/item_choice.json) after +change+ broke a copy of it.
-  def lang_codes
-    item = JSON.parse(Rails.root.join("test/fixtures/lang/item_choice.json").read)
+  # The codes of a golden bilingual item (test/fixtures/lang/item_choice.json, or item_blank.json) after +change+ broke a copy of it.
+  def lang_codes(fixture = "item_choice.json")
+    item = JSON.parse(Rails.root.join("test/fixtures/lang/#{fixture}").read)
     yield item
-    skills = { "english.make-do" => { "key" => "english.make-do", "errors" => [] } }
+    skills = { item["skill"] => { "key" => item["skill"], "errors" => [] } }
     context = Validation::Context.new(subject: "english", skill: ->(key) { skills[key] }, graph_present: true, source_line: ->(*) { nil }, reference_body: ->(_) { nil })
     static_codes(item, context: context)
   end
@@ -415,6 +415,17 @@ class CodeFixturesTest < ActiveSupport::TestCase
       lesson = Struct.new(:body).new({ "bilingual" => true })
       Validation::TopicChecks.mixed({ "key" => "topic.english.x" }, { "title_it" => "Titolo" }, subject, lesson, [ { skill: "s", pins: [ { key: "i", bilingual: false } ] } ], found)
       found.map(&:code).uniq
+    },
+    # a second line with ___ that the frame does not read as the instruction (D-402, §4.3)
+    "W-LANG-FRAME-BLANK" => lambda {
+      lang_codes("item_blank.json") do |i|
+        i["instances"][0]["display"].merge!("stem_en" => "Fill ___ with one word.\nShe ___ to school by bus.", "stem_it" => "Riempi ___ con una parola.\nLei ___ a scuola in autobus.")
+      end
+    },
+    # a [[en:..]] span in an English text of the golden lesson (slice 3's lesson checks)
+    "W-LANG-SPAN-REDUNDANT" => lambda {
+      md = Rails.root.join("test/fixtures/lang/lesson_en.md").read.sub("no -s, no to.", "no [[en:fish]] now.")
+      Validation::LessonChecks.call(md, subject: "english", context: Lesson2Fixtures.context("english")).findings.map(&:code).uniq
     }
   }.freeze
 

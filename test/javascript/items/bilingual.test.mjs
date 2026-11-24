@@ -115,7 +115,7 @@ test("choice: the target text with a translation node under each text, no button
   const handle = await renderItem(fixture.choice.part, ctx)
   const root = handle.element
   const text = target(root)
-  assert.match(text, /Choose the two words that fill the gaps/)
+  assert.match(text, /Choose the two words for the gaps/)
   assert.match(text, /On Saturdays I ___ my bed/)
   assert.match(text, /make \/ do/)
   assert.match(text, /Each option has two parts/)

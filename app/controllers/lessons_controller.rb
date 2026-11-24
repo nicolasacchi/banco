@@ -63,9 +63,8 @@ class LessonsController < ApplicationController
     now = Time.current
     PracticeEvent.create!(student: acting_student, kind: "lesson_solution_shown", topic_revision: @topic.topic_revision, lesson_revision: revision,
                           payload_json: { n: exercise["n"] }.to_json, at: now, created_at: now)
-    # banco.lesson/2 may give the solution as tagged steps (solution_steps) instead of one text (A10); the final is never sent apart.
-    answer = { n: exercise["n"], solution_it: exercise["solution_it"] }
-    answer = { n: exercise["n"], steps: exercise["solution_steps"].map { |s| s.slice("tag", "do_it", "why_it") } } if exercise["solution_steps"]
-    render json: answer
+    # banco.lesson/2 may give the solution as tagged steps (solution_steps) instead of one text (A10); the final is never sent apart. A bilingual exercise
+    # (D-402) is answered with its target text and the Italian in the reply's own `tr`.
+    render json: Lessons::CheckAnswer.solution(exercise)
   end
 end
