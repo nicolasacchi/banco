@@ -13,6 +13,8 @@ class FindingFieldTest < ActiveSupport::TestCase
     "title" => :metadata, "component" => :metadata, "expected_seconds" => :metadata, "skill" => :metadata,
     "generator" => :generator, "tests" => :generator, "verify" => :generator,
     "instances/2" => :instance, "instance 4" => :instance,
+    "stem_en" => :stem, "prompt/stem_es" => :stem, "passage_en" => :passage, "answer_format_en" => :format, "steps_es" => :steps,
+    "error_catalogue/1/message_en" => :errors, "message_es" => :errors, "options/1/text_it" => :options, "text_it" => :options, "final_it" => :solution,
     "something else" => :other, "" => :other
   }.freeze
 

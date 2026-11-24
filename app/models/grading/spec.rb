@@ -21,18 +21,19 @@ module Grading
         paradigm_forms: h["paradigm_forms"], accept: h["accept"], unit: h["unit"],
         allow_dot: h["allow_dot"], display: h["display"], profile: h["profile"],
         case_sensitive: h["case_sensitive"], thousands: h["thousands"], contractions: h["contractions"],
-        prompt_stem: h["prompt"].is_a?(Hash) ? h["prompt"]["stem_it"] : nil,
+        prompt_stem: Items::Text.stem(h["prompt"]),
         item_texts: item_texts_of(h)
       )
     end
 
-    # The words the student reads or is given with the item, as plain texts (D-386): both stems, the answer format, the solution.
+    # The words the student reads or is given with the item, as plain texts (D-386): both stems, the answer format, the solution; the target
+    # layer of a bilingual item (Items::Text), the one text of a legacy item.
     # A number answer may end with a unit word that one of them uses (Grading::Closed::Numbers).
     def self.item_texts_of(h)
       display = h["display"].is_a?(Hash) ? h["display"] : {}
       solution = h["solution"].is_a?(Hash) ? h["solution"] : {}
-      steps = Array(solution["steps"]).map { |step| step.is_a?(Hash) ? step["text_it"] : nil }
-      [ h.dig("prompt", "stem_it"), display["stem_it"], h["answer_format_it"], display["answer_format_it"], *steps, solution["final"] ].grep(String)
+      steps = Array(solution["steps"]).map { |step| Items::Text.step(step) }
+      [ Items::Text.stem(h["prompt"]), Items::Text.stem(display), Items::Text.pick(h, "answer_format"), Items::Text.pick(display, "answer_format"), *steps, solution["final"] ].grep(String)
     rescue TypeError
       []
     end
@@ -113,7 +114,7 @@ module Grading
     ARITHMETIC_ONLY = %r{\A(?=.*\d)[\d\s+\-−*·×÷:/().,^√²³]+\z}
 
     def stem_expressions
-      texts = [ prompt_stem, display.is_a?(Hash) ? display["stem_it"] : nil ].grep(String)
+      texts = [ prompt_stem, Items::Text.stem(display) ].grep(String)
       found = texts.flat_map { |t| t.include?("$") ? t.scan(MATH_SEGMENT).flatten : (t.strip.match?(ARITHMETIC_ONLY) ? [ t ] : []) }
       found.map(&:strip).reject(&:empty?).uniq
     end

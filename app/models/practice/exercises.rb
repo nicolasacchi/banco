@@ -126,10 +126,14 @@ module Practice
     def exercise(pin, n, revision, facts)
       mine = facts.of_item(revision.item_id)
       open = facts.open_serve(revision.item_id)
-      { item: pin["item"], n: n, title_it: self.class.title_of(JSON.parse(revision.body_json).dig("prompt", "stem_it")),
+      { item: pin["item"], n: n, **titles(JSON.parse(revision.body_json)),
         status: status(mine, open, facts), open_serve_id: open&.id,
         done: mine.count { |r| r.status.closed_by == :correct }, tried: mine.count { |r| facts.tries(r.id).positive? } }
     end
+
+    # The title in each layer the item has: `title_it` of a legacy item; of a bilingual one (D-402) `title_<lang>` (the target stem) and `title_it` (its
+    # authored translation).
+    def titles(body) = Items::Text.pair(body["prompt"] || {}, "stem", "title").transform_values { |stem| self.class.title_of(stem) }
 
     def status(mine, open, facts)
       return "unfinished" if open && facts.tries(open.id).zero? && facts.draft?(open.id)

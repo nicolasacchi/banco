@@ -7,6 +7,8 @@ module Diagnosis
   # Only the named parts of a stored display are copied (see +part+), so a field
   # added to displays later cannot leak by accident.
   #
+  # D-402: a bilingual item carries both layers of each text (Items::Part); the entry test is not served bilingual by default, the presenter supports it.
+  #
   # Agent text travels as plain strings; the browser renders it escaped, with the
   # restricted markup of app/javascript/items/markup.js.
   class ItemPresenter
@@ -54,7 +56,9 @@ module Diagnosis
         answers = JSON.parse(@served.item_instance.answer_json)
         part(sub, sub["component"], shown, answer: answers.is_a?(Hash) ? answers[sub["id"]] : nil, accept: Items::Part.accepted(sub, nil)).merge(id: sub["id"])
       end
-      { kind: "testlet", component: "testlet", passage_it: body["passage_it"], sub_items: subs }
+      # the passage of a bilingual testlet is served in its target language only: its Italian would be the text the sub items are answered from
+      lang = Items::Text.lang(body, "passage")
+      { kind: "testlet", component: "testlet", **(lang ? { lang: lang } : {}), **parts.passage(body), sub_items: subs }
     end
 
     def part(body, component, display, answer: nil, accept: []) = parts.call(body, component, display, answer: answer, accept: accept)

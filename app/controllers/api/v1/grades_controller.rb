@@ -97,7 +97,8 @@ module Api
       end
 
       def with_passage(display, body)
-        body["passage_it"].present? ? { "passage_it" => body["passage_it"] }.merge(display) : display
+        passage = Items::Text.passage_keys(body).select { |_, v| v.present? } # both layers of a bilingual passage (D-402): the grader reads the teacher's pages
+        passage.merge(display)
       end
 
       def short_answers(attempts)

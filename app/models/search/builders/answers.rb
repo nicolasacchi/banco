@@ -68,7 +68,7 @@ module Search
         revision = instance.item_revision
         item = revision.item
         body = JSON.parse(revision.body_json)
-        stem = Text.plain(body.dig("prompt", "stem_it") || Array(body["sub_items"]).first&.dig("prompt", "stem_it"))
+        stem = Text.plain(::Items::Text.stem(body["prompt"]) || ::Items::Text.stem(Array(body["sub_items"]).first&.dig("prompt")))
         Doc.build(kind: "student_answer", key: item.key, title: stem.presence || item.key, body: text, subject: item.subject.key, status: status,
                   anchor: anchor, skill: Items.skill_of(body), student_key: student.key, occurred_at: at.utc.iso8601,
                   lang: ::Lessons::Lang.target(item.subject.key) || "it")

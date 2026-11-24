@@ -156,6 +156,7 @@ module Practice
       body[:skill] = skill_block(serve, attempt)
       body[:actions] = Payload.actions(after)
       body[:hint] = (h = made.find { |e| e.kind == "hint_shown" && e.auto }) ? Payload.hint(instance, h.n) : nil
+      body.merge!(Payload.passage(instance)) if after.state == :closed # the exercise is over: the Italian of a bilingual passage may be read now
       body[:solution] = made.any? { |e| e.kind == "solution_shown" && AUTO_SOLUTION_REASONS.include?(e.reason) } ? Payload.solution(instance) : nil
       Result.new(200, body)
     end
@@ -174,8 +175,8 @@ module Practice
       end
       code = grade.codes.first
       { status: "graded", outcome: outcome.to_s, try_number: attempt.try_number,
-        message_it: Messages.feedback(outcome, typical: code && Instances.message_for(instance, code), violations: grade.violations, closing: closing,
-                                    hint: made.any? { |e| e.kind == "hint_shown" && e.auto }, near: grade.near),
+        **Messages.feedback_keys(outcome, code && Instances.catalogue_entry(instance, code), violations: grade.violations, closing: closing,
+                                 hint: made.any? { |e| e.kind == "hint_shown" && e.auto }, near: grade.near),
         note_it: %i[correct correct_aided].include?(outcome) ? note(spec, grade, attempt.raw) : nil,
         count_it: Messages.rows_line(outcome, grade.rows),
         error_code: outcome == :typical_error ? code : nil }

@@ -1,6 +1,7 @@
 module Grading
-  # The sentence a `___` blank sits in (D-339, D-352), read from the text the student was shown: the instance display's stem_it,
-  # else the item's own stem (prompt.stem_it) when the blank is there. Pure: no database, no clock.
+  # The sentence a `___` blank sits in (D-339, D-352), read from the text the student was shown: the instance display's stem,
+  # else the item's own stem (prompt.stem) when the blank is there. A bilingual item is read in its target language (Items::Text.stem), never in
+  # the Italian translation. Pure: no database, no clock.
   #
   # The frame is the line of the text that holds the blank, after the last → before the blank, without the label before the
   # last colon that comes ahead of the blank («Negativa con will: She ___ the test.» is «She ___ the test.»). The prefix is the words before
@@ -14,8 +15,9 @@ module Grading
   #   frame.fill("doesn't have")                      # => "My school doesn't have a library."
   class Frame
     BLANK = /_{3,}/
-    # «scrivi le parole che vanno al posto di ___»: the instruction names the blank, it is not the sentence that has one.
-    INSTRUCTION = /al[[:space:]]+posto[[:space:]]+di[[:space:]]+_{3,}/i
+    # «scrivi le parole che vanno al posto di ___»: the instruction names the blank, it is not the sentence that has one. In a bilingual item (D-402)
+    # the instruction is in the language it teaches («Write the words in place of ___», «Escribe las palabras en lugar de ___»): the same line.
+    INSTRUCTION = /(?:al[[:space:]]+posto[[:space:]]+di|in[[:space:]]+place[[:space:]]+of|en[[:space:]]+(?:el[[:space:]]+)?lugar[[:space:]]+de)[[:space:]]+_{3,}/i
     OPENING_APOSTROPHE = /\A(?:#{Closed::Text::APOSTROPHES.source}|')/
     # A label ends at a colon followed by a space: everything up to the last such colon before the blank is the instruction.
     LABEL_END = /:[[:space:]]/
@@ -31,7 +33,7 @@ module Grading
       # item's stem and the instance's together (the blank may sit in the item's own prompt). nil when there is not exactly one
       # blank in the sentences shown, or no word besides it.
       def for_spec(spec)
-        instance = spec.display.is_a?(Hash) ? spec.display["stem_it"] : nil
+        instance = Items::Text.stem(spec.display)
         from_stem(instance) || from_stem([ spec.prompt_stem, instance ].grep(String).join("\n"))
       end
 

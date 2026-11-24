@@ -68,7 +68,7 @@ module Practice
 
     def answer(serve, status)
       Result.new(200, { status: "contested", message_it: I18n.t("practice.contested"), solution: Payload.solution(serve.item_instance),
-                        actions: Payload.actions(status) })
+                        actions: Payload.actions(status), **Payload.passage(serve.item_instance) })
     end
 
     # The teacher's comment, written as the student's own comment would be; nil in the preview, which never writes one.

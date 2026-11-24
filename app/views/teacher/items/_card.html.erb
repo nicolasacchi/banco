@@ -83,7 +83,7 @@
       <ul class="plain catalogue">
         <% card.catalogue.each do |e| %>
           <li data-code="<%= e['code'] %>"><strong><%= e["code"] %></strong>: <%= e["description_it"] %><br>
-            <%= t("teacher.skill.message") %> <q><%= e["message_it"] %></q>
+            <%= t("teacher.skill.message") %> <q><%= Items::Text.both_of(e, "message") %></q>
             <% if e["implicates"].to_a.any? %><br><%= t("teacher.graph.implicates") %> <%= safe_join(e["implicates"].map { |k| ref_for(k) }, ", ") %><% end %></li>
         <% end %>
       </ul>

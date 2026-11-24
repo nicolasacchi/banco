@@ -19,7 +19,8 @@ module Diagnosis
     def collect(display, strong, weak)
       return unless display.is_a?(Hash)
 
-      %w[stem_it passage_it].each { |k| strong << norm(display[k]) }
+      # the target layer of a bilingual display, the one text of a legacy one (Items::Text); the Italian translation of the same text adds nothing to the comparison
+      [ Items::Text.stem(display), Items::Text.passage(display) ].each { |text| strong << norm(text) }
       %w[options elements left].each { |k| Array(display[k]).each { |e| strong << norm(e.is_a?(Hash) ? e["text"] : e) } }
       Array(display["right"]).each { |e| weak << norm(e.is_a?(Hash) ? e["text"] : e) }
       Array(display["sub_items"]).each { |s| collect(s.is_a?(Hash) ? s["display"] : nil, strong, weak) }

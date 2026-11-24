@@ -8,20 +8,29 @@ module Practice
 
     def component(instance) = body(instance)["component"].to_s
 
-    # Effective hints (A2.4): the instance's own, else the item's.
-    def hints(instance)
-      own = instance.hints_json.present? ? JSON.parse(instance.hints_json) : nil
-      Array(own.presence || body(instance)["hints_it"])
+    # Effective hints (A2.4): the instance's own, else the item's. The stored own hints are a list (a legacy item: Italian) or, in a bilingual
+    # item, an object {hints_en|hints_es, hints_it} (D-402); the item's are `hints_it` or the pair `hints_<lang>`/`hints_it`. This is the hash that
+    # holds the pair, read with Lessons::Lang.pick by Items::Text.
+    # item_body: the item's body when the caller has parsed it already.
+    def hints_source(instance, item_body = nil)
+      own = (instance.hints_json.present? ? JSON.parse(instance.hints_json) : nil).presence
+      own = { "hints_it" => own } if own.is_a?(Array)
+      own || item_body || body(instance)
     end
+
+    # The hints the student reads: the target layer of a bilingual item, the one list of a legacy one.
+    def hints(instance) = Items::Text.hints(hints_source(instance))
 
     def errors(instance) = instance.errors_json.present? ? JSON.parse(instance.errors_json) : []
 
     def solution(instance) = instance.solution_json.present? ? JSON.parse(instance.solution_json) : {}
 
-    # The item's error catalogue message for a code (nil when the item has none).
-    def message_for(instance, code)
-      Array(body(instance)["error_catalogue"]).find { |e| e["code"] == code }&.dig("message_it")
-    end
+    # The item's error catalogue entry for a code (nil when the item has none).
+    def catalogue_entry(instance, code) = Array(body(instance)["error_catalogue"]).find { |e| e["code"] == code }
+
+    # The item's error catalogue message for a code, in the language the student reads it in (the target layer of a bilingual item); nil when the
+    # item has none. Its Italian translation is Items::Text.translation(catalogue_entry(instance, code), "message").
+    def message_for(instance, code) = (entry = catalogue_entry(instance, code)) && Items::Text.message(entry)
 
     # What a stored attempt was worth: Grade = the outcome, the evidence key, the error codes and the
     # form violations of its latest grading. Nil when it is not a try (no grading, "Non lo so", ...).

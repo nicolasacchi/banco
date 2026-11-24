@@ -15,7 +15,13 @@ module Practice
     WINDOW = 10
     SOURCES = %w[item graph].freeze
 
-    Line = Data.define(:code, :text_it, :source)
+    # text_it: the sentence (Italian) of a legacy item or of the graph; of a bilingual item its authored Italian, with `text` the target text and
+    # `lang` its language (D-402). `payload` is what the serve body carries: `{reminder_it}` or `{reminder_<lang>, reminder_it}`.
+    Line = Data.define(:code, :text_it, :source, :lang, :text) do
+      def initialize(code:, text_it:, source:, lang: nil, text: nil) = super
+
+      def payload = lang ? { "reminder_#{lang}": text, reminder_it: text_it } : { reminder_it: text_it }
+    end
 
     module_function
 
@@ -71,8 +77,13 @@ module Practice
     end
 
     def text_for(instance, code, description, leaks)
-      item = Instances.message_for(instance, code).to_s.strip
-      return Line.new(code: code, text_it: item, source: "item") if item.present? && clean?(item, leaks)
+      entry = Instances.catalogue_entry(instance, code)
+      item = Items::Text.message(entry).to_s.strip if entry
+      italian = Items::Text.translation(entry, "message").to_s.strip if entry
+      if item.present? && clean?(item, leaks) && (italian.blank? || clean?(italian, leaks))
+        lang = Items::Text.lang(entry, "message")
+        return lang ? Line.new(code: code, text_it: italian, source: "item", lang: lang, text: item) : Line.new(code: code, text_it: item, source: "item")
+      end
 
       graph = description.call(code).to_s.strip
       Line.new(code: code, text_it: graph, source: "graph") if graph.present? && clean?(graph, leaks)
@@ -85,7 +96,7 @@ module Practice
       spec = Grading::Spec.from_instance(instance)
       if spec.component == "choice"
         right = Array(spec.display.is_a?(Hash) ? spec.display["options"] : nil).find { |o| o["id"] == spec.answer.to_s }
-        right ? [ right["text"].to_s ] : []
+        right ? [ right["text"].to_s, right["text_it"].to_s ].reject(&:empty?) : []
       else
         Validation::Answers.key_texts(spec.component, spec.answer, accept: Array(spec.accept))
       end

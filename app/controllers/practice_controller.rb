@@ -163,10 +163,10 @@ class PracticeController < ApplicationController
     hints = Practice::Instances.hints(instance)
     state = course_view.state(serve.skill_key)
     {
-      type: "item", serve_id: serve.id, reason: serve.reason, reason_it: reason_it(serve, chosen), reminder_it: reminder_it(serve),
+      type: "item", serve_id: serve.id, reason: serve.reason, reason_it: reason_it(serve, chosen), **reminder(serve),
       status: status.state.to_s, next_try_number: status.next_try_number, actions: Practice::Payload.actions(status), # D-395: «Per me va bene così» on a resumed exercise
       skill: skill_block(serve.skill_key, state),
-      hints: { total: hints.size, shown: hints.first(status.hints_shown).each_with_index.map { |text, i| { n: i + 1, hint_it: text } } },
+      hints: { total: hints.size, shown: hints.first(status.hints_shown).each_index.map { |i| Practice::Payload.hint_entry(instance, i + 1) } },
       item: item_part(serve, instance),
       draft: draft_block(serve), exercise: exercise_block(serve, topic), rating: rating_block(serve)
     }
@@ -181,9 +181,11 @@ class PracticeController < ApplicationController
   end
 
   # D-358: «Ricorda: …», the item's own message for the typical error this student made lately in the skill, when this exercise declares it; nil
-  # otherwise. Not a hint (no counter, no try, no state); recorded as an app event (Practice::Reminder). Only the sentence leaves the server.
-  def reminder_it(serve)
-    Practice::Reminder.call(serve, student: acting_student, description: ->(code) { course_view.error_description(serve.skill_key, code) })&.text_it
+  # otherwise. Not a hint (no counter, no try, no state); recorded as an app event (Practice::Reminder). Only the sentence leaves the server:
+  # `reminder_it`, and for a bilingual item (D-402) `reminder_<lang>` with it, the sentence in the language it teaches and its Italian.
+  def reminder(serve)
+    line = Practice::Reminder.call(serve, student: acting_student, description: ->(code) { course_view.error_description(serve.skill_key, code) })
+    line ? line.payload : { reminder_it: nil }
   end
 
   # His latest rating of this exercise (D-365), for the box that opens when it is over; nil when he has given none.

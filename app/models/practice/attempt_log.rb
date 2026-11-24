@@ -163,12 +163,12 @@ module Practice
 
     # `reminders` (D-358): the «Ricorda» lines the page showed with this serve ({code, source: item|graph, at}); absent when none.
     # The serve and the display as the practice page drew it: the stored display re-keyed with the shown order the serve logged
-    # (Diagnosis::Rekey.replay, as PracticeController does), through Items::Part, so it carries the same members the browser got.
+    # (Diagnosis::Rekey.replay, as PracticeController does), through Items::Part, so it carries the same members the browser got (a bilingual item in both layers, D-402; the passage's Italian too: the log is read after the answer).
     def served_of(serve, shown)
       instance = serve.item_instance
       revision = instance.item_revision
       accept = Items::Part.accepted(shown.body, instance.accept_json.present? ? JSON.parse(instance.accept_json) : [])
-      item = Items::Part.new(subject: revision.item.subject, revision: revision).call(shown.body, shown.component, shown.display, answer: shown.answer, accept: accept)
+      item = Items::Part.new(subject: revision.item.subject, revision: revision, after_answer: true).call(shown.body, shown.component, shown.display, answer: shown.answer, accept: accept)
       reminders = Reminder.shown(serve.id)[serve.id].map { |r| { code: r[:code], source: r[:source], at: stamp(r[:at]) } }
       { practice_serve_id: serve.id, reason: serve.reason, parent_serve_id: serve.parent_serve_id, error_code: serve.error_code, at: stamp(serve.created_at),
         rules_version: serve.rules_version, seed: serve.seed, shown_order: shown.shown_order, id_map: shown.id_map, item: item,
@@ -179,7 +179,7 @@ module Practice
     def instance_of(attempt, instance, shown)
       hints = Instances.hints(instance)
       Attempts::InstanceBlock.call(instance, shown, attempt.raw, JSON.parse(attempt.latest_grading&.error_codes_json || "[]"))
-                             .merge(hints: hints.each_with_index.map { |text, i| { n: i + 1, hint_it: text, shown_before: i < attempt.hints_before } }, hints_total: hints.size)
+                             .merge(hints: hints.each_index.map { |i| Payload.hint_entry(instance, i + 1).merge(shown_before: i < attempt.hints_before) }, hints_total: hints.size)
     end
 
     def events_of(serve)

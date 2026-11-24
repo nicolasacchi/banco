@@ -138,7 +138,7 @@ module Api
       # The stem the solver answered, as the quote of the finding.
       def quote_of(result)
         display = JSON.parse(@text.instance_row(result[:instance]).display_json)
-        (display["stem_it"] || display["passage_it"] || display.to_json).to_s.first(500)
+        (Items::Text.both_of(display, "stem") || Items::Text.both_of(display, "passage") || display.to_json).to_s.first(500)
       end
 
       def next_session = "banco session new --role solver --agent NAME --model MODEL"

@@ -1,7 +1,7 @@
 module Practice
   # The sentences the student reads from the practice engine (A8.2, A9.4), in the language of his page (D-356). Every sentence is an
   # approved stored text chosen by code (firm rule 1): the locale files (course.*.yml, grading.*.yml) and the item's error
-  # catalogue, which is course content and stays Italian. Nothing is generated.
+  # catalogue, which is course content (Italian, or in a bilingual item the language it teaches with its Italian beside it, D-402). Nothing is generated.
   module Messages
     module_function
 
@@ -21,6 +21,19 @@ module Practice
       when :contested then I18n.t("practice.contested")
       when :undetermined then I18n.t("practice.undetermined")
       end
+    end
+
+    # The keys of a graded reply that hold the sentence: `{message_it}` (the page's sentence; for a legacy item the catalogue message is Italian text
+    # as it always was) or, for a typical error of a bilingual item, the catalogue message in the language it teaches and its authored Italian,
+    # `{message_<lang>, message_it}` (D-402). entry: the item's catalogue entry for the code, nil when it has none. Everything but the catalogue
+    # message is chrome and stays one sentence in the page's language.
+    def feedback_keys(outcome, entry, **options)
+      target = entry && Items::Text.message(entry)
+      text = feedback(outcome, typical: target, **options)
+      lang = entry && Items::Text.lang(entry, "message")
+      return { message_it: text } unless lang && outcome.to_sym == :typical_error && target.present?
+
+      { "message_#{lang}": text, message_it: entry["message_it"] }
     end
 
     # The line after a try that is not right on an item with rows (D-363): how many rows were right, never which. rows: [right, total] or nil.

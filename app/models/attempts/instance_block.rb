@@ -12,7 +12,7 @@ module Attempts
       { id: instance.id, revision_id: revision.id, item: revision.item.key, fingerprint: instance.fingerprint, stem: view.stem, key: shown.answer, key_words: view.key,
         accept: Items::Part.accepted(shown.body, instance.accept_json.present? ? JSON.parse(instance.accept_json) : []), answer_words: shown.words(raw),
         errors: view.errors, error_catalogue: catalogue,
-        matched_errors: codes.map { |code| { code: code, message_it: catalogue.find { |e| e["code"] == code }&.dig("message_it") }.compact } }
+        matched_errors: codes.map { |code| { code: code, **Items::Text.pair(catalogue.find { |e| e["code"] == code } || {}, "message") }.compact } }
     end
   end
 end

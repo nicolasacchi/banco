@@ -5,7 +5,9 @@ module Diagnosis
   # is a grade: no score, no percentage, no alarm colour.
   class Summary
     Skill = Data.define(:key, :label, :text)
-    Solution = Data.define(:attempt_id, :prompt, :given, :steps, :final, :verdict, :note) do
+    # prompt: the text the student read (the target layer of a bilingual item, D-402); prompt_it: its authored Italian, nil for a legacy item.
+    # steps: the solution's steps with `text_it` holding the text of the layer he read, as the results page draws it.
+    Solution = Data.define(:attempt_id, :prompt, :given, :steps, :final, :verdict, :note, :prompt_it) do
       # How the answer went, in the five words of the results page (D-318). Anything the machine did not settle
       # (short answers, undetermined, a form the teacher decides) is the teacher's to look at.
       def outcome
@@ -112,7 +114,7 @@ module Diagnosis
     def catalogue(revision)
       body = JSON.parse(revision.body_json)
       entries = Array(body["error_catalogue"]) + Array(body["sub_items"]).flat_map { |s| Array(s["error_catalogue"]) }
-      entries.map { |e| [ e["code"], e["message_it"] ] }
+      entries.map { |e| [ e["code"], Items::Text.message(e) ] }
     end
 
     def served
@@ -132,12 +134,24 @@ module Diagnosis
       verdict = grading&.verdict
       note = verdict == "nearly_correct" ? Grading::PairNote.line(JSON.parse(instance.display_json), grading.normalized) : nil # D-301
       Solution.new(attempt_id: attempt.id, prompt: prompt_text(body, instance), given: AnswerText.call(attempt, serve),
-                   steps: Array(solution["steps"]), final: solution["final"], verdict: verdict, note: note)
+                   steps: Array(solution["steps"]).map { |step| step.merge("text_it" => Items::Text.step(step)) }, final: solution["final"], verdict: verdict, note: note,
+                   prompt_it: prompt_translation(body, instance))
     end
 
     def prompt_text(body, instance)
       display = JSON.parse(instance.display_json)
-      body["kind"] == "testlet" ? body["passage_it"].to_s : [ body["passage_it"], body.dig("prompt", "stem_it"), display["stem_it"] ].compact.join(" ")
+      return Items::Text.passage(body).to_s if body["kind"] == "testlet"
+
+      [ Items::Text.passage(body), *Items::Text.stems(body, display) ].compact.join(" ")
+    end
+
+    # The Italian of what prompt_text says, for a bilingual item (the sitting is over, so the passage's translation is no longer a way to the answer); nil for a legacy one.
+    def prompt_translation(body, instance)
+      display = JSON.parse(instance.display_json)
+      parts = [ Items::Text.translation(body, "passage"), Items::Text.translation(body["prompt"], "stem") ]
+      parts << Items::Text.translation(display, "stem") unless body["kind"] == "testlet"
+      parts = parts.compact
+      parts.any? ? parts.join(" ") : nil
     end
   end
 end

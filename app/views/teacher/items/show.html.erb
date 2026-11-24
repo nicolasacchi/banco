@@ -6,7 +6,7 @@
   <p><%= t("teacher.item.status") %> <strong><%= t("teacher.skill.validation.#{@revision.status}") %></strong></p>
   <ol>
     <% @samples.each do |display| %>
-      <li><%= display["stem_it"] || display["passage_it"] %></li>
+      <li><%= Items::Text.both_of(display, "stem") || Items::Text.both_of(display, "passage") %></li>
     <% end %>
   </ol>
   <p><a class="button" href="/teacher"><%= t("teacher.back") %></a></p>

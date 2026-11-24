@@ -22,7 +22,12 @@ module Teacher
       metadata: %w[title component kind expected_seconds difficulty skill skills scope subject profile schema schema_version id],
       generator: %w[generator verify tests seed params parameters]
     }.freeze
-    LOOKUP = KEYS.flat_map { |part, words| words.map { |w| [ w, part ] } }.to_h.freeze
+    # A bilingual item (D-402) names the target text of a field next to its Italian: `stem_en`, `message_es`. Every word ending `_it` is also known
+    # in each language a subject teaches, and the pair keys of a bilingual item that have no suffix in a legacy one (`text_it`, `final_it`, `message`) are known too.
+    PAIR_WORDS = { options: %w[text_it], solution: %w[final_it], errors: %w[message] }.freeze
+    LOOKUP = KEYS.merge(PAIR_WORDS) { |_part, words, more| words + more }.flat_map do |part, words|
+      words.flat_map { |w| w.end_with?("_it") ? [ w, *Lessons::Lang::PAIR_LANGS.map { |lang| w.sub(/_it\z/, "_#{lang}") } ] : [ w ] }.map { |w| [ w, part ] }
+    end.to_h.freeze
     # Path words that only say where, never what.
     NOISE = %w[item item.json display sub_items instances instance revision].freeze
 

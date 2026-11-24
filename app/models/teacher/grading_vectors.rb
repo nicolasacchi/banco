@@ -78,7 +78,9 @@ module Teacher
       accept = Array(body["accept"]) + (instance.accept_json.present? ? JSON.parse(instance.accept_json) : [])
       item = body.slice(*BODY_FIELDS)
       item["accept"] = accept if accept.any?
-      item["prompt"] = { "stem_it" => body.dig("prompt", "stem_it") } if body.dig("prompt", "stem_it").is_a?(String)
+      # the stem in every layer the item has: the grader's frame reads the target one (Items::Text), the display above holds both
+      stems = Items::Text.pair(body["prompt"] || {}, "stem").transform_keys(&:to_s).select { |_, v| v.is_a?(String) }
+      item["prompt"] = stems if stems.any?
       item["answer"] = JSON.parse(instance.answer_json)
       errors = instance.errors_json.present? ? JSON.parse(instance.errors_json) : []
       item["errors"] = errors if errors.any?

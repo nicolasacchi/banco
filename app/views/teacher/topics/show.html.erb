@@ -149,7 +149,7 @@
               <details class="more" data-more="errors">
                 <summary><%= t("teacher.review.errors") %></summary>
                 <% card.catalogue.each do |e| %>
-                  <p data-code="<%= e['code'] %>"><strong><%= e["code"] %></strong>: <%= e["description_it"] %><br><%= t("teacher.skill.message") %> <q><%= e["message_it"] %></q></p>
+                  <p data-code="<%= e['code'] %>"><strong><%= e["code"] %></strong>: <%= e["description_it"] %><br><%= t("teacher.skill.message") %> <q><%= Items::Text.both_of(e, "message") %></q></p>
                 <% end %>
                 <% ex.samples.each do |sample| %>
                   <% if sample.view.errors.any? %>
