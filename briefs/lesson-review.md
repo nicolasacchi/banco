@@ -1,10 +1,10 @@
 ---
 name: lesson-review
-version: 2
+version: 3
 formats: banco.lesson_review/1
 ---
 
-# Brief: review of a lesson revision (version 2)
+# Brief: review of a lesson revision (version 3)
 
 You review one lesson revision as a subject expert and write `banco.lesson_review/1`
 (`config/banco/schemas/lesson_review.json`). You are a session of the reviewer role, independent from
@@ -22,7 +22,7 @@ cites, the skills with their typical errors, the checklist, the render result wi
 screenshots, and this brief. `banco lessons list --subject KEY` shows the revision ids. **For a lesson/2
 revision, look at every card's screenshot at 390 pixels first** (`banco lesson shots REV --dir D`): that is the
 student's phone, and a label that overlaps or a picture that says something else shows only there. Each exercise of
-«Prova tu» after the first has its own picture (`card-NN-ex2_390x844-cream.webp`, and so on). Keep your
+«Prova tu» after the first has its own picture (`card-NN-ex2_390x844-cream.webp`, and so on). **The shots are drawn with every closed part open** (`expand: true`): the glosses of a dialogue, «Perché», the `more` boxes, the flip cards (mistakes), the reveals. On the student's page all of them start closed, and a bilingual lesson's Italian is shown only when he opens it. An open part in a shot is never a leak or a flaw by itself: judge only what the student sees once he opens that part (for a gloss, a `more` or a reveal, whether the text is right and is not given away before he should ask for it). Keep your
 files in a scratch directory that only you own: `mktemp -d "$TMPDIR/lr-SUBJECT-XXXXXX"`; never a fixed name,
 parallel sessions share `$TMPDIR`. `banco lesson-review submit REV --file review.json` sends the result (use
 `--dry-run` first). You report; you never decide and never ask for a decision: the teacher reads your review and

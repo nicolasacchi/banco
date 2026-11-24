@@ -188,7 +188,7 @@ only), `HARNESS_PORT` 3200 (internal), `VIEW_PORT` 3400 (view links, GET only). 
   blocks; `config/banco/schemas/lesson.json`, `$defs.body2`) and the diagram DSL `banco.diagram/1` (`diagram.json`, nine types of release 1),
   `config/banco/lesson_palette.yml` (colour roles, carriers, step verbs) and `icons.yml` (Lucide 1.54.0 subset in `public/vendor/lucide@1.54.0/`,
   `bin/build-icons --check`), the `lesson2:` block of `validation_rules.yml` (rules version 8, `lesson.accept_schema1`), briefs `lesson` (v3),
-  `lesson-v1`, `lesson-review` (v2). Fixtures: `test/fixtures/lesson2` (demos, `bad/` with `manifest.json`, `numbers.json`, `whitelist.json`,
+  `lesson-v1`, `lesson-review` (v3). Fixtures: `test/fixtures/lesson2` (demos, `bad/` with `manifest.json`, `numbers.json`, `whitelist.json`,
   `context.json`), `test/fixtures/diagrams/vectors.json`, the role and link cases in `test/fixtures/markup/v2.json` (`"options"`).
 - Rich lessons, Ruby side (R1, D-252): `lib/lessons/{parser2,directives,blocks,diagrams,num,palette,icons,student_body,checks,convert1to2}.rb`
   (`Parser2` the fence-aware splitter; `Blocks::*` per-type checks; `Diagrams::*` the nine types and the state overlay; `StudentBody` the whitelist
