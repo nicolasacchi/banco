@@ -231,6 +231,80 @@ export function stackLabels(ctx, specs, y0, dir = 1) {
   return used
 }
 
+const SIDE = 4 // a label's box keeps this far in from its leader's x at least
+const CLEAR = 3 // a leader keeps this far from a label's box and from another label's box
+
+// Puts over[k..] into `rows` (the rows are filled in place and emptied again when a try fails): for each label the rows from the first,
+// in each the places that keep its box over its mark's x, the nearest to where it would stand centred first: centred, against its mark's
+// right or left, right against another label's box in the row, or just beside the leader of another label. Returns the placed labels.
+// env: { W, gap, budget: { left }, all } (all: every label of the figure, whose leaders a box must keep beside).
+export function arrange(rows, over, k, env) {
+  if (k === over.length) return []
+  const b = over[k]
+  const cx = b.spec.cx
+  const { W, gap, budget } = env
+  const inside = (x) => Math.max(4, Math.min(Math.round(x), W - b.w - 4))
+  const near = [b.x, cx - SIDE, cx + SIDE - b.w]
+  for (const o of env.all) if (o !== b) near.push(Math.ceil(o.spec.cx) + CLEAR + 1, Math.floor(o.spec.cx) - CLEAR - 1 - b.w)
+  for (let row = 0; row < rows.length; row++) {
+    // the leader of this label runs through the nearer rows at cx
+    if (row > 0 && rows.slice(0, row).some((r) => r.some((o) => cx >= o.x - CLEAR && cx <= o.x + o.w + CLEAR))) continue
+    const xs = [...near, ...rows[row].flatMap((o) => [o.x + o.w + gap, o.x - gap - b.w])]
+      .map(inside)
+      .filter((x, i, all) => all.indexOf(x) === i && x + SIDE <= cx && cx <= x + b.w - SIDE)
+      .sort((p, q) => Math.abs(p - b.x) - Math.abs(q - b.x))
+    for (const x of xs) {
+      if (--budget.left < 0) return null
+      const free = rows[row].every((o) => x >= o.x + o.w + gap || x + b.w + gap <= o.x)
+      const beside = rows.slice(row + 1).every((r) => r.every((o) => o.spec.cx < x - CLEAR || o.spec.cx > x + b.w + CLEAR))
+      if (!free || !beside) continue
+      const p = { ...b, x, row }
+      rows[row].push(p)
+      const rest = arrange(rows, over, k + 1, env)
+      if (rest) return [p, ...rest]
+      rows[row].pop()
+    }
+  }
+  return null
+}
+
+// stackLabels, but with no connector across a label. The stack is first made as stackLabels makes it, and kept when no connector crosses a
+// label (a drawing that was right does not move). Otherwise the labels are placed again, in the fewest rows that leave every connector free:
+// each label in a row, sliding sideways over its mark when a neighbour's connector needs the place (`arrange`). When no way is free the
+// stackLabels drawing stays and `clear` is false (the caller may try narrower labels). Same arguments as stackLabels; every spec has
+// connectFrom, and a label in a row after the first has the connector. Returns { used, clear }.
+export function stackLabelsClear(ctx, specs, y0, dir = 1) {
+  const scratch = { ...ctx, labels: [], shapes: [] }
+  stackLabels(scratch, specs, y0, dir)
+  const across = (scene) => scene.shapes.some((s) => s.cls === "dg-connector" && scene.labels.some((l) => crosses(s, { x: l.x, y: l.y + 3, w: l.w, h: l.h - 6 }, 1)))
+  if (!across(scratch)) return { used: stackLabels(ctx, specs, y0, dir), clear: true }
+  const W = ctx.width
+  const gap = 8
+  const boxes = specs
+    .map((spec) => {
+      const probe = ctx.measure(spec.text, ctx.fontPx, spec.maxW, spec.cls)
+      const w = Math.min(Math.ceil(probe.w), W - 8)
+      return { spec, x: Math.max(4, Math.min(Math.round(spec.cx - w / 2), W - w - 4)), w, h: Math.ceil(probe.h), row: 0 }
+    })
+    .sort((a, b) => a.spec.cx - b.spec.cx)
+  for (let total = 1; total <= boxes.length; total++) {
+    const placed = arrange(Array.from({ length: total }, () => []), boxes, 0, { W, gap, budget: { left: 20000 }, all: boxes })
+    if (!placed) continue
+    let used = 0
+    for (const { spec, x, w, h, row } of placed) {
+      const rowH = ctx.lineH * (spec.lines ?? 1) + 4
+      const y = dir > 0 ? y0 + row * rowH : y0 - row * rowH - h
+      const item = label(ctx, spec.text, x, y, { anchor: "start", maxW: spec.maxW ? w : undefined, cls: spec.cls ?? "", role: spec.role, key: spec.key })
+      item.w = Math.max(item.w, w)
+      item.anchor = "middle"
+      if (row > 0 && spec.connectFrom !== undefined) shape(ctx, "line", { x1: spec.cx, y1: spec.connectFrom, x2: spec.cx, y2: dir > 0 ? item.y : item.y + item.h, cls: "dg-connector" })
+      used = Math.max(used, (row + 1) * rowH)
+    }
+    return { used, clear: true }
+  }
+  return { used: stackLabels(ctx, specs, y0, dir), clear: false }
+}
+
 // Does the segment s touch the rectangle r (a little padded)? Liang-Barsky clipping.
 export function crosses(s, r, pad = 2) {
   const [x0, y0, x1, y1] = [r.x - pad, r.y - pad, r.x + r.w + pad, r.y + r.h + pad]

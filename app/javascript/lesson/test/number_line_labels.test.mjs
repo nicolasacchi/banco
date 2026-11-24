@@ -97,8 +97,14 @@ test("under jump arcs, a leader starts under the tick numbers and crosses nothin
   for (const s of leaders) assert.ok(Math.min(s.y1, s.y2) >= tickBottom, "the leaders start under the tick numbers")
 })
 
-test("labels too many and too wide for the width are an error, not a drawing with overlaps", () => {
+test("under jump arcs, five wide labels at 320 px are drawn clear (labels slide over their marks) or refused, never overlapped", () => {
   const scene = layout({ ...line("0", "6", LONG), jumps: [{ from: "0", by: "1", label_it: "+1" }] }, { width: 320, fontPx: 20, subject: "math" })
+  if (scene.error) assert.equal(scene.error.code, "E-DIAGRAM-LAYOUT")
+  else assertClear(scene, "320/20")
+})
+
+test("two labels on one mark under jump arcs cannot both reach it with a straight leader: an error, not a drawing with overlaps", () => {
+  const scene = layout({ ...line("0", "6", [["3", "uno"], ["3", "due"]]), jumps: [{ from: "0", by: "1", label_it: "+1" }] }, { width: 390, fontPx: 20, subject: "math" })
   assert.equal(scene.error?.code, "E-DIAGRAM-LAYOUT")
 })
 

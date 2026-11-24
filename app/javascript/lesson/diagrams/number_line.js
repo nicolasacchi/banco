@@ -2,7 +2,7 @@
 // intervals (a thick bar, open or closed ends, an arrow for infinity). Exact numbers (num.js); floats
 // only for pixel positions. Tick labels thin out (every k-th, keeping 0) when they would touch.
 import * as N from "lesson/num"
-import { crosses, effectiveState, fail, finish, label, listIt, plain, shape, stateCount, words } from "lesson/diagrams/common"
+import { arrange, crosses, effectiveState, fail, finish, label, listIt, plain, shape, stateCount, words } from "lesson/diagrams/common"
 import { run } from "lesson/diagrams/run"
 
 export const states = stateCount
@@ -57,8 +57,6 @@ export function semantic(data) {
 
 const ABOVE_GAP = 14 // from the axis to the bottom of the first row of labels above it (clears the ring of a closed mark)
 const LEADER_GAP = 12 // from the axis to where a leader going up starts
-const SIDE = 4 // a label's box keeps this far in from its leader's x at least
-const CLEAR = 3 // a leader keeps this far from a label's box and from another label's box
 
 // Where the labels of marks and intervals go, along x and in rows. Row 0 under the tick numbers (no leader) takes the labels, left to
 // right, that fit side by side as they are, centred on their marks. A label that would touch another goes above the axis, in the rows
@@ -88,36 +86,8 @@ function planLabels(ctx, specs, up) {
   // wide label of the first row can stand where a leader of a further row must pass
   const list = up ? over : boxes
   for (let total = 1; total <= (up ? over.length : boxes.length); total++) {
-    const placed = arrange(Array.from({ length: total }, () => []), list, 0, { W, gap, budget: { left: 20000 } })
+    const placed = arrange(Array.from({ length: total }, () => []), list, 0, { W, gap, budget: { left: 20000 }, all: boxes })
     if (placed) return up ? { below: first, above: placed, belowRows: used(first), aboveRows: used(placed) } : { below: placed, above: [], belowRows: used(placed), aboveRows: 0 }
-  }
-  return null
-}
-
-// Puts over[k..] into `rows` (the rows are filled in place and emptied again when a try fails): for each label the rows from the first,
-// in each the places that keep its box over its mark's x (centred, then against the mark's right, then its left). Returns the placed labels.
-function arrange(rows, over, k, env) {
-  if (k === over.length) return []
-  const b = over[k]
-  const cx = b.spec.cx
-  const { W, gap, budget } = env
-  const xs = [b.x, Math.round(cx) - SIDE, Math.round(cx) + SIDE - b.w]
-    .map((x) => Math.max(4, Math.min(x, W - b.w - 4)))
-    .filter((x, i, all) => all.indexOf(x) === i && x + SIDE <= cx && cx <= x + b.w - SIDE)
-  for (let row = 0; row < rows.length; row++) {
-    // the leader of this label runs through the nearer rows at cx
-    if (row > 0 && rows.slice(0, row).some((r) => r.some((o) => cx >= o.x - CLEAR && cx <= o.x + o.w + CLEAR))) continue
-    for (const x of xs) {
-      if (--budget.left < 0) return null
-      const free = rows[row].every((o) => x >= o.x + o.w + gap || x + b.w + gap <= o.x)
-      const beside = rows.slice(row + 1).every((r) => r.every((o) => o.spec.cx < x - CLEAR || o.spec.cx > x + b.w + CLEAR))
-      if (!free || !beside) continue
-      const p = { ...b, x, row }
-      rows[row].push(p)
-      const rest = arrange(rows, over, k + 1, env)
-      if (rest) return [p, ...rest]
-      rows[row].pop()
-    }
   }
   return null
 }

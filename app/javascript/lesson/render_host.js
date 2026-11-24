@@ -142,9 +142,8 @@ function figureFindings(figure, minPx, state, out) {
     }
   }
   // a leader (the thin vertical `.dg-connector` from a label to its mark) must not run through the text of any label, a tick number
-  // among them: it ends against its own label, so the top and bottom of every text are left out of the test. Number lines only: the
-  // timeline's stacked labels can still draw a leader through a neighbour at 390 px (its layout has no sideways slide yet), so it is not judged
-  for (const line of figure.dataset.type === "number_line" ? figure.querySelectorAll("svg .dg-connector") : []) {
+  // among them: it ends against its own label, so the top and bottom of every text are left out of the test
+  for (const line of figure.querySelectorAll("svg .dg-connector")) {
     const c = line.getBoundingClientRect()
     if (c.width > 1 || c.height < 1) continue
     const hit = boxes.find(({ rect }) => c.left > rect.left + 1 && c.left < rect.right - 1 && Math.min(c.bottom, rect.bottom - 4) - Math.max(c.top, rect.top + 4) > 1)
