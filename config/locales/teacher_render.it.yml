@@ -40,5 +40,7 @@ it:
         state_ex: "esercizio %{n}"
         state_open: "con le parti chiuse aperte"
         state_ex_open: "esercizio %{n}, con le parti chiuse aperte"
+        state_tr: "con la traduzione in italiano aperta"
+        state_ex_tr: "esercizio %{n}, con la traduzione in italiano aperta"
         back: "Torna all'argomento"
         extra: "approfondimento"

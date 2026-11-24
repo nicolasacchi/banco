@@ -49,6 +49,13 @@ module Teacher
                    exhausted[key])
     end
 
+    # «Traduzione aperta in N esercizi su M» (D-402) for the student's serves of one skill, or of the whole subject; nil when it was opened in none.
+    # Informational: it is not an aid and no state reads it.
+    def translation_line(skill = nil)
+      ids = skill ? serve_ids_by_skill.fetch(skill, []) : serve_ids_by_skill.values.flatten
+      Practice::TranslationUse.line(ids, openings)
+    end
+
     # Skills the diagnosis found to recover or learn that no topic of the map practices.
     def without_topic
       @without_topic ||= input.seeds.values.select { |s| %w[to_recover to_learn].include?(s.state) && !skill_keys.include?(s.skill) }
@@ -91,6 +98,12 @@ module Teacher
     end
 
     private
+
+    def serve_ids_by_skill
+      @serve_ids_by_skill ||= PracticeServe.where(student: student, skill_key: skill_keys).pluck(:skill_key, :id).group_by(&:first).transform_values { |pairs| pairs.map(&:last) }
+    end
+
+    def openings = @openings ||= Practice::TranslationUse.by_serve(serve_ids_by_skill.values.flatten)
 
     def resolutions = @resolutions ||= Practice::Resolutions.for_student(student.id)
 

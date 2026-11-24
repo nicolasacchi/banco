@@ -79,6 +79,38 @@ module Approval
       reasons
     end
 
+    # The language status of a topic of english or spanish (D-402), derived and never stored: which of its parts are bilingual (the lesson, the
+    # title and the intro paired, the pinned items). nil for a subject that teaches no language. A topic is mixed when some parts are and some
+    # are not: it stays servable (the student reads the target language where it was rewritten and today's pages elsewhere), the teacher is
+    # warned (W-TOPIC-LANG-MIXED); a topic with nothing rewritten yet is not mixed, it is simply not done.
+    LanguageStatus = Data.define(:lang, :lesson, :title, :intro, :items_done, :items_total) do
+      # The parts still in Italian only: :lesson, :title, :intro, :items (some of the pinned items).
+      def missing = [ (:lesson unless lesson), (:title unless title), (:intro if intro == false), (:items if items_done < items_total) ].compact
+
+      def mixed? = (lesson || title || intro == true || items_done.positive?) && !missing.empty?
+    end
+
+    def language_status(revision)
+      subject = revision.lesson.subject
+      lang = Lessons::Lang.target(subject.key) or return nil
+      entry = map_entry(subject, revision.lesson.key)
+      items = ItemRevision.where(id: item_revision_ids(revision)).map { |r| JSON.parse(r.body_json)["bilingual"] == true }
+      body = revision.body
+      LanguageStatus.new(lang: lang, lesson: revision.lesson_revision.body["bilingual"] == true,
+                         title: !entry.nil? && Lessons::Lang.pair?(entry, "title"),
+                         intro: (Lessons::Lang.pair?(body, "intro") if body["intro_it"].present?),
+                         items_done: items.count(true), items_total: items.size)
+    end
+
+    # The Italian sentence that says a topic is mixed (W-TOPIC-LANG-MIXED), or nil. A warning on the topic page, never a reason that blocks approving.
+    def language_warning(revision)
+      status = language_status(revision)
+      return nil unless status&.mixed?
+
+      todo = status.missing.map { |part| I18n.t("teacher.topic_lang.#{part}", todo: status.items_total - status.items_done, total: status.items_total, locale: :it) }
+      I18n.t("teacher.topic_lang.mixed", todo: todo.join(", "), locale: :it)
+    end
+
     # The free page revisions the topic's lesson revision pins (D-290), in card order.
     def page_revisions(revision)
       ids = Pages::Embeds.revision_ids(revision.lesson_revision.body).uniq

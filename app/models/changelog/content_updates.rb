@@ -9,8 +9,11 @@ module Changelog
   module ContentUpdates
     RECENT_DAYS = 14
 
-    Update = Data.define(:decision_id, :at, :subject_key, :topic, :title_it, :old_revision_id, :new_revision_id, :reason_it, :via) do
+    Update = Data.define(:decision_id, :at, :subject_key, :topic, :title_it, :old_revision_id, :new_revision_id, :reason_it, :via, :title_target) do
       def date = at.in_time_zone.to_date
+
+      # The title the student's line shows: the target-language one when the topic's entry has the pair (D-402), else the Italian.
+      def title = title_target || title_it
     end
 
     module_function
@@ -27,13 +30,13 @@ module Changelog
         next if old_id.nil? || old_id == new_id
 
         Update.new(decision_id: decision.id, at: decision.created_at, subject_key: decision.subject&.key, topic: key, title_it: title_of(key, new_id),
-                   old_revision_id: old_id, new_revision_id: new_id, reason_it: reason_of(payload), via: payload["via"].presence || "web")
+                   old_revision_id: old_id, new_revision_id: new_id, reason_it: reason_of(payload), via: payload["via"].presence || "web", title_target: nil)
       end
       found.reverse
     end
 
     # The updates of the topics this student's course view shows. An official student never saw a topic before the teacher opened its subject, so
-    # an approval from before that is no news to him; the title is the one his course shows.
+    # an approval from before that is no news to him; the title is the one his course shows (target-language when the entry has the pair).
     def for_student(view, updates = all)
       return [] unless view
 
@@ -43,7 +46,7 @@ module Changelog
         next unless topic
         next if subject_view.mode == :official && update.decision_id < opened.fetch(subject_view.subject.id, Float::INFINITY)
 
-        update.with(title_it: topic.title_it)
+        update.with(title_it: topic.title_it, title_target: topic.title_target)
       end
     end
 

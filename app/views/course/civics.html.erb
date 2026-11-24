@@ -1,8 +1,9 @@
 <% content_for :title, t("civics.title") %>
 <%# Educazione civica (D-345): the topics of other subjects the student can see, by the three nuclei. The rows are the Materia's rows
     (status, kind, «Fuori programma»), each with the chip and the name of its subject; no progress of its own. %>
-<main class="page course" id="civics-page">
-  <%= ui_page_header(t("civics.title"), back: [ t("subjects.title"), spath("/subjects") ]) %>
+<% offered = tr_titles?(@civics.nuclei.flat_map { |nucleus| nucleus.entries.map(&:topic) }) %>
+<main class="page course" id="civics-page" <%= tr_scope_attrs(offered) %>>
+  <%= ui_page_header(t("civics.title"), back: [ t("subjects.title"), spath("/subjects") ], &tr_actions(offered)) %>
   <p class="hint" id="civics-intro"><%= t("civics.intro") %></p>
   <% @civics.nuclei.each do |nucleus| %>
     <section id="civics-<%= nucleus.key %>" class="civics-nucleus" data-nucleus="<%= nucleus.key %>" aria-labelledby="civics-<%= nucleus.key %>-title">

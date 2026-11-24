@@ -38,6 +38,7 @@ type itemShotsList struct {
 
 type itemShotsRecord struct {
 	Instance   int             `json:"instance"`
+	State      string          `json:"state"`
 	Seed       string          `json:"seed"`
 	ShownOrder json.RawMessage `json:"shown_order"`
 	Viewport   string          `json:"viewport"`
@@ -185,7 +186,7 @@ func jsonOrEmpty(raw json.RawMessage) json.RawMessage {
 
 func (e *env) printJSON(v any) error { return json.NewEncoder(e.stdout).Encode(v) }
 
-// saveItemShots writes DIR/REV/instance-NN_WxH.webp for each shot the server still holds, after clearing the instance files of an earlier fetch (a
+// saveItemShots writes DIR/REV/instance-NN_WxH.webp (instance-NN-tr_WxH.webp for the picture with the Italian translation open) for each shot the server still holds, after clearing the instance files of an earlier fetch (a
 // symlink is removed, never followed), and answers what was written and how many files the purge had removed.
 func saveItemShots(e *env, list itemShotsList, target, next string) ([]map[string]any, int, error) {
 	old, _ := filepath.Glob(filepath.Join(target, "instance-*.webp"))
@@ -209,11 +210,20 @@ func saveItemShots(e *env, list itemShotsList, target, next string) ([]map[strin
 		if err != nil {
 			return nil, 0, err
 		}
-		file := filepath.Join(target, fmt.Sprintf("instance-%02d_%sx%s.webp", s.Instance, m[1], m[2]))
+		// the picture of an instance with the Italian translation open (state "tr", D-402) sits beside the one as drawn: instance-NN-tr_WxH.webp
+		suffix := ""
+		if s.State != "" {
+			suffix = "-" + s.State
+		}
+		file := filepath.Join(target, fmt.Sprintf("instance-%02d%s_%sx%s.webp", s.Instance, suffix, m[1], m[2]))
 		if err := writeFile(file, data); err != nil {
 			return nil, 0, err
 		}
-		files = append(files, map[string]any{"instance": s.Instance, "file": file, "width": s.Width, "height": s.Height, "seed": s.Seed, "shown_order": jsonOrEmpty(s.ShownOrder)})
+		entry := map[string]any{"instance": s.Instance, "file": file, "width": s.Width, "height": s.Height, "seed": s.Seed, "shown_order": jsonOrEmpty(s.ShownOrder)}
+		if s.State != "" {
+			entry["state"] = s.State
+		}
+		files = append(files, entry)
 	}
 	return files, removed, nil
 }

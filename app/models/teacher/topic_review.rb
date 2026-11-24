@@ -33,6 +33,18 @@ module Teacher
     def lesson_revision = latest&.lesson_revision
     def lesson_body = lesson_revision&.body
     def gate = @gate ||= Approval::TopicGate.mechanical(latest)
+    # W-TOPIC-LANG-MIXED (D-402): the Italian sentence on a topic of english or spanish half rewritten in the target language, or nil.
+    def language_warning = @language_warning ||= latest && Approval::TopicGate.language_warning(latest)
+
+    # «Traduzione aperta in N esercizi su M»: the exercises of this topic in which a student opened the Italian translation (D-402), or nil.
+    # Informational: not an aid. Only real students count, not the teacher's preview.
+    def translation_line
+      return nil unless lesson
+
+      ids = PracticeServe.joins(:student).where(students: { kind: "student" }, topic_revision_id: lesson.topic_revisions.select(:id)).pluck(:id)
+      Practice::TranslationUse.line(ids)
+    end
+
     def needs_reason? = Approval::TopicGate.findings_need_reason?(latest)
 
     # The free pages the lesson revision pins (D-290): one "Ho provato ..." box each in the approval form.

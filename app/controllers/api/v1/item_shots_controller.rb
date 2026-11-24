@@ -64,7 +64,7 @@ module Api
 
       def shots(row)
         row.shots.map do |s|
-          s.slice("instance", "seed", "shown_order", "viewport", "width", "height", "scale", "sha256", "bytes").merge(
+          s.slice("instance", "state", "seed", "shown_order", "viewport", "width", "height", "scale", "sha256", "bytes").merge(
             "available" => LessonShots.exist?(s["sha256"]), "path" => "/api/v1/item-revisions/#{@revision.id}/shots/#{s['sha256']}"
           )
         end

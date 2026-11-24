@@ -1,7 +1,9 @@
 <%# «I miei schemi» (D-372): the schemas he has opened, by subject, and the number still closed in each. %>
 <% content_for :title, t("schemas.title") %>
-<main class="page course schemas-page" id="schemas-page">
+<% offered = !@closed && tr_titles?(@schemas.groups.flat_map { |group| group.open.map(&:topic) }) %>
+<main class="page course schemas-page" id="schemas-page" <%= tr_scope_attrs(offered) %>>
   <h1><%= t("schemas.title") %></h1>
+  <% if offered %><p class="tr-bar"><%= tr_page_button(offered) %></p><% end %>
   <% if @closed %>
     <%= ui_notice :info, t("today.closed"), html: { id: "course-closed" } %>
   <% else %>
@@ -17,7 +19,7 @@
             <% group.open.each do |entry| %>
               <li class="row" data-topic="<%= entry.topic.key %>" data-state="open">
                 <div class="row-main">
-                  <a class="row-stretch schema-link" href="<%= spath("/topics/#{entry.topic.key}/schema") %>" aria-label="<%= t("schemas.open_link", topic: entry.topic.title_it) %>"><%= entry.topic.title_it %></a>
+                  <a class="row-stretch schema-link" href="<%= spath("/topics/#{entry.topic.key}/schema") %>" aria-label="<%= t("schemas.open_link", topic: topic_title(entry.topic)) %>"><%= topic_title_html(entry.topic) %></a>
                   <span class="topic-meta"><%= t("topic.kind.#{entry.topic.kind}") %></span>
                 </div>
                 <span class="row-end"><%= ui_icon("next", css: "row-chev") %></span>

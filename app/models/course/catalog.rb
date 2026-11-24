@@ -14,9 +14,18 @@ module Course
   #   Course::Catalog.for(preview_student, view: :drafts)
   module Catalog
     SubjectView = Data.define(:subject, :mode, :course_revision, :released, :topics, :skills_without_topic)
-    TopicView = Data.define(:key, :kind, :title_it, :term, :minutes, :skills, :after, :topic_revision, :lesson_revision, :approved) do
+    # `lang` is the language the subject teaches ("en", "es", nil for any other subject) and `title_target` the entry's title in it (`title_en|es`,
+    # nil when the entry has no pair): the course of a subject may hold some entries paired and some not (D-402). `title_it` stays what the CLI,
+    # the API and the teacher's pages read.
+    TopicView = Data.define(:key, :kind, :title_it, :term, :minutes, :skills, :after, :topic_revision, :lesson_revision, :approved, :lang, :title_target) do
       # Outside the programme (D-324): optional, listed apart, never suggested by Oggi nor counted.
       def extra? = kind == "extra"
+
+      # The student's title: the target-language one when the entry has the pair, else the Italian (no toggle for it).
+      def title = title_target || title_it
+
+      # Whether the Italian title is a translation to offer (the entry holds both texts).
+      def title_paired? = title_target.present? && title_it.present?
     end
 
     module_function
@@ -72,8 +81,10 @@ module Course
       return nil unless revision
 
       approved = official || approvals.any? { |p| p["topic_revision_id"] == revision.id }
+      lang = Lessons::Lang.target(subject.key)
       TopicView.new(key: entry["key"], kind: entry["kind"], title_it: entry["title_it"], term: entry["term"], minutes: entry["minutes"],
-                    skills: entry["skills"], after: entry["after"], topic_revision: revision, lesson_revision: revision.lesson_revision, approved: approved)
+                    skills: entry["skills"], after: entry["after"], topic_revision: revision, lesson_revision: revision.lesson_revision, approved: approved,
+                    lang: lang, title_target: (entry["title_#{lang}"].presence if lang))
     end
 
     # The skills a topic revision practices, sorted.

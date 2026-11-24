@@ -10,7 +10,8 @@ module Validation
   # error, markup printed as text, a figure that did not draw), and takes a WebP shot of the WHOLE instance: the window is made as tall as the page for
   # the picture, so nothing is cut and the sticky action bar sits under the item as it does when the student has scrolled to the end. The bytes go to
   # the shots store (LessonShots, by content). Each shot says its instance, the seed of its shuffle and the shown order of its choices (stored ids in the
-  # order drawn), so the solver can map a position to a stored id.
+  # order drawn), so the solver can map a position to a stored id. A bilingual item (D-402) is pictured a second time for its first
+  # item_render.translation_instances instances with the Italian translation open (`?tr=1`): that shot says `state: "tr"`, the others no state.
   #
   # The caller holds the ChromeRunner session. Nothing here judges: the findings are an aid for the reviewer and never a gate; nothing writes the database.
   # Time: a budget per revision and per instance (E-ITEM-RENDER "timeout:"); infrastructure trouble (Chrome gone, the host not answering) is raised.
@@ -38,6 +39,7 @@ module Validation
       @budget = Rules.get(:item_render, :budget_seconds)
       @per_instance = Rules.get(:item_render, :instance_seconds)
       @max_shot_height = Rules.get(:item_render, :max_shot_height)
+      @translation_instances = Rules.get(:item_render, :translation_instances).to_i
     end
 
     def viewport = "#{@width}x#{@height}-#{@theme}"
@@ -49,6 +51,7 @@ module Validation
       @timings = []
       total = Items::ShotPresentation.instances(@revision).count
       rows = Items::ShotPresentation.instances(@revision).limit(@max).to_a
+      @translation = Items::ShotPresentation.translation?(@revision)
       add(nil, "the item has #{total} instances: the first #{rows.size} are pictured", "instances", code: "E-ITEM-RENDER", level: "note") if total > rows.size
       @session.context do |ctx|
         page = ctx.create_page
@@ -61,6 +64,7 @@ module Validation
               break
             end
             draw(page, row, number)
+            draw(page, row, number, translation: true) if @translation && number <= @translation_instances
           end
         ensure
           (page.close rescue nil)
@@ -74,9 +78,11 @@ module Validation
 
     def over_budget? = (@clock.call - @started) > @budget
 
-    def draw(page, row, number)
+    # One picture of one instance: as drawn, or (translation: true) the same instance again with the Italian translation open, which the host
+    # measures too (overflow with the translation shown, a text with no translation unit: the same findings, each said once).
+    def draw(page, row, number, translation: false)
       started = @clock.call
-      url = Harness.item_page_url(@token, number, theme: @theme)
+      url = Harness.item_page_url(@token, number, theme: @theme, translation: translation)
       LOAD_ATTEMPTS.times do |attempt|
         page.go_to(url)
         break if defined_in?(page)
@@ -87,14 +93,14 @@ module Validation
       answer = begin
         page.evaluate_async("window.bancoItemRender.ready.then(arguments[0])", @per_instance)
       rescue Ferrum::ScriptTimeoutError, Ferrum::TimeoutError
-        add(number, "timeout: the instance took more than #{@per_instance} s to draw", viewport)
+        add(number, "timeout: the instance took more than #{@per_instance} s to draw#{' with the translation open' if translation}", viewport)
         return
       end
       add(number, "the item did not draw: #{answer['error']}", viewport) unless answer["ok"]
       Array(answer["exceptions"]).each { |m| add(number, "exception: #{m}", viewport) }
       Array(answer["findings"]).each { |f| add(number, f["message"], f["where"], code: f["code"]) }
-      shoot(page, row, number, answer["height"].to_i)
-      @timings << { "instance" => number, "draw" => (loaded - started).round(2), "ready" => (@clock.call - loaded).round(2) }
+      shoot(page, row, number, answer["height"].to_i, state: (Items::ShotPresentation::TRANSLATION_STATE if translation))
+      @timings << { "instance" => number, "draw" => (loaded - started).round(2), "ready" => (@clock.call - loaded).round(2) }.tap { |t| t["state"] = Items::ShotPresentation::TRANSLATION_STATE if translation }
     end
 
     def defined_in?(page) = self.class.wait_defined(page, DEFINED_WAIT, @clock)
@@ -125,7 +131,7 @@ module Validation
 
     # The whole instance, WebP quality 80 at device scale 1 (width = CSS px). The window is made as tall as the page; a layout that moves with the
     # window's height (a viewport unit) is measured again once, so the picture is of the page as it stands in that window.
-    def shoot(page, row, number, height)
+    def shoot(page, row, number, height, state: nil)
       height = measured(page, height)
       page.command("Emulation.setDeviceMetricsOverride", width: @width, height: height.clamp(200, @max_shot_height), deviceScaleFactor: 1, mobile: false)
       settled = page.evaluate("window.bancoItemRender.measure()").to_i
@@ -140,7 +146,7 @@ module Validation
       height = height.clamp(200, @max_shot_height)
       data = page.command("Page.captureScreenshot", format: "webp", quality: 80, clip: { x: 0, y: 0, width: @width, height: height, scale: 1 })["data"]
       bytes = Base64.decode64(data)
-      meta = Items::ShotPresentation.meta(Items::ShotPresentation.call(@revision, row, number))
+      meta = Items::ShotPresentation.meta(Items::ShotPresentation.call(@revision, row, number), state: state)
       @shots << meta.merge("viewport" => viewport, "width" => @width, "height" => height, "scale" => 1, "sha256" => @store.put(bytes), "bytes" => bytes.bytesize)
       # back to the phone's window for the next instance
       page.command("Emulation.setDeviceMetricsOverride", width: @width, height: @height, deviceScaleFactor: 1, mobile: false)

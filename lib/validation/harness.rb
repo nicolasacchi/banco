@@ -80,9 +80,10 @@ module Validation
       Digest::SHA256.hexdigest([ File.read(ITEM_HOST), File.read(ITEM_SCRIPT), File.read(LESSON_RAW_MARKUP), JSON.generate(Rules.get(:item_render)), *sources ].join("\n"))
     end
 
-    # Instance n of the item revision behind the token, in the cream theme (the student's default) unless asked.
-    def item_page_url(token, number, theme: "cream")
-      "#{base_url}/h/#{token}/item-render.html?n=#{Integer(number)}&theme=#{theme}"
+    # Instance n of the item revision behind the token, in the cream theme (the student's default) unless asked; `translation: true` draws it with the
+    # Italian translation open (`?tr=1`, D-402: the host sets data-translation="on" on the item box).
+    def item_page_url(token, number, theme: "cream", translation: false)
+      "#{base_url}/h/#{token}/item-render.html?n=#{Integer(number)}&theme=#{theme}#{'&tr=1' if translation}"
     end
 
     # The host page of a free page validation (D-290, SPEC B7): token kind prev (a page revision).

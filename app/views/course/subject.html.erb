@@ -4,8 +4,9 @@
     topic's place in its whole section, also when «Solo quello che manca» hides the done ones. %>
 <% programme = course_view.programme_topics(@subject_view); extra = course_view.extra_topics(@subject_view)
    progress = course_view.progress(@subject_view); missing_only = only_missing? %>
-<main class="page course" style="--subject: var(--accent-<%= key %>, var(--soft-primary))">
-  <%= ui_page_header(@subject_view.subject.name_it, back: [ t("subjects.title"), spath("/subjects") ]) %>
+<% offered = tr_titles?(@subject_view.topics) %>
+<main class="page course" style="--subject: var(--accent-<%= key %>, var(--soft-primary))" <%= tr_scope_attrs(offered) %>>
+  <%= ui_page_header(@subject_view.subject.name_it, back: [ t("subjects.title"), spath("/subjects") ], &tr_actions(offered)) %>
   <section class="card subject-summary" id="subject-summary" aria-label="<%= @subject_view.subject.name_it %>">
     <div class="subject-line">
       <%= subject_chip(key) %>

@@ -20,7 +20,7 @@ import (
 var lessonKeyRe = regexp.MustCompile(`^(ripasso|ponte|lezione|extra)\.[a-z_]+\.[a-z0-9]+(-[a-z0-9]+)*$`)
 
 // the further states of a card in the render check's shots (D-311), part of a file name
-var shotStateRe = regexp.MustCompile(`^(ex[0-9]+|open|ex[0-9]+-open)$`)
+var shotStateRe = regexp.MustCompile(`^(ex[0-9]+|open|tr|ex[0-9]+-open|ex[0-9]+-tr)$`)
 
 func runCourseOpen(e *env, a []string) error {
 	return runSubject(e, subjectCommands["course open"], a)
@@ -245,7 +245,7 @@ func runLessonShots(e *env, args []string) error {
 		file := map[string]any{"card": s.Card, "viewport": s.Viewport}
 		if s.State != "" {
 			if !shotStateRe.MatchString(s.State) {
-				return newErr(ExitServer, "E-HTTP", "state", "the server named a shot state "+strconv.Quote(s.State)+" that is not exN, open or exN-open", "banco health")
+				return newErr(ExitServer, "E-HTTP", "state", "the server named a shot state "+strconv.Quote(s.State)+" that is not exN, open, tr, exN-open or exN-tr", "banco health")
 			}
 			name = fmt.Sprintf("card-%02d-%s_%s.webp", s.Card, s.State, s.Viewport)
 			file["state"] = s.State

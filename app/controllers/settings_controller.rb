@@ -4,6 +4,6 @@ class SettingsController < ApplicationController
   include ActingStudent
 
   def show
-    @preferences = Diagnosis::Preferences.for(acting_student).merge(language: Diagnosis::Preferences.language(acting_student))
+    @preferences = Diagnosis::Preferences.for(acting_student).merge(language: Diagnosis::Preferences.language(acting_student), translation: Diagnosis::Preferences.translation(acting_student))
   end
 end

@@ -28,6 +28,8 @@
     </p>
     <% if review.approved_latest? && (words = Course::Decisions.attestation(review.key)) %><p class="hint" id="topic-attested" data-attested><%= t("teacher.topic.attested", words: words) %></p><% end %>
     <% if review.intro_it %><p class="hint"><%= review.intro_it %></p><% end %>
+    <% if (warning = review.language_warning) %><%= ui_notice :info, warning, html: { id: "topic-lang-mixed", data: { warning: "W-TOPIC-LANG-MIXED" } } %><% end %>
+    <% if (line = review.translation_line) %><p class="hint" id="topic-translation-opened" data-translation-opened><%= line %></p><% end %>
 
     <div data-controller="topic-review" id="guided-review"
          data-topic-review-url-value="<%= teacher_topic_seen_path(revision_id: latest.id) %>"

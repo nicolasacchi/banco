@@ -1,8 +1,9 @@
-<% content_for :title, @topic.title_it %>
+<% content_for :title, topic_title(@topic) %>
+<% offered = @topic.title_paired? || @intro_tr.present? || @topic.skills.any? { |skill| course_view.label_translation(skill) } %>
 <% skill_states = @topic.skills.map { |skill| course_view.state(skill) } %>
 <% done_count = skill_states.count { |s| Practice::Today::DONE.include?(s.state) } %>
-<main class="page course topic-page" style="--subject: var(--accent-<%= @subject_view.subject.key %>, var(--soft-primary))">
-  <%= ui_page_header(@topic.title_it, back: [ @subject_view.subject.name_it, spath("/subjects/#{@subject_view.subject.key}") ]) %>
+<main class="page course topic-page" style="--subject: var(--accent-<%= @subject_view.subject.key %>, var(--soft-primary))" <%= tr_scope_attrs(offered, topic: @topic) %>>
+  <%= ui_page_header(topic_title_html(@topic), back: [ @subject_view.subject.name_it, spath("/subjects/#{@subject_view.subject.key}") ], &tr_actions(offered)) %>
   <p class="topic-meta cluster">
     <%= subject_chip(@subject_view.subject.key) %>
     <span><%= t("topic.kind.#{@topic.kind}") %></span>
@@ -17,7 +18,7 @@
       </ul>
     </section>
   <% end %>
-  <% if @intro %><p id="intro"><%= @intro %></p><% end %>
+  <% if @intro %><p id="intro" lang="<%= @topic.lang %>"><%= @intro %></p><%= tr_node(@intro_tr, tag: :p) if @intro_tr %><% end %>
 
   <ol class="topic-steps" aria-label="<%= t("topic.steps") %>">
     <li class="topic-step card<%= ' action' unless @read %>" id="step-lesson" data-comment-anchor="step_lesson" data-state="<%= @read ? 'done' : 'todo' %>">
@@ -48,7 +49,7 @@
           <% state = course_view.state(skill) %>
           <li class="skill" data-skill="<%= skill %>" data-state="<%= state.state %>" data-comment-anchor="skill:<%= i + 1 %>">
             <div class="skill-main">
-              <span class="skill-name"><%= course_view.label(skill) %></span>
+              <span class="skill-name"><span <%= tag.attributes(lang: @topic.lang) if course_view.label_translation(skill) %>><%= course_view.label(skill) %></span><% if (italian = course_view.label_translation(skill)) %><%= tr_node(italian) %><% end %></span>
               <span class="topic-why"><%= Practice::Messages.why_it(state.why) %></span>
               <% missing = Practice::Messages.missing_it(state.why) %>
               <% if missing %><span class="topic-why topic-missing"><%= missing %></span><% end %>

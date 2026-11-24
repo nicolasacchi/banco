@@ -65,7 +65,7 @@
           <div class="subject-line">
             <%= subject_chip(@resume[0].subject.key) %>
             <div class="subject-text">
-              <h3 class="now-title"><%= topic.title_it %></h3>
+              <h3 class="now-title"><%= topic_title_html(topic) %></h3>
               <span class="topic-meta"><%= @resume[0].subject.name_it %> · <%= t("topic.minutes", n: topic.minutes) %></span>
               <% unless topic.approved %><span class="topic-why" id="now-draft"><%= ui_tag(t("topic.draft"), icon: "info") %></span><% end %>
               <% close_line = Practice::Messages.close_line(topic.skills.map { |skill| [ course_view.label(skill), course_view.state(skill).why ] }) %>
@@ -86,7 +86,7 @@
               <div class="subject-line">
                 <%= subject_chip(row[:subject_view].subject.key) %>
                 <div class="subject-text">
-                  <a class="topic-title" href="<%= spath("/topics/#{topic.key}") %>"><%= topic.title_it %></a>
+                  <a class="topic-title" href="<%= spath("/topics/#{topic.key}") %>"><%= topic_title_html(topic) %></a>
                   <span class="topic-meta"><%= row[:subject_view].subject.name_it %> · <%= t("topic.kind.#{topic.kind}") %> · <%= t("topic.minutes", n: topic.minutes) %></span>
                 </div>
                 <%= ui_icon("next", css: "row-chev") unless big %>
@@ -134,18 +134,20 @@
         <div class="subject-line">
           <%= subject_chip(pick.subject_view.subject.key) %>
           <div class="subject-text">
-            <span class="topic-title"><%= pick.topic.title_it %></span>
+            <span class="topic-title"><%= topic_title_html(pick.topic) %></span>
             <span class="topic-meta"><%= pick.subject_view.subject.name_it %></span>
           </div>
         </div>
-        <p><%= t("schemas.review.line", topic: pick.topic.title_it) %></p>
+        <p><%= t("schemas.review.line", topic: topic_title(pick.topic)) %></p>
         <div class="button-row"><a class="button secondary" id="schema-review-link" href="<%= schema_href(pick.topic.key) %>"><%= t("schemas.review.open") %></a></div>
       </div>
     </section>
   <% end %>
 <% end %>
-<main class="page course today">
+<% offered = tr_titles?([ (@resume && @resume[1]), *@suggestions.map { |row| row[:topic] }, @schema_pick&.topic ].compact) %>
+<main class="page course today" <%= tr_scope_attrs(offered) %>>
   <h1><%= t("today.title") %></h1>
+  <% if offered %><p class="tr-bar"><%= tr_page_button(offered) %></p><% end %>
   <% if comment_unread_count.positive? %>
     <%= ui_notice :info, nil, html: { id: "comment-replies" } do %><strong><%= t("comments.today_line") %></strong> <a href="/comments"><%= t("comments.today_link") %></a><% end %>
   <% end %>

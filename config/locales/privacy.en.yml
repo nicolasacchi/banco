@@ -47,7 +47,7 @@ en:
       items:
         - "The login name that reaches us from the access portal. The password never reaches banco."
         - "Your answers to tests and exercises, with the time and how long you took, the hints and the solutions you opened."
-        - "The events of lessons and exercises: which cards you open, when, the tries you make."
+        - "The events of lessons and exercises: which cards you open, when, the tries you make and, in the English and Spanish courses, when you open the Italian translation (it does not count as a hint)."
         - "Comments and the teacher's replies, with the context of the page: which page, the words you selected, the screen size and the theme. The stars and the comments you give to exercises and lessons."
         - "Your preferences: colours and text size."
         - "The device cookie (see below)."
