@@ -1,5 +1,4 @@
 Adrián
-Alba
 Alberto
 Alejandro
 Alicia
@@ -45,7 +44,6 @@ Luis
 Manuel
 Marcos
 María
-Marina
 Mario
 Marta
 Martín
@@ -60,7 +58,6 @@ Pedro
 Pilar
 Rafael
 Raúl
-Rosa
 Rubén
 Sara
 Sergio

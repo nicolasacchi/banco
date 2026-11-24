@@ -30,6 +30,18 @@ module Banco
         "items" => { "oneOf" => [ { "type" => "null" }, { "type" => "string", "minLength" => 1, "maxLength" => 40 } ] },
         "description" => "D-402: the Italian label of each edge of `edges`, in the same order; null where the edge has no label."
       }.freeze
+      # D-402: `translate_material: false` says that the form material under it is target-only (Lessons::Bilingual::MATERIAL): an item (its root), a lesson check (a
+      # check block, a step blank or an exercise's check, all `check_spec`), a `try` exercise, a `table` block and a figure of type `table`. Only `false` is a value:
+      # a revision that has nothing to say about it translates everything.
+      MATERIAL_MARKER = { "const" => false, "description" => "D-402: the form material of this exercise (the sentence with its blank, the options and rows that are forms, the final) is target-language only, with no Italian text; the instruction, hints, messages and solution steps stay paired." }.freeze
+      MATERIAL_AT = {
+        "item" => [ [] ],
+        "lesson" => [ %w[$defs check_spec], %w[$defs exercise], %w[$defs b_table] ],
+        "diagram" => [ %w[$defs table] ]
+      }.freeze
+      # The `_it` that the schema requires of a text that can be form material (an option, an exercise's sentence, a mistake's wrong and right): there the
+      # target text is enough, `text_en` or `text_es` instead of `text_it` (the missing Italian of a text that is not material is E-LANG-PAIR-MISSING's).
+      MATERIAL_REQUIRED = { "lesson" => { "id_text" => %w[text_it], "exercise" => %w[text_it], "b_mistake" => %w[wrong_it right_it] } }.freeze
       # R2: schema => { $defs name => { property => the Italian twin's name, or [name, its own schema] when the twin is not a copy } }.
       R2 = {
         "item" => {
@@ -64,6 +76,21 @@ module Banco
           raise ArgumentError, "#{name}: no #{path.join('/')}" unless target.is_a?(Hash) && target["properties"].is_a?(Hash)
 
           target["properties"]["bilingual"] ||= MARKER.dup
+        end
+        MATERIAL_AT.fetch(name.to_s, []).each do |path|
+          target = path.empty? ? out : out.dig(*path)
+          raise ArgumentError, "#{name}: no #{path.join('/')}" unless target.is_a?(Hash) && target["properties"].is_a?(Hash)
+
+          target["properties"][Lessons::Bilingual::MARKER] ||= MATERIAL_MARKER.dup
+        end
+        MATERIAL_REQUIRED.fetch(name.to_s, {}).each do |def_name, keys|
+          node = out.dig("$defs", def_name) or raise ArgumentError, "#{name}: no $defs/#{def_name}"
+          node["required"] = Array(node["required"]) - keys
+          node.delete("required") if node["required"].empty?
+          keys.each do |key|
+            base = key.delete_suffix("_it")
+            node["allOf"] = Array(node["allOf"]) + [ { "anyOf" => [ key, *LANGS.map { |l| "#{base}_#{l}" } ].map { |k| { "required" => [ k ] } } } ]
+          end
         end
         TEACHES_AT.fetch(name.to_s, []).each do |path|
           target = path.empty? ? out : out.dig(*path)

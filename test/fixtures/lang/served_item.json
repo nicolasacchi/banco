@@ -6,12 +6,11 @@
       "stem_en": "Choose the two words for the gaps, in the right order.",
       "stem_it": "Scegli le due parole che completano la frase, nell'ordine in cui servono.",
       "instance_stem_en": "On Saturdays I ___ my bed and then I ___ the shopping with Dad.",
-      "instance_stem_it": "Il sabato io ___ il letto e poi io ___ la spesa con papà.",
       "options": [
-        { "id": "o1", "text": "do / make", "text_it": "fare / fare" },
-        { "id": "o2", "text": "make / do", "text_it": "fare / fare" },
-        { "id": "o3", "text": "do / do", "text_it": "fare / fare" },
-        { "id": "o4", "text": "make / make", "text_it": "fare / fare" }
+        { "id": "o1", "text": "do / make" },
+        { "id": "o2", "text": "make / do" },
+        { "id": "o3", "text": "do / do" },
+        { "id": "o4", "text": "make / make" }
       ],
       "answer_format_en": "Each option has two parts, split by /. The first part goes in the first gap.",
       "answer_format_it": "Ogni opzione ha due parti, divise da /. La prima parte va nel primo spazio.",
@@ -47,8 +46,7 @@
         { "text_en": "We say «make the bed».", "text_it": "Si dice «make the bed»." },
         { "text_en": "We say «do the shopping».", "text_it": "Si dice «do the shopping»." }
       ],
-      "final": "make / do",
-      "final_it": "make / do: il sabato rifaccio il letto e faccio la spesa."
+      "final": "make / do"
     }
   },
   "blank": {

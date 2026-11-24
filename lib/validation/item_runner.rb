@@ -40,6 +40,7 @@ module Validation
 
       @subject = item["subject"]
       @bilingual = Bilingual.bilingual?(item) && !Lessons::Lang.target(@subject).nil?
+      @material = @bilingual && item[Lessons::Bilingual::MARKER] == false
       ItemChecks.call(item, files: @files, context: @context, findings: @findings, grandfathered: @grandfathered)
       instances = collect(item)
       finish(item, instances)
@@ -184,7 +185,7 @@ module Validation
 
     def static(unit, item, passage: nil)
       list = Array(unit.instances)
-      checker = InstanceChecks.new(unit, context: @context, files: @files, passage: passage, bilingual: @bilingual, subject: @subject)
+      checker = InstanceChecks.new(unit, context: @context, files: @files, passage: passage, bilingual: @bilingual, subject: @subject, material: @material)
       list.each_with_index do |inst, i|
         @findings.merge!(checker.call(inst, label: "#{unit.path}/instances/#{i}"))
         ItemChecks.excluded_params(unit.body, inst, "#{unit.path}/instances/#{i}", @findings)
@@ -294,7 +295,7 @@ module Validation
         gen = phase.generate_all(1..Rules.get(:generator, :seeds))
         return [] if generator_problems(gen)
 
-        checker = InstanceChecks.new(unit, context: @context, files: @files, bilingual: @bilingual, subject: @subject)
+        checker = InstanceChecks.new(unit, context: @context, files: @files, bilingual: @bilingual, subject: @subject, material: @material)
         clean = []
         problems = 0
         gen.rows.each do |row|

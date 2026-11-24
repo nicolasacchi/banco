@@ -7,7 +7,7 @@ class Review::BilingualReviewTest < ActiveSupport::TestCase
   C = Review::Checklist
   include GradingRows
 
-  def golden = JSON.parse(Rails.root.join("test/fixtures/lang/item_choice.json").read)
+  def golden = JSON.parse(Rails.root.join("test/fixtures/lang/item_choice_translated.json").read)
 
   def revision_of(body, instance)
     create_instance(body, instance).item_revision
@@ -28,6 +28,26 @@ class Review::BilingualReviewTest < ActiveSupport::TestCase
     assert_equal "fare / fare", shown["options"].first["text_it"]
     assert_equal shown, text.review_instances.first[:display]
     assert text.bilingual?
+  end
+
+  test "an item that says translate_material: false shows the solver the target sentence and options only; the instruction keeps both layers" do
+    body = JSON.parse(Rails.root.join("test/fixtures/lang/item_choice.json").read)
+    revision = revision_of(body, body["instances"].first)
+    text = Review::ItemText.new(revision)
+    shown = text.solver_instances.first[:display]
+    assert text.material_off?
+    assert_equal "On Saturdays I ___ my bed and then I ___ the shopping with Dad.", shown["stem_en"]
+    assert_not shown.key?("stem_it"), "the sentence is not translated: stem_it must not read as its translation"
+    assert_equal body["prompt"]["stem_it"], shown["prompt_stem_it"]
+    assert_equal body["prompt"]["stem_en"], shown["prompt_stem_en"]
+    assert_equal body["instances"][0]["display"]["options"].map { |o| o["text"] }, shown["options"].map { |o| o["text"] }
+    assert_empty shown["options"].filter_map { |o| o["text_it"] }
+    stored = body["instances"].first.deep_dup
+    stored["display"]["options"][0]["text_it"] = "fare"
+    stored["display"]["stem_it"] = "Il sabato io ___."
+    leaked = Review::ItemText.new(revision_of(body.merge("skill" => "english.make-do-b"), stored)).solver_instances.first[:display]
+    assert_not leaked.key?("stem_it"), "whatever is stored, the solver reads no Italian of the material"
+    assert_empty leaked["options"].filter_map { |o| o["text_it"] }
   end
 
   test "a legacy item is shown exactly as before: no sibling key appears" do

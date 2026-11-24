@@ -34,10 +34,24 @@ class BilingualTest < ActiveSupport::TestCase
     assert_not Lessons::Lang.italian?("The cat and the dog"), "the Italian test does not fire on English"
   end
 
+  test "TARGET_WORDS holds no word that is also Italian: del, es and son (an Italian text quoting «-es» must not be taken for Spanish)" do
+    italian = Lessons::Lang::ITALIAN_FUNCTION_WORDS
+    Lessons::Lang::TARGET_WORDS.each_value { |words| assert_empty words & italian }
+    %w[del es son].each { |w| assert_not_includes Lessons::Lang::TARGET_WORDS["es"], w }
+    assert_not Validation::Bilingual.translation_lang?("Con -es il plurale si aggiunge una sillaba, come in «bus» e «autobús»: del singolare.", "es")
+    assert_not Validation::Bilingual.translation_lang?("La parola «the book» e «my brother and the dog» si legge così.", "en")
+  end
+
+  test "italian? does not count what is quoted: a [[it:..]] span, «...» or a span of a language" do
+    assert_not Lessons::Lang.italian?("Say [[it:c'è]] and [[it:il gatto]] in English: there is.")
+    assert_not Lessons::Lang.italian?("The Italian «il gatto che è nero» is a black cat.")
+    assert Lessons::Lang.italian?("Il gatto che è nero.")
+  end
+
   # ---- the walker ---------------------------------------------------------------------------------------------------------
 
   test "pairs of the practice fixtures: every text has both sides, in the pointer order of the document" do
-    %w[item_choice item_blank].each do |name|
+    %w[item_choice_translated item_blank].each do |name|
       found = B.pairs(fixture("#{name}.json"), "en").to_a
       assert_operator found.size, :>=, 10, name
       assert found.all? { |_, _, target, italian| target.is_a?(String) && italian.is_a?(String) }, "#{name}: #{found.reject { |f| f[2] && f[3] }.inspect}"
@@ -45,7 +59,7 @@ class BilingualTest < ActiveSupport::TestCase
   end
 
   test "pairs names the pointer of the target field, the base and both texts; lists pair by index" do
-    found = B.pairs(fixture("item_choice.json"), "en").to_a
+    found = B.pairs(fixture("item_choice_translated.json"), "en").to_a
     assert_includes found, [ "/prompt/stem_en", "stem", "Choose the two words for the gaps, in the right order.",
                              "Scegli le due parole che completano la frase, nell'ordine in cui servono." ]
     assert_includes found, [ "/hints_en/1", "hints", "Think of the nouns: a bed, the shopping. Which verb is the usual partner of each one?",
@@ -56,7 +70,7 @@ class BilingualTest < ActiveSupport::TestCase
   end
 
   test "R2: the bare key of an option, a solution's final, a table and a quote is the target; its twin is <key>_it" do
-    found = B.pairs(fixture("item_choice.json"), "en").to_a
+    found = B.pairs(fixture("item_choice_translated.json"), "en").to_a
     assert_includes found, [ "/instances/0/display/options/0/text", "text", "make / do", "fare / fare" ]
     assert_includes found, [ "/instances/1/solution/final", "final", "makes / do", "makes / do: la mamma fa una torta e io faccio i compiti." ]
     doc = { "instances" => [ { "display" => { "table" => { "header" => [ "Verb", "Past" ], "header_it" => [ "Verbo", "Passato" ], "rows" => [ [ "go", "went" ] ], "rows_it" => [ [ "andare", "andò" ] ] },
@@ -101,7 +115,7 @@ class BilingualTest < ActiveSupport::TestCase
   test "pairs of the lesson fixtures: every text has both sides" do
     %w[projected_lesson.json projected_lesson_es.json].zip(%w[en es]).each do |name, lang|
       found = B.pairs(fixture(name), lang).to_a
-      assert_operator found.size, :>=, 15, name
+      assert_operator found.size, :>=, 12, name
       assert_empty found.reject { |_, _, target, italian| target && italian }, name
     end
   end
@@ -128,7 +142,7 @@ class BilingualTest < ActiveSupport::TestCase
     text, check = card["blocks"]
     assert_equal "Dopo un verbo modale il verbo che segue non cambia: niente -s, niente to.", text["tr"][text["text_it"]]
     assert_equal %w[play plays], check["options"].map { |o| o["text_it"] }
-    assert_equal({ "My sister can ___ the guitar." => "Mia sorella sa ___ la chitarra.", "play" => "suonare", "plays" => "suona" }, check["tr"])
+    assert_equal({ "Which form goes after can?" => "Quale forma va dopo can?" }, check["tr"], "the options are form material: no entry in tr")
     assert_nil check["prompt_en"], "no target sibling is left once folded"
   end
 
@@ -139,8 +153,10 @@ class BilingualTest < ActiveSupport::TestCase
     assert_equal "verbo modale", served["tr"]["modal verb"]
     try = served["cards"][1]["blocks"][0]
     assert_equal "Prova tu", served["cards"][1]["tr"]["Try it"]
-    assert_equal "Dovresti ___ più acqua.", try["tr"]["You should ___ more water."]
-    assert_equal "bere", try["tr"]["drink"]
+    assert_nil try["tr"]["You should ___ more water."], "the exercise's sentence is form material: no translation"
+    assert_nil try["tr"]["drink"]
+    assert_equal "You should ___ more water.", try["exercises"][0]["text_it"], "the target text is in the slot the renderer reads"
+    assert_equal false, try["exercises"][0]["translate_material"]
     assert_nil served["cards"][1]["tr"]["drink"]
   end
 
@@ -188,7 +204,7 @@ class BilingualTest < ActiveSupport::TestCase
   # ---- the Italian layer --------------------------------------------------------------------------------------------------
 
   test "italian_layer of an item: the bare keys take the Italian, the R1 keys keep theirs and lose the target" do
-    item = fixture("item_choice.json")
+    item = fixture("item_choice_translated.json")
     layer = B.italian_layer(item)
     display = layer["instances"][0]["display"]
     assert_equal "Il sabato io ___ il letto e poi io ___ la spesa con papà.", display["stem_it"]
@@ -221,6 +237,55 @@ class BilingualTest < ActiveSupport::TestCase
     before = Marshal.load(Marshal.dump(item))
     B.italian_layer(item)
     assert_equal before, item
+  end
+
+  # ---- form material (D-402) ------------------------------------------------------------------------------------------------------
+
+  test "form material has no pair: the instance stem, the options, the final of an item that says translate_material: false" do
+    item = fixture("item_choice.json")
+    assert_equal false, item["translate_material"]
+    found = B.pairs(item, "en").map { |pointer, base, _t, _i| [ pointer, base ] }
+    assert_includes found, [ "/prompt/stem_en", "stem" ], "the instruction stays paired"
+    assert_includes found, [ "/hints_en/0", "hints" ]
+    assert_includes found, [ "/instances/0/solution/steps/1/text_en", "text" ], "a solution step stays paired"
+    assert_empty found.select { |pointer, _| pointer.include?("/display/") || pointer.end_with?("/final") }, "no pair for the sentence, the options, the final"
+    material = B.material_fields(item, "en").map { |pointer, base, tkey, ikey| [ pointer, base, tkey, ikey ] }
+    assert_includes material, [ "/instances/0/display", "stem", "stem_en", nil ]
+    assert_empty material.select { |_, _, _, ikey| ikey }, "no Italian beside the material"
+    assert_includes B.material_pointers(item, "en"), "/instances/1/display/stem_en"
+  end
+
+  test "without the marker the same fields are pairs, and a marker only counts for what is under it" do
+    translated = fixture("item_choice_translated.json")
+    assert_empty B.material_fields(translated, "en").to_a
+    assert_includes B.pairs(translated, "en").map { |_, base, _t, _i| base }, "final"
+    below = B.pairs(fixture("item_choice.json")["instances"][0], "en", "/instances/0", false, true).map { |pointer, *| pointer } # a walk that starts below the root says it with `material`
+    assert_includes below, "/instances/0/solution/steps/0/text_en"
+    assert_empty below.grep(/display|final/)
+  end
+
+  test "a lesson mistake block's wrong and right are material with no marker; its why is a pair; a table says it with the marker" do
+    mistake = { "type" => "mistake", "group_en" => "The -s", "group_it" => "La -s", "wrong_en" => "He play.", "right_en" => "He plays.", "why_en" => "He takes -s.", "why_it" => "He prende -s." }
+    assert_equal %w[group why], B.pairs(mistake, "en").map { |_, base, _, _| base }
+    assert_equal %w[right wrong], B.material_fields(mistake, "en").map { |_, base, _, _| base }.sort
+    served = B.fold({ "cards" => [ { "n" => 1, "blocks" => [ mistake ] } ] }, "en")["cards"][0]["blocks"][0]
+    assert_equal "He play.", served["wrong_it"]
+    assert_equal "He plays.", served["right_it"]
+    assert_equal({ "He takes -s." => "He prende -s.", "The -s" => "La -s" }, served["tr"])
+    table = { "type" => "table", "translate_material" => false, "caption_en" => "Forms", "caption_it" => "Forme", "header" => [ "I", "he" ], "rows" => [ [ "have", "has" ] ] }
+    assert_equal %w[caption], B.pairs(table, "en", "/cards/0/blocks/0").map { |_, base, _, _| base }
+    assert_empty B.material_fields(table.except("translate_material"), "en", "/cards/0/blocks/0").to_a, "a table with no marker pairs its cells"
+  end
+
+  test "italian_layer of a material item has no stem and keeps the bare options and final the student reads" do
+    item = fixture("item_choice.json")
+    layer = B.italian_layer(item)
+    display = layer["instances"][0]["display"]
+    assert_nil display["stem_en"]
+    assert_nil display["stem_it"]
+    assert_equal item["instances"][0]["display"]["options"].map { |o| o["text"] }, display["options"].map { |o| o["text"] }
+    assert_equal "make / do", layer["instances"][0]["solution"]["final"]
+    assert_equal "Scegli le due parole che completano la frase, nell'ordine in cui servono.", layer["prompt"]["stem_it"]
   end
 
   # ---- the rules and the codes --------------------------------------------------------------------------------------------

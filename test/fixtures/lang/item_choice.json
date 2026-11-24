@@ -4,6 +4,7 @@
   "kind": "practice_item",
   "subject": "english",
   "bilingual": true,
+  "translate_material": false,
   "skill": "english.make-do",
   "component": "choice",
   "level": 2,
@@ -45,12 +46,11 @@
     {
       "display": {
         "stem_en": "On Saturdays I ___ my bed and then I ___ the shopping with Dad.",
-        "stem_it": "Il sabato io ___ il letto e poi io ___ la spesa con papà.",
         "options": [
-          { "id": "o1", "text": "make / do", "text_it": "fare / fare" },
-          { "id": "o2", "text": "do / make", "text_it": "fare / fare" },
-          { "id": "o3", "text": "make / make", "text_it": "fare / fare" },
-          { "id": "o4", "text": "do / do", "text_it": "fare / fare" }
+          { "id": "o1", "text": "make / do" },
+          { "id": "o2", "text": "do / make" },
+          { "id": "o3", "text": "make / make" },
+          { "id": "o4", "text": "do / do" }
         ]
       },
       "answer": "o1",
@@ -64,19 +64,17 @@
           { "text_en": "We say «make the bed».", "text_it": "Si dice «make the bed»." },
           { "text_en": "We say «do the shopping».", "text_it": "Si dice «do the shopping»." }
         ],
-        "final": "make / do",
-        "final_it": "make / do: il sabato rifaccio il letto e faccio la spesa."
+        "final": "make / do"
       }
     },
     {
       "display": {
         "stem_en": "On Sunday Mum ___ a cake and I ___ my homework.",
-        "stem_it": "La domenica la mamma ___ una torta e io ___ i compiti.",
         "options": [
-          { "id": "o1", "text": "makes / do", "text_it": "fa / faccio" },
-          { "id": "o2", "text": "does / make", "text_it": "fa / faccio" },
-          { "id": "o3", "text": "makes / make", "text_it": "fa / faccio" },
-          { "id": "o4", "text": "does / do", "text_it": "fa / faccio" }
+          { "id": "o1", "text": "makes / do" },
+          { "id": "o2", "text": "does / make" },
+          { "id": "o3", "text": "makes / make" },
+          { "id": "o4", "text": "does / do" }
         ]
       },
       "answer": "o1",
@@ -89,8 +87,7 @@
         "steps": [
           { "text_en": "We say «make a cake» and «do homework».", "text_it": "Si dice «make a cake» e «do homework»." }
         ],
-        "final": "makes / do",
-        "final_it": "makes / do: la mamma fa una torta e io faccio i compiti."
+        "final": "makes / do"
       },
       "hints_en": [
         "The first gap goes with Mum: look at the verb ending.",

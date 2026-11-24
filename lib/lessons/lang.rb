@@ -13,11 +13,23 @@ module Lessons
     # Function words that Italian has and neither English nor Spanish has: two of them in a text under an _en or _es key is Italian.
     ITALIAN_WORDS = %w[il gli della dello delle degli nella nelle sono perché anche questo questa quella quello che è].freeze
     # The mirror of ITALIAN_WORDS (D-402): function words of the target language that Italian does not have, so two of them in a text under an
-    # `_it` key mean that the "translation" is not Italian (E-LANG-TRANSLATION-LANG). Chosen not to collide with Italian: no a, in, me, come, con, una, al, lo.
+    # `_it` key mean that the "translation" is not Italian (E-LANG-TRANSLATION-LANG). No word that is also Italian: not a, in, me, come, con, una, al, lo,
+    # and not «del» (Spanish and Italian), «es» (Spanish «es», the ending «-es», Italian «es.» for esempio) or «son» (Spanish, archaic Italian).
+    # test/lib/lessons/lang_test.rb checks both lists against ITALIAN_WORDS and ITALIAN_FUNCTION_WORDS.
     TARGET_WORDS = {
       "en" => %w[the and with this that these those you your they their have has had will would not from what which when because his her was were does did].freeze,
-      "es" => %w[el los las unos unas es son está están muy también yo usted ustedes que del por para donde cuando porque tengo tiene hay].freeze
+      "es" => %w[el los las unos unas está están muy también yo usted ustedes que por para donde cuando porque tengo tiene hay].freeze
     }.freeze
+    # Italian function words, a superset of ITALIAN_WORDS (D-402): the leak scans of the Italian layer never take one of them for the key (the Italian
+    # «perché» of «porque» is not a leak of it); a needle of fewer than DISTINCT_MIN letters is never distinctive either.
+    ITALIAN_FUNCTION_WORDS = (ITALIAN_WORDS + %w[
+      a ad al allo alla alle ai agli col con da dal dallo dalla dalle dai dagli di del dei dentro dopo e ed fra tra in nel nei su sul sulla sulle per
+      un uno una lo la le l i mi ti si ci vi ne lui lei noi voi loro io tu egli ella esso essa non no sì ma o oppure se come dove quando quale quali
+      quanto quanta quanti quante cosa chi cui mentre poi prima ora già ancora sempre mai molto poco più meno tutto tutta tutti tutte ogni altro altra
+      altri altre stesso stessa stessi stesse ho hai ha abbiamo avete hanno sei siamo siete era erano sarà saranno può possono deve devono fa fanno
+      va vanno sta stanno qui qua là lì così allora quindi però perciò dunque ecco
+    ]).freeze
+    DISTINCT_MIN = 5
     # The languages of a pair: the siblings `<base>_en` and `<base>_es` (Latin keys are quoted words, never a translated text).
     PAIR_LANGS = TARGET_OF.values.freeze
 
@@ -47,9 +59,15 @@ module Lessons
 
     # Whether +text+ is Italian rather than the language of its key (two distinct Italian-only function words).
     def italian?(text)
-      words = text.to_s.downcase.scan(/\p{L}+/)
+      words = quoted_out(text).downcase.scan(/\p{L}+/)
       (words & ITALIAN_WORDS).size >= 2
     end
+
+    # Words that are quoted, not said: «...», "...", a [[it:..]] span (Italian quoted inside target text, D-402), a span of a language, a code span.
+    QUOTED = /«[^»]*»|"[^"]*"|“[^”]*”|\[\[(?:it|en|es|la|code):.*?\]\](?!\])/m
+
+    # +text+ without what it quotes: the words that the language of a text is told from.
+    def quoted_out(text) = text.to_s.gsub(QUOTED, " ")
 
     # +text+ as the Italian lint reads it, and the foreign pieces it leaves out: [italian, [[lang, words]]]. A span of another language
     # and a code span stand for one word ("m", like a formula); in a lesson of a language subject (+target+) a colour role span is

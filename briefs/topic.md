@@ -38,6 +38,7 @@ Before you write, search what exists: `banco search "WORDS" --subject KEY` finds
 state with `banco topics list --subject KEY` and `banco topic open KEY`.
 
 - `key` is a topic of the subject's latest course map (`E-TOPIC-UNKNOWN`).
+- **english and spanish (D-402).** A topic is rewritten as a whole: `"bilingual": true` with `intro_en` (or `intro_es`) beside `intro_it`, pinning a bilingual lesson and bilingual items. The title of the topic in the course map is a pair `title_en|title_es` + `title_it` in the **course revision** (`banco course open` / submit): a topic file cannot write it, and until the course revision has it `W-TOPIC-LANG-MIXED` warns (shown, never blocking).
 - `"latest"` resolves when you submit: the lesson to its newest revision, an item to its newest
   **passed** revision. The stored topic holds integers only, and the answer echoes them (`stored`).
   Pin a number when you mean a specific revision. Items keep their order in the file: that is the

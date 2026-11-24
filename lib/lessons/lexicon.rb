@@ -9,6 +9,7 @@ module Lessons
   module Lexicon
     DIR = File.expand_path("../../config/banco/lexicon", __dir__)
     LANGS = %w[en es].freeze
+    EXTRA_LISTS = %w[grammar basic].freeze
     WORD = /\p{L}[\p{L}'’]*/
 
     module_function
@@ -20,12 +21,23 @@ module Lessons
       (@sets ||= {})[[ lang, top ]] ||= @lists[lang].first(top).to_set
     end
 
-    # Whether +word+ (any case) or a plain form of it is in the first 3000 words of +lang+.
+    # Whether +word+ (any case) or a plain form of it is in the first 3000 words of +lang+, or among the words of the language that its two allowlists
+    # add (D-402): the metalanguage of a language lesson (`<lang>_grammar.txt`: verb, singular, sílaba, tilde) and the beginner words that the frequency
+    # list lacks (`<lang>_basic.txt`: thirteen, grandad, pen, lección).
     def known?(lang, word)
       return true unless LANGS.include?(lang)
 
       list = words(lang)
-      forms(lang, word.downcase.tr("’", "'")).any? { |f| list.include?(f) }
+      extra = extras(lang)
+      forms(lang, word.downcase.tr("’", "'")).any? { |f| list.include?(f) || extra.include?(f) }
+    end
+
+    # The words of `<lang>_grammar.txt` and `<lang>_basic.txt` (one word to a line, `#` comments), lower case, as a set.
+    def extras(lang)
+      (@extras ||= {})[lang] ||= EXTRA_LISTS.flat_map do |kind|
+        path = File.join(DIR, "#{lang}_#{kind}.txt")
+        File.exist?(path) ? File.readlines(path, chomp: true).reject { |l| l.strip.empty? || l.start_with?("#") }.flat_map { |l| l.downcase.tr("’", "'").split } : []
+      end.to_set.freeze
     end
 
     def forms(lang, w)

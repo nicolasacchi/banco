@@ -55,6 +55,24 @@ class ItemsPartBilingualTest < ActiveSupport::TestCase
     end
   end
 
+  test "form material is served with no Italian, whatever is stored; a translated choice keeps the Italian of its sentence and options" do
+    body = item("choice")
+    display = display_of("choice", body)
+    display = display.merge("stem_it" => "Il sabato io ___ il letto.", "options" => display["options"].map { |o| o.merge("text_it" => "fare") })
+    part = Items::Part.new(subject: Subject.new("english")).call(body, "choice", display)
+    assert_nil part[:instance_stem_it]
+    assert_equal "On Saturdays I ___ my bed and then I ___ the shopping with Dad.", part[:instance_stem_en]
+    assert_empty part[:options].flat_map(&:keys) & %w[text_it]
+    assert_equal body["prompt"]["stem_it"], part[:stem_it], "the instruction keeps its Italian"
+    sub = Items::Text.inherit_material(body, { "id" => "a", "prompt" => {} })
+    assert_equal false, sub["translate_material"], "a sub item of a testlet inherits the marker"
+
+    translated = JSON.parse(File.read(Rails.root.join("test/fixtures/lang/item_choice_translated.json")))
+    shown = Items::Part.new(subject: Subject.new("english")).call(translated, "choice", translated["instances"][0]["display"])
+    assert_equal "Il sabato io ___ il letto e poi io ___ la spesa con papà.", shown[:instance_stem_it]
+    assert_equal [ "fare / fare" ] * 4, shown[:options].map { |o| o["text_it"] }
+  end
+
   test "the chrome sentences stay one sentence in the page's language, whatever the item" do
     body = item("choice")
     assert_equal({ message_it: I18n.t("practice.correct") }, Practice::Messages.feedback_keys(:correct, body["error_catalogue"][0]))

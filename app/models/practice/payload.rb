@@ -16,7 +16,7 @@ module Practice
     def solution(instance)
       s = Instances.solution(instance)
       out = { steps: Array(s["steps"]).map { |st| Items::Text.pair(st, "text").merge(math: st["math"]).compact }, final: s["final"] }
-      out[:final_it] = s["final_it"] if s["final_it"]
+      out[:final_it] = s["final_it"] if s["final_it"] && !Items::Text.material_off?(Instances.body(instance))
       out.merge(passage(instance))
     end
 

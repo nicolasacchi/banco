@@ -220,11 +220,14 @@ module Lessons
       return (steps ? { n: exercise["n"], steps: steps.map { |s| s.slice("tag", "do_it", "why_it") } } : { n: exercise["n"], solution_it: exercise["solution_it"] }) unless bilingual
 
       out = if steps
-        { "n" => exercise["n"], "steps" => steps.map { |s| s.slice(*StudentBody.wide(%w[tag do_it why_it])) } }
+        Bilingual.fold({ "n" => exercise["n"], "steps" => steps.map { |s| s.slice(*StudentBody.wide(%w[tag do_it why_it])) } }, nil).except("lang")
       else
-        { "n" => exercise["n"] }.merge(exercise.slice(*StudentBody.wide(%w[solution_it final_it])))
+        # the exercise sits where the fold expects it (`/exercises/N`), so that a `final` that is form material (translate_material: false) goes to the `final_it` slot with no
+        # Italian, as the page reads it
+        wrapped = Bilingual.fold({ "exercises" => [ { "n" => exercise["n"] }.merge(exercise.slice(*StudentBody.wide(%w[solution_it final_it]), Bilingual::MARKER)) ] }, nil)
+        wrapped["exercises"].first.except(Bilingual::MARKER).merge(wrapped.slice("tr"))
       end
-      Bilingual.fold(out, nil).except("lang").transform_keys(&:to_sym)
+      out.transform_keys(&:to_sym)
     end
   end
 end

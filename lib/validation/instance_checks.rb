@@ -26,14 +26,16 @@ module Validation
 
     # bilingual: the revision is a bilingual one (D-402): +unit+ and every instance are read on two layers, the target text under its legacy
     # `_it` key (what every check below was written for) and the Italian translation, scanned for the leaks of the key; +subject+ names the
-    # language (a testlet's sub item has no subject of its own).
-    def initialize(unit, context:, files: {}, passage: nil, bilingual: false, subject: nil)
+    # language (a testlet's sub item has no subject of its own). material: the item says `translate_material: false` (its root): the instance sentence,
+    # the options and the final are target-only, so the Italian layer has none of them.
+    def initialize(unit, context:, files: {}, passage: nil, bilingual: false, subject: nil, material: false)
       @passage = passage
       @unit = unit
       @context = context
       @files = files
       @subject = subject || unit.body["subject"]
       @lang = bilingual ? Lessons::Lang.target(@subject) : nil
+      @material = material
       layer_unit if @lang
     end
 
@@ -41,12 +43,12 @@ module Validation
       return run(inst, label: label, seed: seed, generated: generated) unless @lang && inst["display"].is_a?(Hash) && !inst["answer"].nil?
 
       renamed = @renamed.dup
-      found = run(Bilingual.target_layer(inst, @lang, "", renamed), label: label, seed: seed, generated: generated, layered: true)
+      found = run(Bilingual.target_layer(inst, @lang, "", renamed, false, @material), label: label, seed: seed, generated: generated, layered: true)
       f = Findings.new
       found.each { |x| f.add(x.code, Bilingual.author_pointer(x.field, @lang, renamed), x.message, **x.detail.except(:seeds), seed: x.detail[:seeds]&.first) }
       generated_layers(inst, label, seed, f) if generated
       italian = Findings.new
-      @italian.scan_italian(Lessons::Bilingual.italian_layer(inst), target_key(inst), label, seed, italian)
+      @italian.scan_italian(Lessons::Bilingual.italian_layer(inst, "", false, @material), target_key(inst), label, seed, italian)
       italian.each { |x| f.add(x.code, x.field, "in the Italian translation: #{x.message}", **x.detail.except(:seeds), rule: "it-#{x.detail[:rule]}", seed: x.detail[:seeds]&.first) }
       f
     end
@@ -54,7 +56,10 @@ module Validation
     # The Italian layer of one instance: what the student reads with the translation open must not hold the key either (§4.2 rule 5). The key is
     # looked for in the Italian text of the key option (a choice) and in the target key; the supports, the hints and the stored-order phrases
     # are read as the Italian they are.
+    # A needle of the Italian layer is distinctive (Lessons::Lang::DISTINCT_MIN letters, not an Italian function word): the translation of «porque» and
+    # of «por qué» is «perché», which is no leak of either, and an Italian reply says «che» and «quale» as every text does.
     def scan_italian(layer, target_text, label, seed, f)
+      @distinct = true
       display = layer["display"]
       answer = layer["answer"]
       return unless display.is_a?(Hash) && !answer.nil?
@@ -124,9 +129,9 @@ module Validation
     def layer_unit
       body = @unit.body.except("instances")
       @renamed = Set.new
-      target = Units::Unit.new(**@unit.to_h.merge(body: Bilingual.target_layer(body, @lang, "", @renamed)))
-      italian = Units::Unit.new(**@unit.to_h.merge(body: Lessons::Bilingual.italian_layer(body)))
-      @italian = self.class.new(italian, context: @context, files: @files, subject: @subject)
+      target = Units::Unit.new(**@unit.to_h.merge(body: Bilingual.target_layer(body, @lang, "", @renamed, false, @material)))
+      italian = Units::Unit.new(**@unit.to_h.merge(body: Lessons::Bilingual.italian_layer(body, "", false, @material)))
+      @italian = self.class.new(italian, context: @context, files: @files, subject: @subject, material: @material)
       @unit = target
     end
 
@@ -139,9 +144,9 @@ module Validation
 
     # A generated instance is not in item.json: its own pairs, the lint of its Italian texts and of its target-language texts.
     def generated_layers(inst, label, seed, f)
-      Bilingual.check(f, inst, lang: @lang, prefix: label, conflicts: false)
-      Bilingual.lint_target(f, inst, @lang, known: Bilingual.names(@lang), prefix: label)
-      Readability.lint_document({ "display" => inst["display"], "solution" => inst["solution"], "hints_it" => inst["hints_it"] }.compact, label, f)
+      Bilingual.check(f, inst, lang: @lang, prefix: label, conflicts: false, material: @material)
+      Bilingual.lint_target(f, inst, @lang, known: Bilingual.names(@lang), prefix: label, material: @material)
+      Readability.lint_document({ "display" => inst["display"], "solution" => inst["solution"], "hints_it" => inst["hints_it"] }.compact, label, f, bilingual: true)
     end
 
     # ---- sizes ---------------------------------------------------------------
@@ -338,13 +343,13 @@ module Validation
       prompt = @unit.body["prompt"].is_a?(Hash) ? @unit.body["prompt"].slice("stem_it", "table", "quote", "figure") : {}
       if component == "choice"
         key = Array(display["options"]).find { |o| o["id"] == answer.to_s }
-        needles = key ? [ key["text"], @target_key ].compact : []
+        needles = key ? distinct_needles([ key["text"], @target_key ].compact) : []
         scope = readable_strings(display, include_stem: true, include_options: false)
         # The item's own prompt is read with every instance (D-081).
         scope += prefixed(readable_strings(prompt, include_stem: true, include_options: false), "prompt")
       else
         needles = Answers.key_texts(component, answer, accept: @unit.accept + Array(inst["accept"]))
-        needles += ordering_texts(display, answer) + matching_texts(display, answer)
+        needles = distinct_needles(needles + ordering_texts(display, answer) + matching_texts(display, answer))
         scope = readable_strings(display, include_stem: false, include_options: false)
         scope += prefixed(readable_strings(prompt, include_stem: false, include_options: false), "prompt")
         [ [ display["stem_it"], "#{label}/display/stem_it" ], [ prompt["stem_it"], "#{label}/prompt/stem_it" ] ].each do |stem, field|
@@ -357,7 +362,7 @@ module Validation
       end
       passage_leak(needles, display, label, seed, f) if component == "choice"
       final = inst.dig("solution", "final").to_s
-      needles += [ final ] if Answers.plain(final).length >= Answers::MIN_LEAK_CHARS && component != "choice"
+      needles += distinct_needles([ final ]) if Answers.plain(final).length >= Answers::MIN_LEAK_CHARS && component != "choice"
       needles.each do |n|
         hit = scope.find { |_path, text| Answers.contains?(text, n) }
         next unless hit
@@ -410,7 +415,7 @@ module Validation
       texts = support_texts(@unit.body, "#{@unit.path}") + support_texts(display, "#{label}/display")
       return if texts.empty?
 
-      needles = support_needles(display, answer, inst)
+      needles = distinct_needles(support_needles(display, answer, inst))
       texts.each do |field, text|
         needle = needles.find { |n| Answers.contains?(text, n, min: support_min) }
         next unless needle
@@ -422,6 +427,19 @@ module Validation
     # A short numeric key or error value (12, 5) is exactly what a format example states, so
     # numbers have no length floor here (whole-token match: 12 is not found in 123).
     def support_min = %w[number fraction].include?(@unit.component) ? 1 : Answers::MIN_LEAK_CHARS
+
+    # In the Italian layer only the distinctive needles are looked for (see scan_italian); the target layer reads them all.
+    def distinct_needles(needles) = @distinct ? needles.select { |n| distinct?(n) } : needles
+
+    # A needle is distinctive when it is not an Italian function word and has a word of DISTINCT_MIN letters (a phrase: of four, one of them not a function
+    # word); a key without letters (a number) always is.
+    def distinct?(needle)
+      words = Answers.plain(needle).scan(/\p{L}+/)
+      return true if words.empty?
+
+      free = words.reject { |w| Lessons::Lang::ITALIAN_FUNCTION_WORDS.include?(w) }
+      words.size == 1 ? free.any? { |w| w.length >= Lessons::Lang::DISTINCT_MIN } : free.any? { |w| w.length >= 4 }
+    end
 
     def support_texts(hash, base)
       out = []
@@ -540,7 +558,7 @@ module Validation
       /\bnell'ordine\s+in\s+cui\s+(?:ti\s+)?(?:sono\s+)?(?:elencat|mostrat|presentat|scritt)\w*/,
       /\b(?:#{ORDINAL})\s+(?:#{ROW_NOUN})\b(?!\s+(?:del|dello|della|dei|nel|nella)\s+(?:testo|brano|passo|paragrafo|citazione|poesia|lettera|versi?|strofa|canto|periodo))/,
       /\b(?:#{LIST_NOUN})\b[^.;:!?]{0,25}\b(?:#{PLACE})\b/, /\b(?:#{PLACE})\b[^.;:!?]{0,25}\b(?:#{LIST_NOUN})\b/,
-      /\b(?:opzione|risposta|alternativa|scelta|lettera)\s+[a-e](?=\s*[).,;:!?»"']|\s*\z)/
+      /\b(?:opzione|risposta|alternativa|scelta|lettera)\s+[a-e](?=\s*[).,;:!?»"]|\s*'(?!\p{L})|\s*\z)/
     )
 
     def stored_order(display, inst, label, seed, f)
@@ -643,8 +661,8 @@ module Validation
 
     def key_hints(display, answer, inst, hints, label, seed, f)
       shown = Canonical.strings(display).map(&:last).join(" ") + " " + @unit.body["prompt"].to_h.slice("stem_it", "table", "quote").to_json
-      needles = Answers.key_texts(@unit.component, answer, accept: @unit.accept + Array(inst["accept"]), min: support_min)
-                       .reject { |n| Answers.contains?(shown, n, min: support_min) }
+      needles = distinct_needles(Answers.key_texts(@unit.component, answer, accept: @unit.accept + Array(inst["accept"]), min: support_min))
+                .reject { |n| Answers.contains?(shown, n, min: support_min) }
       hints.each_with_index do |hint, i|
         needle = needles.find { |n| Answers.contains?(hint, n, min: support_min) }
         next unless needle
@@ -657,7 +675,7 @@ module Validation
 
     def option_hints(display, answer, hints, label, seed, f)
       key = Array(display["options"]).find { |o| o["id"] == answer.to_s } or return
-      texts = [ key["text"].to_s, @target_key ].compact
+      texts = distinct_needles([ key["text"].to_s, @target_key ].compact)
       hints.each_with_index do |hint, i|
         next unless texts.any? { |t| Answers.contains?(hint, t) }
 

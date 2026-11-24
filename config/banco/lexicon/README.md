@@ -23,3 +23,13 @@ exercise or a lesson («Tom plays football», «Lucía come pan») is a name, ne
 
 - **Only common given names**: the ones a learner meets in a textbook. No surname, no famous person, no name of the student or of his household (the briefs say so; the public-repository hygiene check enforces it).
 - **Changed** like the frequency lists, through a D entry.
+- **A name that is also an Italian word is not listed** (the Italian text of a lesson is linted with these names, so «Mia», «Rosa», «Sol» and the like stay out).
+
+# Grammar and basic words (D-402)
+
+`en_grammar.txt`, `es_grammar.txt`, `en_basic.txt` and `es_basic.txt` are read, like the lists above, only by `Lessons::Lexicon`; they are never shown to the student. One word per line, UTF-8, lower case (Spanish with its accents), `#` comment lines and blank lines ignored.
+
+- **`{en,es}_grammar.txt`**: the metalanguage a language lesson or item uses to talk about the language in that language (*verb, plural, vowel, tilde, esdrújula, oración*…), with the inflections a lesson uses (number, gender). These words are not a `W-LANG-LEVEL` warning even when they fall outside the first 3000 words.
+- **`{en,es}_basic.txt`**: beginner words every A1 learner has by the first lessons (numbers, family, school things, days, months, colours, animals, clothes, classroom verbs) that the first 3000 words of the frequency list lack. Words already inside the first 3000 are not repeated; phrases are listed word by word.
+- **Source and licence:** written for this repository, not derived from the frequency lists; no licence of their own beyond the repository's.
+- **Changed** only through a D entry, like the other files here.

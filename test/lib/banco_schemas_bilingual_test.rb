@@ -106,6 +106,7 @@ class BancoSchemasBilingualTest < ActiveSupport::TestCase
     ref = S.for_subject("lesson", "english").ref("#/$defs/block")
     text, check = projected["cards"][0]["blocks"]
     assert_empty ref.validate(text).to_a
+    # the options of a check that says translate_material: false have no Italian: the derived schema asks for the target text, not for `text_it`
     assert_empty ref.validate(check.merge("answer" => "o1")).to_a
   end
 
@@ -113,8 +114,10 @@ class BancoSchemasBilingualTest < ActiveSupport::TestCase
 
   test "an item of another subject is refused the flag and every _en sibling, as before" do
     doc = item.merge("subject" => "math")
+    doc["instances"][0]["display"]["options"][0]["text_it"] = "fare / fare"
     found = S.validate("item", doc)
     assert_match(/\/bilingual/, messages(found))
+    assert_match(/\/translate_material/, messages(found), "the marker of the form material is for the language subjects too")
     assert_match(/\/prompt\/stem_en/, messages(found))
     assert_match(/message_en/, messages(found))
     assert_match(/\/instances\/0\/display\/options\/0\/text_it/, messages(found), "an R2 twin as well")

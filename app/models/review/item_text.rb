@@ -57,7 +57,23 @@ module Review
 
     def bilingual? = body["bilingual"] == true
 
-    def student_view(display) = bilingual? ? display.except("passage_it") : display
+    # Form material is not translated (D-402): the item says `translate_material: false`. The student has no translation of the instance sentence, the options
+    # or the rows, so the solver has none either; the instruction around them stays in both layers.
+    def material_off? = Items::Text.material_off?(body)
+
+    def student_view(display)
+      display = display.except("passage_it") if bilingual?
+      return display unless material_off?
+
+      shown = display.key?("sub_items") ? display.merge("sub_items" => Array(display["sub_items"]).map { |s| s.is_a?(Hash) && s["display"].is_a?(Hash) ? s.merge("display" => untranslated(s["display"])) : s }) : display
+      untranslated(shown)
+    end
+
+    def untranslated(display)
+      out = display.except("stem_it")
+      %w[options elements left right].each { |k| out[k] = Items::Text.shown_entries(out[k], body) if out[k] }
+      out
+    end
 
     # The figures of the instances read so far (call review_instances or solver_instances first), each as a PNG of the
     # drawing alone (D-320); [] when no instance shows one.
@@ -90,9 +106,11 @@ module Review
       extra = {}
       SIBLINGS.each { |s| extra["passage#{s}"] = source["passage#{s}"] if passage && source["passage#{s}"].present? }
       prompt = source["prompt"].is_a?(Hash) ? source["prompt"] : {}
+      # An instance stem that is form material has no Italian (stem_en alone): the instruction's stem_it must not read as its translation.
+      own_stem = SIBLINGS.any? { |s| display.key?("stem#{s}") }
       SIBLINGS.each do |s|
         key = "stem#{s}"
-        extra[display.key?(key) ? "prompt_#{key}" : key] = prompt[key] if prompt[key].present?
+        extra[display.key?(key) || own_stem ? "prompt_#{key}" : key] = prompt[key] if prompt[key].present?
       end
       %w[table quote figure].each { |k| extra[k] = prompt[k] if prompt[k].present? && !display.key?(k) }
       # The supports the student reads with the item (D-216): the item's own, unless the instance has its own.

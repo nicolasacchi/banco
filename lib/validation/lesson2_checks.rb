@@ -114,6 +114,10 @@ module Validation
         @glossary = Array(@body["glossary"]).to_h { |g| [ g["term_it"].to_s.downcase, g ] }
         @glossary_it = Array(@italian && @italian["glossary"]).to_h { |g| [ g["term_it"].to_s.downcase, g ] }
         @known_words = known_words
+        # The target fields that have only their Italian (a lone `_it` of a bilingual lesson: E-LANG-PAIR-ORPHAN says it all) and the target fields that are form
+        # material (no level lint): the pointers are the body's.
+        @orphans = @lang ? Lessons::Bilingual.pairs(@raw, @lang).select { |_p, _b, target, italian| target.nil? && !italian.nil? }.map(&:first).to_set : Set.new
+        @forms = @lang ? Lessons::Bilingual.material_pointers(@raw, @lang) : Set.new
       end
 
       def rule(*path) = Rules.get(:lesson2, *path)
@@ -132,10 +136,21 @@ module Validation
         whole_text
       end
 
+      # A lone `_it` is read in the target layer as if it were the target text (its field is the `_en|_es` pointer): everything said about it there (E-READ, W-LANG-LEVEL,
+      # W-LANG-SPAN-REDUNDANT, ...) is a repeat of E-LANG-PAIR-ORPHAN, which is reported by the pairs and not here.
       def add(code, field, message, line: nil, **detail)
+        return if @lang && !@italian_pass && orphan?(field)
+
         detail[:line] = line if line
         detail[:rule] ||= "#{code}#{field}"
         @findings.add(code, field, message, **detail)
+      end
+
+      def orphan?(field)
+        return false if @orphans.empty?
+
+        at = field.to_s.sub(%r{\A/front_matter}, "")
+        @orphans.any? { |o| at == o || at.start_with?("#{o}/") }
       end
 
       # The error codes of the lesson's skills (nil when none of them is known).
@@ -191,6 +206,11 @@ module Validation
 
         Validation::Lesson2Checks.flag_pairs(@raw.slice("cards", "parts"), "", @lang, @target) do |field, why|
           add("E-LANG-BILINGUAL-FLAG", field, why, line: pair_line(field), rule: "flag-#{field}")
+        end
+        return if @lang
+
+        Validation::Bilingual.marker_pointers(@raw.slice("cards")).each do |field|
+          add("E-LANG-BILINGUAL-FLAG", field, "#{Lessons::Bilingual::MARKER} is for a bilingual lesson (it says that the form material has no translation): add bilingual: true", line: pair_line(field), rule: "flag-material-#{field}")
         end
       end
 
@@ -652,7 +672,7 @@ module Validation
         if layer == :target && plain_words && lang == @lang && !quoted_unit?(text)
           add("W-LANG-SPAN-REDUNDANT", field, "line #{at}: [[#{lang}:#{text}]] is a #{LANGUAGE_NAMES[lang]} span in a text that is all #{LANGUAGE_NAMES[lang]}: leave it plain unless the lesson then discusses that unit (glossary, teaches_#{lang})", line: at, rule: "span-redundant-#{field}-#{at}")
         end
-        target_lint(field, lang, text, at)
+        target_lint(field, lang, text, at, level: layer != :target) # a span of the target text is a quoted unit: the level lint leaves it to the glossary and teaches_*
       end
 
       # A unit the lesson discusses: all its words are in the glossary or in teaches_en / teaches_es.
@@ -663,12 +683,22 @@ module Validation
 
       LANGUAGE_NAMES = { "en" => "English", "es" => "Spanish", "la" => "Latin", "it" => "Italian" }.freeze
 
-      # The lint of words of another language (the target-language set, WAVE2 1.8): a short sentence, and words a learner of the lesson knows.
-      def target_lint(field, lang, text, at)
+      # The lint of words of another language (the target-language set, WAVE2 1.8): a short sentence, and words a learner of the lesson knows. A bilingual
+      # lesson's target text (@lang) is read by Validation::Bilingual.target_report: sentences split after `.»`, `;` and a lone letter, no level for form material,
+      # quoted forms, spans and pieces of words, and the absolute words (W-ABSOLUTE). +level+ false: no word of the level, no absolute word.
+      def target_lint(field, lang, text, at, level: true)
         max = rule(:target_sentence_words)
-        long = Readability.sentences_of(text.to_s).map { |t| Readability.count_words(t) }.max.to_i
+        known = @known_words.fetch(lang, []) + common_names(lang)
+        if @lang
+          report = Validation::Bilingual.target_report(lang, text, known: known, level: level && !@forms.include?(field))
+          long = report[:long]
+          unknown = report[:unknown]
+          add("W-ABSOLUTE", field, "an absolute word (#{report[:absolute]}) needs a counterexample check", line: at, rule: "absolute-#{field}-#{at}", word: report[:absolute]) if report[:absolute]
+        else
+          long = Readability.sentences_of(text.to_s).map { |t| Readability.count_words(t) }.max.to_i
+          unknown = Lessons::Lexicon.unknown(lang, text, known: known)
+        end
         add("E-READ", field, "a #{LANGUAGE_NAMES.fetch(lang, lang)} sentence has #{long} words (at most #{max})", line: at, rule: "target_sentence_words-#{field}-#{at}", words: long) if long > max
-        unknown = Lessons::Lexicon.unknown(lang, text, known: @known_words.fetch(lang, []) + common_names(lang))
         return if unknown.empty?
 
         add("W-LANG-LEVEL", field, "#{LANGUAGE_NAMES.fetch(lang, lang)} words outside the first #{rule(:target_vocabulary_top)} (and the glossary and teaches_#{lang}): #{unknown.first(6).join(', ')}", line: at, rule: "lang-level-#{field}-#{at}", words: unknown)

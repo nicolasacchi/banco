@@ -111,7 +111,7 @@ test("sides reads a pair, a legacy text and nothing, with the same call", () => 
 
 // ---- the choice and the blank of the golden fixture ----------------------------------------------------------
 
-test("choice: the target text with a translation node under each text, no button anywhere", async () => {
+test("choice (form material, translate_material: false): the instruction has its translation node, the sentence and the options have none, no button anywhere", async () => {
   const handle = await renderItem(fixture.choice.part, ctx)
   const root = handle.element
   const text = target(root)
@@ -123,8 +123,8 @@ test("choice: the target text with a translation node under each text, no button
   assert.doesNotMatch(text, /Scegli le due parole|Il sabato io|fare \/ fare|Leggi tutta la frase/, "the Italian is only in translation nodes")
   const translations = trNodes(root).map((n) => n.textContent)
   assert.ok(translations.some((s) => s.includes("Scegli le due parole")))
-  assert.ok(translations.some((s) => s.includes("Il sabato io")))
-  assert.equal(translations.filter((s) => s === "fare / fare").length, 4, "one per option")
+  assert.ok(!translations.some((s) => s.includes("Il sabato io")), "the sentence with its blank is form material: no translation")
+  assert.equal(translations.filter((s) => s === "fare / fare").length, 0, "nor the options")
   assert.ok(translations.some((s) => s.includes("Ogni opzione ha due parti")))
   assert.ok(translations.some((s) => s.includes("Leggi tutta la frase")))
   for (const node of trNodes(root)) {
@@ -136,14 +136,16 @@ test("choice: the target text with a translation node under each text, no button
   assert.equal(root.querySelector(".prompt").querySelector(".instance-stem").getAttribute("lang"), "en")
 })
 
-test("choice: an option's Italian sits in its label, and the choice itself is unchanged", async () => {
+test("choice: an option is its target text with no Italian, and the choice itself is unchanged; an option with a text_it keeps it in its label", async () => {
   const handle = await renderItem(fixture.choice.part, ctx)
   const labels = handle.element.querySelectorAll("label.option")
   assert.equal(labels.length, 4)
   for (const label of labels) {
-    assert.equal(trNodes(label).length, 1)
+    assert.equal(trNodes(label).length, 0, "form material has no translation node")
     assert.equal(buttons(label).length, 0)
   }
+  const translated = await renderItem({ ...fixture.choice.part, options: fixture.choice.part.options.map((o) => ({ ...o, text_it: "fare / fare" })) }, ctx)
+  for (const label of translated.element.querySelectorAll("label.option")) assert.equal(trNodes(label).length, 1, "a translated option has its Italian under it")
   assert.equal(labels[1].querySelector(".option-text").textContent, "make / do")
   const radio = handle.element.querySelectorAll("input")[1]
   radio.checked = true
@@ -375,7 +377,8 @@ test("the golden hint, feedback, reminder and solution are pairs that sides() re
     assert.ok(sides(served.reminder, "reminder", lang).italian)
     assert.ok(sides(served.exercise, "title", lang).italian)
     for (const step of served.solution.steps) assert.ok(sides(step, "text", lang).italian)
-    assert.ok(served.solution.final_it)
+    if (key === "blank") assert.ok(served.solution.final_it)
+    else assert.equal(served.solution.final_it, undefined, "the final of form material has no Italian")
   }
 })
 

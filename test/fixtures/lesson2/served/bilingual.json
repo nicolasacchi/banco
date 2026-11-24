@@ -59,18 +59,16 @@
         },
         {
           "n": 2,
-          "prompt_en": "My sister can ___ the guitar.",
-          "prompt_it": "Mia sorella sa ___ la chitarra.",
+          "prompt_en": "Which form goes after can?",
+          "prompt_it": "Quale forma va dopo can?",
           "options": [
             {
               "id": "a",
-              "text_en": "plays",
-              "text_it": "suona"
+              "text_en": "plays"
             },
             {
               "id": "b",
-              "text_en": "play",
-              "text_it": "suonare"
+              "text_en": "play"
             }
           ],
           "answer": "b",
@@ -84,7 +82,8 @@
           "explain_en": "After can the verb stays as it is: can play.",
           "explain_it": "Dopo can il verbo resta com'è: can play.",
           "type": "check",
-          "component": "choice"
+          "component": "choice",
+          "translate_material": false
         }
       ]
     },
@@ -107,7 +106,6 @@
             {
               "n": 1,
               "text_en": "You should ___ more water.",
-              "text_it": "Dovresti ___ più acqua.",
               "check": {
                 "component": "choice",
                 "prompt_en": "Which word fits?",
@@ -115,13 +113,11 @@
                 "options": [
                   {
                     "id": "a",
-                    "text_en": "drinks",
-                    "text_it": "beve"
+                    "text_en": "drinks"
                   },
                   {
                     "id": "b",
-                    "text_en": "drink",
-                    "text_it": "bere"
+                    "text_en": "drink"
                   }
                 ],
                 "answer": "b"
@@ -129,7 +125,7 @@
               "solution_en": "After should the verb has no -s: should drink.",
               "solution_it": "Dopo should il verbo non prende -s: should drink.",
               "final_en": "drink",
-              "final_it": "bere"
+              "translate_material": false
             }
           ],
           "type": "try"

@@ -22,7 +22,7 @@ module Validation
       accent_policy(item, findings)
       prova_a(item, findings)
       quote_ref(item.dig("prompt", "quote"), "/prompt/quote", context, findings) if item.dig("prompt", "quote").is_a?(Hash)
-      Readability.lint_document(item, "", findings, skip: target_language_keys(item))
+      Readability.lint_document(item, "", findings, skip: target_language_keys(item), bilingual: Bilingual.bilingual?(item))
       calculator(item, findings)
       support_method_words(item, findings)
       code_scan(files, findings)
