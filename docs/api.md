@@ -896,7 +896,7 @@ the server's Chrome, for the reviewer and the blind solver. An aid: it decides n
 ### `banco item shots REV [--dir DIR] [--wait] [--force] [--timeout SECONDS]`
 
 Reads the status and always asks for the render: the server enqueues one only when none is pending and the verdict is missing or outdated (a `bot_read` or `teacher` token cannot ask; it reads the verdict there is or waits for one a content agent has queued) and,
-with `--wait`, polls until it is done (it says on stderr how many requests are queued ahead, each time that changes; `--timeout`, default 1200 s, enough for a busy Chrome lane: `E-TIMEOUT`, which says to run it again with a longer `--timeout`; an `error` row is `E-CHROME-UNAVAILABLE`). It writes
+with `--wait`, polls until it is done (it says on stderr how many requests are queued ahead, each time that changes, and it keeps waiting while that number goes down: `--timeout`, default 1200 s, is the stretch without progress, renewed at each step forward, and 6 hours is the cap in all (D-402 round 7): `E-TIMEOUT`, which says to run it again with a longer `--timeout`; an `error` row is `E-CHROME-UNAVAILABLE`). It writes
 `DIR/REV/instance-NN_390x844.webp` (NN is the instance number of `review open` and `solve open`; `DIR` defaults to `banco-figures`) and prints, per file,
 the `instance`, the `seed` and the `shown_order`: a choice, a matching and an ordering are shuffled with that fixed seed as the student's page shuffles
 them, and the number on an option (1, 2, …) is `shown_order.options[n-1]`, the stored id an answer uses (a matching's right column is a closed menu; its order is

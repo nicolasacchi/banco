@@ -148,7 +148,8 @@ or a reading text (a passage keeps its after-the-answer rule). Without the marke
   instances (`E-PRACTICE-POOL`). Instances must differ in display and fingerprint.
 - Instances of one item must look different to the student: different cases or rows, not the same rows reshuffled (`W-INSTANCES-ALIKE`).
 - A `matching` with 2 categories (a right/wrong judge) has at least 2 rows of each category in every instance (`W-MATCHING-JUDGE-ROWS`).
-- A `matching` has at most 4 rows: 5 or 6 rows are `W-MATCHING-ROWS` (a warning), 7 or more `E-MATCHING-ROWS` (an error in a new submission); from 4 rows it is already hard to guess and more rows only use up his tries, so split a longer list into two items. A right/wrong judge has exactly 4 rows here (at least 4: `E-MATCHING-SIZE`; at least 2 of each option: `W-MATCHING-JUDGE-ROWS`).
+- A classification (`reuse_right: true`) has fewer chips than rows, **or as many when one chip is never a right answer** (a distractor, «why» among «because, so, but»): four rows and four chips with one unused chip need no fifth row (`E-MATCHING-SIZE`).
+- A `matching` has at most 4 rows (a right/wrong judge, two labels, at most 5: 3 + 2 lets the split vary): more rows are `W-MATCHING-ROWS` (a warning), 7 or more `E-MATCHING-ROWS` (an error in a new submission); from 4 rows it is already hard to guess and more rows only use up his tries, so split a longer list into two items. A right/wrong judge has 4 or 5 rows here (at least 4: `E-MATCHING-SIZE`; at least 2 of each option: `W-MATCHING-JUDGE-ROWS`; 5 rows are not warned).
 - Per skill a topic needs at least 20 distinct instances over its 2 to 4 pinned items, 12 of them hard
   to guess (written answers, an ordering or matching of 4 or more): plan the items so that the pool
   reaches that. Write the first, level 1, item first. An `extra` topic (outside the programme, D-324:
@@ -169,7 +170,7 @@ for help: prompt and display, never hints, messages or solutions. Findings are a
 ## The cycle
 
 `banco work open ITEM`, edit, `banco work submit DIR --dry-run`, `banco work submit DIR`,
-`banco work status REV --wait`: the same as for diagnosis items (new generators wait for a verifier).
+`banco work status REV --wait`: the same as for diagnosis items (new generators wait for a verifier). A validation that failed with `E-GEN-TIMEOUT` and `timeout_only` is the server's time limit, not your generator: the server queues it again by itself; ask at once with `banco work retry REV` (also for a revision that stays `validating` after a restart).
 `banco items list --subject KEY --kind practice --current` lists the practice items only. The teacher
 can send an item back ("Rimanda"); read `teacher_comments` before you edit. When the items of a skill
 have passed, been reviewed and been solved blind, the topic file pins them (`banco brief show topic`).

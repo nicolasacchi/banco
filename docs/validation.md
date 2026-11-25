@@ -13,7 +13,8 @@ banco skill-graph open|submit|coverage --subject KEY
 banco blueprint open|submit --subject KEY
 banco work open ITEM [--role author|verifier]     writes a folder (item.json, generator.mjs, verify.mjs, assets/)
 banco work submit DIR [--dry-run]     new revision; --dry-run validates now and stores nothing
-banco work status REV [--wait] [--timeout S]   exit 0 passed, 3 failed (codes on stderr), 6 error or timeout (default 900 s); the status has queue_ahead and current_rules_version
+banco work status REV [--wait] [--timeout S]   exit 0 passed, 3 failed (codes on stderr), 6 error or timeout (default 900 s); the status has queue_ahead and current_rules_version; timeout_only says a failure is the server's time limit
+banco work retry REV [--dry-run]     validate the same revision again: only after a timeout-only failure or a lost job (D-402)
 ```
 
 Order for a generated item: the author submits `item.json` and `generator.mjs`; the
@@ -142,7 +143,7 @@ feedback and the oral's model answer (answers, from the server).
 
 | code | what |
 |---|---|
-| `E-LESSON-RENDER` | an exception, a formula KaTeX refuses, markup printed as text (`[[es:hablar]]`, `$a^3$`: a field drawn as plain text, D-310), a card that does not draw, a time budget (90 s per revision, 5 s per card and viewport), "Stampa riassunto e schema" over one A4 page |
+| `E-LESSON-RENDER` | an exception, a formula KaTeX refuses, markup printed as text (`[[es:hablar]]`, `$a^3$`: a field drawn as plain text, D-310), a card that does not draw, a time budget (a floor of 90 s per revision plus 2 s for each shot already taken, at most 600 s: `LessonRenderRunner.budget_for`; 5 s per card and viewport; D-402 round 7). A render that fails on its time limits alone (every error is a `timeout:` finding, `LessonRender#timeout_only?`) is the server's limit, not a verdict: `RenderLessonRevisionJob` queues it again with a wait (5, then 10 minutes) until three such failures stand in a row, and `POST /api/v1/lesson-revisions/ID/render` (`banco lesson render REV --retry`, a content token, only when the latest render is timeout-only; `409 E-RETRY-REFUSED` otherwise) draws it again without a new revision. An item validation that timed out on its last attempt (`E-GEN-TIMEOUT` with `detail.server_limit`, `ItemValidation#timeout_only?`) is queued again the same way, and `POST /api/v1/work/revisions/ID/retry` (`banco work retry REV`) also re-queues a revision that has no verdict because its job was lost (no row and no queued job for `generator.stale_minutes`), "Stampa riassunto e schema" over one A4 page |
 | `E-LESSON-OVERFLOW` | the page wider than the window, or something wider inside than its box (the box of a `code` block scrolls sideways on purpose and is not counted, D-329) |
 | `E-DIAGRAM-LAYOUT` | a layout that answered an error, two labels overlapping, a label outside its figure, a box's text crossing its border or a box's icon outside it or on its text |
 | `E-DIAGRAM-SMALL-TEXT` | a diagram label under `min_text_px` (a guard: the layout never draws one) |

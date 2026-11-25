@@ -1,10 +1,10 @@
 ---
 name: review
-version: 4
+version: 5
 formats: banco.review/1
 ---
 
-# Brief: expert review of an item revision (version 4)
+# Brief: expert review of an item revision (version 5)
 
 You review one item revision as a subject expert and write `banco.review/1`
 (`config/banco/schemas/review.json`). You are a session of the reviewer role,
@@ -30,7 +30,7 @@ alt text and the stored data, as the student sees it; a figure that is missing o
 result. Never ask for a decision; the teacher disposes of every finding.
 
 **Look at the pictures of the instances first.** `banco review open REV` asks the server to draw every instance as the student sees it on a 390 px
-phone and prints `item_shots.fetch`, the command that brings the pictures: `banco item shots REV --dir DIR --wait` writes
+phone and prints `item_shots.fetch`, the command that brings the pictures: `banco item shots REV --dir DIR --wait` (it waits as long as the queue in front keeps shrinking, printing your place on stderr, up to 6 hours) writes
 `DIR/REV/instance-NN_390x844.webp`, one whole-page picture per instance (NN is the instance number), with the findings of the drawing (`errors`: a
 page wider than the phone, a box that clips its text, a formula that did not draw, markup printed as text, a figure that did not load). Open each file as an image before you
 read the keys: an item that overflows, cuts a formula or hides its question on a phone is a finding (point 11 if it is the reading load or the interface, else the point
