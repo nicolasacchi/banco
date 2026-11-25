@@ -7,13 +7,13 @@ module Validation
   #
   #   E-LANG-PAIR-MISSING / -ORPHAN   a text without its translation, a translation without its text, lists of different length
   #   E-LANG-PAIR-SHAPE               paragraphs, list items, ___ blanks, math, digits, bold words, [[g:..]] terms differ
-  #   E-LANG-PAIR-CONFLICT            two equal target strings in one scope with different Italian (W-LANG-PAIR-CONFLICT when the text is a label of 3 words or fewer)
+  #   E-LANG-PAIR-CONFLICT            two equal target strings in one scope with different Italian (W-LANG-PAIR-CONFLICT when the text is a label of 3 words or fewer, or when one of the two is a `final`)
   #   E-LANG-TRANSLATION-LANG         an `_it` text that is not Italian; E-LESSON-LANG for a `_en|_es` text that is Italian
   #   E-LANG-TRANSLATION-COPY         an `_it` text equal to its target text
   #   E-LANG-BILINGUAL-FLAG / -REQUIRED   the `bilingual` marker (flag) and the rule that asks for it (required)
   #
-  # plus the lint of the target-language texts (12-word sentences, the 60-word stem, W-LANG-LEVEL with the given names allowed) and the
-  # target layer of a document: the document with each target text under its legacy `_it` key, which the checks written before D-402 read.
+  # plus the lint of the target-language texts (12-word sentences, the 60-word stem, W-LANG-LEVEL with the given names allowed, the form material read for the level
+  # too) and the target layer of a document: the document with each target text under its legacy `_it` key, which the checks written before D-402 read.
   module Bilingual
     # Bases whose `_en` key is not a translated text (a vocabulary list the lesson teaches).
     NOT_TEXT = (Lessons::Bilingual::FIELDS[:target_only] + Lessons::Bilingual::FIELDS[:native] + Lessons::Bilingual::EXEMPT).freeze
@@ -63,7 +63,7 @@ module Validation
           shape_problems(target, italian).each { |problem| add.call("E-LANG-PAIR-SHAPE", "#{base}: the translation differs in shape: #{problem}") }
           add.call("E-LESSON-LANG", "#{names[0]} holds Italian words (a key ending in _#{pair_lang} holds that language only)") if %w[en es].include?(pair_lang) && Lessons::Lang.italian?(target)
           add.call("E-LANG-TRANSLATION-LANG", "#{names[1]} is not Italian: it holds words of #{pair_lang == 'es' ? 'Spanish' : 'English'}", it_field) if translation_lang?(italian, pair_lang)
-          add.call("E-LANG-TRANSLATION-COPY", "#{names[1]} is the same text as #{names[0]}: write the translation", it_field) if base != "term" && copy?(target, italian)
+          add.call("E-LANG-TRANSLATION-COPY", "#{names[1]} is the same text as #{names[0]}: write the translation", it_field) if base != "term" && copy?(target, italian, pair_lang)
           conflict(findings, table, field, target, italian, at) if conflicts
         end
       end
@@ -120,6 +120,8 @@ module Validation
     end
 
     SHORT_LABEL_WORDS = 3
+    # The target text of a step is often the `final` of its exercise, with a shorter or longer Italian: «Does Jack study German?» is both. Reading them as two translations of one text is a warning.
+    FINAL_FIELD = %r{/final(?:_(?:en|es))?(?:/\d+)?\z}
 
     def conflict(findings, table, field, target, italian, at)
       key = plain(target)
@@ -127,7 +129,7 @@ module Validation
       if first.nil?
         table[key] = [ italian, field ]
       elsif plain(first[0]) != plain(italian)
-        short = key.scan(Readability::WORD).size <= SHORT_LABEL_WORDS # a label of a few words (a state, a verb form) reads differently in two places: only the first translation is shown
+        short = key.scan(Readability::WORD).size <= SHORT_LABEL_WORDS || [ field, first[1] ].any? { |f| FINAL_FIELD.match?(f) } # a label of a few words (a state, a verb form) reads differently in two places, and a final is repeated by a step: only the first translation is shown
         findings.add(short ? "W-LANG-PAIR-CONFLICT" : "E-LANG-PAIR-CONFLICT", field, "the same text has another translation at #{first[1]}: the translation table is keyed by the target text, so write one Italian for it", rule: "conflict-#{field}", **at)
       end
     end
@@ -168,10 +170,14 @@ module Validation
           .delete("*_").downcase.gsub(/[[:space:]]+/, " ").strip
     end
 
+    # A role span of a language subject's text holds a target-language form («[[od:lo]]», «[[oi:le]]») unless it says |it, so in an Italian text it is quoted target,
+    # like a span of a language.
+    ROLE_SPAN = /\[\[(?!g:)[a-z]+(?:[_-][a-z]+)*:.*?\]\](?!\])/m
+
     # True when an Italian text holds two distinct function words of the target language outside spans and quotations (a translation that was
     # not translated). +lang+ nil reads both lists.
     def translation_lang?(italian, lang)
-      outside = italian.to_s.gsub(QUOTED_SPAN, " ").gsub(QUOTED, " ").gsub(Readability::MATH, " ")
+      outside = italian.to_s.gsub(QUOTED_SPAN, " ").gsub(ROLE_SPAN, " ").gsub(QUOTED, " ").gsub(Readability::MATH, " ")
       words = outside.downcase.scan(/\p{L}+/)
       lists = lang ? [ Lessons::Lang::TARGET_WORDS.fetch(lang, []) ] : Lessons::Lang::TARGET_WORDS.values
       lists.any? { |list| (words & list).size >= 2 }
@@ -180,8 +186,21 @@ module Validation
     # True when the Italian is the target text itself (after spans and markup) and BOTH hold a word of four or more letters that is not quoted: a text that is all
     # [[en:..]] / [[es:..]] spans or «...»-quoted forms (a form is the same in both languages), in either language, is no copy; nor is a text whose only other words
     # are shared connectors («con», «a», «e») or pieces of words. The Italian one is read too: «[[es:hacer]]: [[es:hago]]» beside «hacer: hago» quotes its forms on purpose.
-    def copy?(target, italian)
-      plain(target) == plain(italian) && [ target, italian ].all? { |text| own_words?(text) }
+    # A label of three words or fewer with nothing in it that Italian lacks («Una cosa» beside «una cosa») is one word of the two languages, no copy (+shared_label?+).
+    def copy?(target, italian, lang = nil)
+      plain(target) == plain(italian) && [ target, italian ].all? { |text| own_words?(text) } && !shared_label?(target, lang)
+    end
+
+    # Letters and digraphs that Italian does not use (j k w x y ñ ¿ ¡ á í ú ü, th sh ck ee oo ou, -ing): a label with one of them, or with a function word of the language
+    # that Italian lacks (TARGET_WORDS), is not the same word in the two languages.
+    FOREIGN = /[jkwxyñ¿¡áíúü]|th|sh|ck|ee|oo|ou|ing\b/i
+
+    def shared_label?(text, lang)
+      words = plain(text).scan(Readability::WORD)
+      return false if words.empty? || words.size > SHORT_LABEL_WORDS || plain(text).match?(FOREIGN)
+
+      lists = lang ? [ Lessons::Lang::TARGET_WORDS.fetch(lang, []) ] : Lessons::Lang::TARGET_WORDS.values
+      lists.none? { |list| (words & list).any? }
     end
 
     # Does +text+ hold a word of four letters outside its spans, quotations, formulas and pieces of words?
@@ -241,7 +260,9 @@ module Validation
 
     # The lint of every `_<lang>` text of +doc+ (the keys of the subject's language only): sentences of at most
     # lesson2.target_sentence_words words, the 60-word stem, and W-LANG-LEVEL and W-ABSOLUTE (words outside the first 3000 of the language, the common given
-    # names and +known+ aside; the form material of an exercise is not read for them). +material+: the marker is in force above +doc+.
+    # names and +known+ aside). +material+: the marker is in force above +doc+. The form material of an exercise (the sentence with its blank, an option, a row,
+    # which have no Italian beside them) is read for the level too, as the student reads it in the target language alone: the words of the item's own keys,
+    # accepted answers and error values are the forms it teaches and never a level word (+own_words+); it has no W-ABSOLUTE (it is the exercise's material).
     def lint_target(findings, doc, lang, known: [], prefix: "", line: nil, material: false)
       allowed = names(lang) | Array(known).to_set(&:to_s)
       forms = Lessons::Bilingual.material_pointers(doc, lang, material)
@@ -251,24 +272,83 @@ module Validation
         base = key.sub(/_#{lang}\z/, "")
         next if NOT_TEXT.include?(base)
 
-        target_lint(findings, "#{prefix}#{pointer}", lang, text, known: allowed, line: line&.call(pointer), stem: base == "stem", level: !forms.include?(pointer))
+        form = forms.include?(pointer)
+        target_lint(findings, "#{prefix}#{pointer}", lang, text, known: form ? allowed | own_words(doc, pointer, lang) : allowed, line: line&.call(pointer), stem: base == "stem", absolute: !form)
+      end
+      bare_material(doc, lang, "", material) do |pointer, text|
+        target_lint(findings, "#{prefix}#{pointer}", lang, text, known: allowed | own_words(doc, pointer, lang), line: line&.call(pointer), absolute: false, cap: false)
       end
       findings
     end
 
-    def target_lint(findings, field, lang, text, known: [], line: nil, stem: false, level: true)
+    # +absolute+ false: no W-ABSOLUTE; +cap+ false: no sentence cap (a cell of a table is a form, not a sentence).
+    def target_lint(findings, field, lang, text, known: [], line: nil, stem: false, absolute: true, cap: true)
       at = line ? { line: line }.compact : {}
       name = lang == "es" ? "Spanish" : "English"
       max = Rules.get(:lesson2, :target_sentence_words)
-      report = target_report(lang, text, known: known, level: level)
-      findings.add("E-READ", field, "an #{name} sentence has #{report[:long]} words (at most #{max})", rule: "target_sentence_words-#{field}", words: report[:long], **at) if report[:long] > max
-      if stem && report[:words] > Rules.get(:readability, :max_stem_words)
+      report = target_report(lang, text, known: known, absolute: absolute)
+      findings.add("E-READ", field, "an #{name} sentence has #{report[:long]} words (at most #{max})", rule: "target_sentence_words-#{field}", words: report[:long], **at) if cap && report[:long] > max
+      if cap && stem && report[:words] > Rules.get(:readability, :max_stem_words)
         findings.add("E-READ", field, "the instruction has #{report[:words]} words (at most #{Rules.get(:readability, :max_stem_words)})", rule: "stem_length-#{field}", words: report[:words], **at)
       end
       findings.add("W-ABSOLUTE", field, "an absolute word (#{report[:absolute]}) needs a counterexample check", rule: "absolute-#{field}", word: report[:absolute], **at) if report[:absolute]
       return if report[:unknown].empty?
 
       findings.add("W-LANG-LEVEL", field, "#{name} words outside the first #{Rules.get(:lesson2, :target_vocabulary_top)} (and the given names, the glossary and teaches_#{lang}): #{report[:unknown].first(6).join(', ')}", rule: "lang-level-#{field}", words: report[:unknown], **at)
+    end
+
+    # ---- the level of form material ---------------------------------------------------------------------------------------------
+
+    OPTION_LISTS = %w[options elements left right tiles items].freeze
+
+    # The bare target text of form material (rule R2: an option's `text`, the `header` and the `rows` of a table, which have no `_<lang>` key to be found by):
+    # yields (pointer of the text, text); a table's cells one by one. +material+: the marker is in force above +node+.
+    def bare_material(node, lang, pointer = "", material = false, &block)
+      case node
+      when Hash
+        material = Lessons::Bilingual.material_in?(node, material)
+        %w[text header rows].each do |base|
+          value = node[base]
+          next unless value && Lessons::Bilingual.r2?(node, base, pointer) && Lessons::Bilingual.material?(node, base, pointer, material)
+
+          cells(value, "#{pointer}/#{base}", &block)
+        end
+        node.each { |k, v| bare_material(v, lang, "#{pointer}/#{k}", material, &block) if v.is_a?(Hash) || v.is_a?(Array) }
+      when Array then node.each_with_index { |v, i| bare_material(v, lang, "#{pointer}/#{i}", material, &block) if v.is_a?(Hash) || v.is_a?(Array) }
+      end
+    end
+
+    def cells(value, pointer, &block)
+      if value.is_a?(Array) then value.each_with_index { |v, i| cells(v, "#{pointer}/#{i}", &block) }
+      elsif value.is_a?(String) then yield pointer, value
+      end
+    end
+
+    # The lower-case words that ARE the forms taught at +pointer+ of +doc+ (an item, a lesson body): the key, the accepted answers and the error values of the
+    # item, instance or check that holds the field, and the text of the options they name by id. They are in the material on purpose.
+    def own_words(doc, pointer, lang)
+      words = Set.new
+      node = doc
+      holders = [ doc ]
+      pointer.to_s.split("/").reject(&:empty?).each do |segment|
+        node = node.is_a?(Array) ? node[segment.to_i] : (node.is_a?(Hash) ? node[segment] : nil)
+        break unless node.is_a?(Hash) || node.is_a?(Array)
+
+        holders << node
+      end
+      holders.each { |holder| key_words(holder, lang, words) if holder.is_a?(Hash) }
+      words
+    end
+
+    def key_words(hash, lang, words)
+      key_words(hash["check"], lang, words) if hash["check"].is_a?(Hash)
+      return unless %w[answer accept errors].any? { |k| hash.key?(k) }
+
+      options = [ hash, hash["display"] ].select { |h| h.is_a?(Hash) }.flat_map { |h| OPTION_LISTS.flat_map { |k| Array(h[k]) } }.grep(Hash)
+      texts = options.to_h { |o| [ o["id"].to_s, o["text"] || o["text_#{lang}"] ] }
+      errors = Array(hash["errors"]).grep(Hash).flat_map { |e| [ e["answer"], e["value"] ] }
+      values = [ hash["answer"], hash["accept"], *errors ].flatten.flat_map { |v| v.is_a?(Hash) ? v.to_a.flatten : [ v ] }.grep(String)
+      values.each { |v| words.merge([ v, texts[v] ].compact.flat_map { |t| t.downcase.tr("’", "'").scan(Lessons::Lexicon::WORD) }) }
     end
 
     MARKUP_SPAN = /\[\[(?:[a-z]+(?:[_-][a-z]+)*)(?:\|it)?:(.*?)\]\](?!\])/m
@@ -278,7 +358,7 @@ module Validation
     # Abbreviations whose full stop does not end the sentence. Any other letter or word followed by a full stop and a space does.
     ABBREVIATIONS = /(?<![\p{L}])(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Sra|Srta|Sres|Dña|vs|etc)\./
     # What the target-language lint reads of a text: the longest sentence in words, all the words (the instruction's length), the words outside the level
-    # and the absolute word, if any: {long:, words:, unknown:, absolute:}. +level+ false (form material): no unknown word, no absolute one; +absolute+ false: no absolute
+    # and the absolute word, if any: {long:, words:, unknown:, absolute:}. +level+ false: no unknown word, no absolute one; +absolute+ false: no absolute
     # one (the words of the exercise's material: a sentence, an option, the text around a box).
     def target_report(lang, text, known: [], level: true, absolute: true)
       counts = target_sentences(sentence_text(text)).map { |s| Readability.count_words(s) }
@@ -291,15 +371,18 @@ module Validation
       out
     end
 
-    # A colon that follows a closing quote («...»:), or one followed by a quote, a capital letter or a span, ends a sentence like a semicolon does.
+    # A colon that follows a closing quote («...»:), or one followed by a quote, a capital letter, a span or an opening ¿ or ¡, ends a sentence like a semicolon does.
     # (A lesson's text reaches this with its spans already read as ` m `, the one word they count.)
-    COLON_BREAK = /(?<=[»”"])\s*:\s*|\s*:\s+(?=\[\[|[«“"]|\p{Lu}|m\s)/
+    COLON_BREAK = /(?<=[»”"])\s*:\s*|\s*:\s*(?=[¿¡])|\s*:\s+(?=\[\[|[«“"]|\p{Lu}|m\s)/
+    # An Italian or code span counts one word; when its own full stop closes it (`[[it:Che bello!]]`) the stop still ends the sentence, as a quotation's does.
+    SPAN_ONE_WORD = /\[\[(?:it|code):(.*?)\]\](?!\])/m
 
     # The text of a target-language field as the sentence cap reads it: a formula and an Italian or code span count one word, a quotation («...», “...”: the forms
     # and sentences the text talks about) and a piece of a word (-es, ja-mon) none, other markup shows its words; a colon of COLON_BREAK splits.
     def sentence_text(text)
       text = text.to_s.gsub(COLON_BREAK, "; ")
-      Readability.strip_markup(Readability.without_quotations(text.gsub(Readability::MATH, " m ").gsub(/\[\[(?:it|code):.*?\]\](?!\])/m, " m ")).gsub(MARKUP_SPAN, '\1').gsub(LINK, '\1').gsub(PIECES, " "))
+      one_word = text.gsub(Readability::MATH, " m ").gsub(SPAN_ONE_WORD) { Regexp.last_match(1).match?(/[.!?…]\s*\z/) ? " m . " : " m " }
+      Readability.strip_markup(Readability.without_quotations(one_word).gsub(MARKUP_SPAN, '\1').gsub(LINK, '\1').gsub(PIECES, " "))
     end
 
     # ... as the level lint reads it: no formula, no span of a language, no quoted form («jámon»), no piece of a word (ja-mon, -es); other markup shows its words.

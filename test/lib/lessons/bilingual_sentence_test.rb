@@ -7,7 +7,7 @@ require_relative "../../support/lesson2_fixtures"
 class BilingualSentenceTest < ActiveSupport::TestCase
   DIR = Rails.root.join("test/fixtures/lang")
   F = Lesson2Fixtures
-  SENTENCE = %(translate_material: false\nsentence_en: "She ___ the guitar very well."\noptions:\n  - {id: a, text_en: "plays"})
+  SENTENCE = %(translate_material: false\nsentence_en: "She ___ the game very well."\noptions:\n  - {id: a, text_en: "plays"})
   PLAIN = %(translate_material: false\noptions:\n  - {id: a, text_en: "plays"})
   CHOICE_EXERCISE = <<~YAML.freeze
     text_en: "You should ___ more water."
@@ -51,19 +51,20 @@ class BilingualSentenceTest < ActiveSupport::TestCase
   test "a check choice with a sentence_en is clean: no pair, no level word, no schema or block finding" do
     outcome = check(with_sentence)
     assert_empty mine(outcome).map { |f| [ f.code, f.field, f.message ] }
-    assert_equal "She ___ the guitar very well.", parse(with_sentence).body.dig("cards", 0, "blocks", 1, "sentence_en")
+    assert_equal "She ___ the game very well.", parse(with_sentence).body.dig("cards", 0, "blocks", 1, "sentence_en")
   end
 
   test "the sentence is target-only: sentence_it beside it is E-LANG-PAIR-ORPHAN, naming the field" do
-    md = with_sentence.sub(%(sentence_en: "She ___ the guitar very well."), %(sentence_en: "She ___ the guitar very well."\nsentence_it: "Lei ___ la chitarra."))
+    md = with_sentence.sub(%(sentence_en: "She ___ the game very well."), %(sentence_en: "She ___ the game very well."\nsentence_it: "Lei ___ il gioco."))
     orphan = check(md).findings.select { |f| f.code == "E-LANG-PAIR-ORPHAN" }
     assert_equal [ "/cards/0/blocks/1/sentence_it" ], orphan.map(&:field)
     assert_match(/target-only|form material/, orphan.first.message)
   end
 
-  test "the words of the sentence are not read for the level" do
-    md = with_sentence.sub("She ___ the guitar very well.", "She ___ the brujúla very well.")
-    assert_empty check(md).findings.select { |f| f.code == "W-LANG-LEVEL" && f.detail[:words].to_a.include?("brujúla") }
+  test "the words of the sentence are read for the level (D-402, round 6), and teaches_en clears them" do
+    md = with_sentence.sub("She ___ the game very well.", "She ___ the brujúla very well.")
+    assert_equal [ "/cards/0/blocks/1/sentence_en" ], check(md).findings.select { |f| f.code == "W-LANG-LEVEL" && f.detail[:words].to_a.include?("brujúla") }.map(&:field)
+    assert_empty check(md.sub("bilingual: true\n", "bilingual: true\nteaches_en: [brujúla]\n")).findings.select { |f| f.code == "W-LANG-LEVEL" && f.detail[:words].to_a.include?("brujúla") }
   end
 
   test "a typed gap and a span_select hold their sentence elsewhere: sentence_en on them is E-LESSON-CHECK" do
@@ -84,10 +85,10 @@ class BilingualSentenceTest < ActiveSupport::TestCase
   test "the served check has the sentence in the sentence_it slot, with no tr entry and no sentence_en" do
     body = served(with_sentence)
     check = body.dig("cards", 0, "blocks", 1)
-    assert_equal "She ___ the guitar very well.", check["sentence_it"]
+    assert_equal "She ___ the game very well.", check["sentence_it"]
     assert_not check.key?("sentence_en")
-    assert_not_includes JSON.generate(check["tr"] || {}), "guitar"
-    assert_not_includes JSON.generate(body["tr"] || {}), "guitar"
+    assert_not_includes JSON.generate(check["tr"] || {}), "game"
+    assert_not_includes JSON.generate(body["tr"] || {}), "game"
   end
 
   test "the Italian layer of a check has no sentence, the target layer reads it as its own text" do

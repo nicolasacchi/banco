@@ -114,6 +114,7 @@ module Validation
         @ids = @cards.to_h { |c| [ c["id"], c ] }
         @catalogue = catalogue
         @ctx = Lessons::Blocks::Context.new(subject: subject, findings: findings, catalogue: @catalogue, resolver: method(:field_line), references: context.method(:reference_body), pages: context.method(:page))
+        @ctx.lang = @lang
         @plain = [] # every markup text, for the whole-lesson budgets: [[text, line]]
         @target = Lessons::Lang.target(subject)
         @glossary = Array(@body["glossary"]).to_h { |g| [ g["term_it"].to_s.downcase, g ] }
@@ -628,9 +629,11 @@ module Validation
       # span are out of the Italian lint (D-266): each stands for one word. In the translation of a bilingual lesson a role span is Italian words.
       def unmark(text, layer = nil) = Lessons::Lang.split(text, target: layer == :italian ? nil : @target).first
 
-      # A text of the target layer as the target lint reads it: its words, the quoted Italian ([[it:..]]) and the formulas out.
+      # A text of the target layer as the target lint reads it: its words, the quoted Italian ([[it:..]]) and the formulas out. A span of a language or of code
+      # counts one word (read as ` m `); a full stop that closes it, `[[es:¿Dónde estás?]]`, still ends the sentence.
       def target_plain(text)
-        plain = Lessons::Lang.split(text.gsub(/\[\[it:.*?\]\]/m, " m "), target: nil).first
+        one_word = text.gsub(/\[\[(?:it|en|es|la|code):(.*?)\]\](?!\])/m) { Regexp.last_match(1).match?(/[.!?…]\s*\z/) ? " m . " : " m " }
+        plain = Lessons::Lang.split(one_word, target: nil).first
         Readability.strip_markup(plain.gsub(Readability::MATH, " m "))
       end
 
@@ -700,14 +703,19 @@ module Validation
       MATERIAL_FIELD = %r{/(?:input_before|input_after|sentence_\w+|(?:options|elements|left|right|tiles|items)/\d+/text_\w+)\z}
 
       # The lint of words of another language (the target-language set, WAVE2 1.8): a short sentence, and words a learner of the lesson knows. A bilingual
-      # lesson's target text (@lang) is read by Validation::Bilingual.target_report: sentences split after `.»`, `;` and a lone letter, no level for form material,
+      # lesson's target text (@lang) is read by Validation::Bilingual.target_report: sentences split after `.»`, `;` and a lone letter, the level also for form material,
       # quoted forms, spans and pieces of words, and the absolute words (W-ABSOLUTE). +level+ false: no word of the level, no absolute word.
-      def target_lint(field, lang, text, at, level: true)
+      # +cell+: a cell of a table of forms, read for the level only (it is no sentence: no cap, no absolute word).
+      def target_lint(field, lang, text, at, level: true, cell: false)
         max = rule(:target_sentence_words)
         known = @known_words.fetch(lang, []) + common_names(lang)
         if @lang
-          report = Validation::Bilingual.target_report(lang, text, known: known, level: level && !@forms.include?(field), absolute: !MATERIAL_FIELD.match?(field))
-          long = report[:long]
+          # Form material (an option, a row, the sentence with its blank) is read for the level as the student reads it, in the target language alone: the words of
+          # the key, the accepted answers and the error values of its exercise are the forms it teaches (Validation::Bilingual.own_words).
+          form = cell || @forms.include?(field)
+          known += Validation::Bilingual.own_words(@raw, field, lang).to_a if form
+          report = Validation::Bilingual.target_report(lang, text, known: known, level: level, absolute: !form && !MATERIAL_FIELD.match?(field))
+          long = cell ? 0 : report[:long]
           unknown = report[:unknown]
           add("W-ABSOLUTE", field, "an absolute word (#{report[:absolute]}) needs a counterexample check", line: at, rule: "absolute-#{field}-#{at}", word: report[:absolute]) if report[:absolute]
         else
@@ -752,6 +760,14 @@ module Validation
             end
           end
         end
+        form_cells
+      end
+
+      # The cells of a table of forms (`translate_material: false` on a table: `header` and `rows` with no Italian) have no `_<lang>` key to be found by: read them for the level.
+      def form_cells
+        return unless @lang
+
+        Validation::Bilingual.bare_material(@raw, @lang) { |pointer, text| target_lint(pointer, @lang, text, pair_line(pointer), cell: true) }
       end
 
       # The figures of a block with where they sit in it: [[diagram, "/diagram"]].

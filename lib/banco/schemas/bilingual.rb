@@ -31,17 +31,19 @@ module Banco
         "description" => "D-402: the Italian label of each edge of `edges`, in the same order; null where the edge has no label."
       }.freeze
       # D-402: `translate_material: false` says that the form material under it is target-only (Lessons::Bilingual::MATERIAL): an item (its root), a lesson check (a
-      # check block, a step blank or an exercise's check, all `check_spec`), a `try` exercise, a `table` block and a figure of type `table`. Only `false` is a value:
-      # a revision that has nothing to say about it translates everything.
+      # check block, a step blank or an exercise's check, all `check_spec`), a `try` exercise, a `table` block, a figure of type `table` and a figure of type
+      # `concept_map` (its nodes that are verb forms). Only `false` is a value: a revision that has nothing to say about it translates everything.
       MATERIAL_MARKER = { "const" => false, "description" => "D-402: the form material of this exercise (the sentence with its blank, the options and rows that are forms, the final) is target-language only, with no Italian text; the instruction, hints, messages and solution steps stay paired." }.freeze
       MATERIAL_AT = {
         "item" => [ [] ],
         "lesson" => [ %w[$defs check_spec], %w[$defs exercise], %w[$defs b_table] ],
-        "diagram" => [ %w[$defs table] ]
+        "diagram" => [ %w[$defs table], %w[$defs concept_map] ]
       }.freeze
       # The `_it` that the schema requires of a text that can be form material (an option, a mistake's wrong and right): there the target text is enough,
       # `text_en` or `text_es` instead of `text_it` (the missing Italian of a text that is not material is E-LANG-PAIR-MISSING's).
       MATERIAL_REQUIRED = { "lesson" => { "id_text" => %w[text_it], "b_mistake" => %w[wrong_it right_it] } }.freeze
+      # The same for an inline object schema, by its path: the nodes of a concept map.
+      MATERIAL_REQUIRED_AT = { "diagram" => [ [ %w[$defs concept_map properties nodes items], %w[text_it] ] ] }.freeze
       # A `try` exercise of a bilingual course may have no text at all: a typed gap carries its sentence in `input_before` / `input_after`. The schema asks for
       # none; Lessons::Blocks::Try says an exercise with no text and no such gap is E-LESSON-BLOCK.
       OPTIONAL = { "lesson" => { "exercise" => %w[text_it] } }.freeze
@@ -91,12 +93,11 @@ module Banco
         end
         MATERIAL_REQUIRED.fetch(name.to_s, {}).each do |def_name, keys|
           node = out.dig("$defs", def_name) or raise ArgumentError, "#{name}: no $defs/#{def_name}"
-          node["required"] = Array(node["required"]) - keys
-          node.delete("required") if node["required"].empty?
-          keys.each do |key|
-            base = key.delete_suffix("_it")
-            node["allOf"] = Array(node["allOf"]) + [ { "anyOf" => [ key, *LANGS.map { |l| "#{base}_#{l}" } ].map { |k| { "required" => [ k ] } } } ]
-          end
+          material_required(node, keys)
+        end
+        MATERIAL_REQUIRED_AT.fetch(name.to_s, []).each do |path, keys|
+          node = out.dig(*path) or raise ArgumentError, "#{name}: no #{path.join('/')}"
+          material_required(node, keys)
         end
         OPTIONAL.fetch(name.to_s, {}).each do |def_name, keys|
           node = out.dig("$defs", def_name) or raise ArgumentError, "#{name}: no $defs/#{def_name}"
@@ -114,6 +115,16 @@ module Banco
           LANGS.each { |lang| target["properties"]["teaches_#{lang}"] ||= TEACHES.dup }
         end
         out
+      end
+
+      # +keys+ of +node+ (an object schema) are no longer required: one of them or its `_en` / `_es` sibling is (the text of a form is the target text alone).
+      def material_required(node, keys)
+        node["required"] = Array(node["required"]) - keys
+        node.delete("required") if node["required"].empty?
+        keys.each do |key|
+          base = key.delete_suffix("_it")
+          node["allOf"] = Array(node["allOf"]) + [ { "anyOf" => [ key, *LANGS.map { |l| "#{base}_#{l}" } ].map { |k| { "required" => [ k ] } } } ]
+        end
       end
 
       # R1, at every object schema of the tree.

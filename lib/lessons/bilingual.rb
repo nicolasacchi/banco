@@ -63,12 +63,13 @@ module Lessons
     # The marker of form material: `translate_material: false` (the only value that means anything; true is what no marker says).
     MARKER = "translate_material"
     # Form material, by base and the pointer of the hash that holds it, once a marker is in force above it (see the module comment): an instance's
-    # `display.stem`, the `text` of an option, element or row (items and lesson checks), the `final` of a solution or of a `try` exercise and the `text` of that
+    # `display.stem`, the `text` of an option, element or row (items and lesson checks) or of a node of a concept map (a node that is a verb form), the `final` of a
+    # solution or of a `try` exercise and the `text` of that
     # exercise (the sentence with its blank). A `table`'s `rows` are material under the marker when the hash is of `type: table`; so is its `header`, unless the table
     # writes `header_it` (the headers are chrome: a pair `header` + `header_it` is allowed beside material cells, and is drawn with its translation).
     MATERIAL = {
       "stem" => %r{/display\z},
-      "text" => %r{/(?:options|elements|left|right)/\d+\z|/exercises/\d+\z},
+      "text" => %r{/(?:options|elements|left|right|nodes)/\d+\z|/exercises/\d+\z},
       "final" => %r{/solution\z|/exercises/\d+\z}
     }.freeze
     # What a `mistake` block holds is material with no marker: the wrong and the right form (a translation of either gives the same Italian for both).
