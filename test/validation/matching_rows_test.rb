@@ -129,6 +129,35 @@ class MatchingRowsTest < ActiveJob::TestCase
     assert_empty found(result, "E-MATCHING-SIZE")
   end
 
+  test "a practice judge of five rows (3 + 2) is clean: the split can vary, and the warning starts above five (D-402 round 7)" do
+    result = run_item(judge_item(%w[r1 r1 r1 r2 r2]))
+    assert_empty found(result, "W-MATCHING-ROWS")
+    assert_empty found(result, "E-MATCHING-SIZE")
+    assert_empty found(result, "W-MATCHING-JUDGE-ROWS")
+    assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
+    assert_equal 1, found(run_item(judge_item(%w[r1 r1 r1 r2 r2 r2])), "W-MATCHING-ROWS").size
+    Validation::Rules.with(practice: { matching_two_labels_warn: 4 }) do
+      assert_equal 1, found(run_item(judge_item(%w[r1 r1 r1 r2 r2])), "W-MATCHING-ROWS").size, "the five is the file's"
+    end
+  end
+
+  test "a classification of four rows and four chips with a distractor chip is clean, no fifth row and no warning (D-402 round 7)" do
+    display = lambda do |n|
+      { "stem_it" => "Classifica la parola, serie #{n}.", "reuse_right" => true,
+        "left" => (1..4).map { |i| { "id" => "l#{i}", "text" => "parola numero #{i} della serie #{n}" } },
+        "right" => (1..4).map { |i| { "id" => "r#{i}", "text" => "categoria #{i} della serie #{n}" } } }
+    end
+    key = { "l1" => "r1", "l2" => "r2", "l3" => "r3", "l4" => "r1" }
+    instances = (1..10).map do |n|
+      { "display" => display.call(n), "answer" => key, "errors" => [ { "code" => "swap", "value" => key.merge("l1" => "r2") } ],
+        "solution" => { "steps" => [ { "text_it" => "Classifica ogni parola." } ], "final" => "fatto" } }
+    end
+    result = run_item(practice_matching(4).merge("instances" => instances))
+    assert_empty found(result, "E-MATCHING-SIZE")
+    assert_empty found(result, "W-MATCHING-ROWS")
+    assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
+  end
+
   test "a diagnosis judge keeps its six rows" do
     assert_not_empty found(run_item(judge_item(%w[r1 r2 r1 r2], kind: "diagnosis_item")), "E-MATCHING-SIZE")
     assert_empty found(run_item(judge_item(%w[r1 r1 r1 r2 r2 r2], kind: "diagnosis_item")), "E-MATCHING-SIZE")

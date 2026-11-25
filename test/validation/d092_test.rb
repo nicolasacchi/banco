@@ -41,6 +41,17 @@ class D092Test < ActiveSupport::TestCase
     assert_includes codes(run_item(classification(left: 4, categories: 4))), "E-MATCHING-SIZE"
   end
 
+  test "a classification may have as many chips as rows when one chip is never the right answer (a distractor), and not otherwise (D-402 round 7)" do
+    # four rows, four chips: the key uses r1..r3 only, r4 is the distractor («why» among because, so, but)
+    key = (1..4).to_h { |i| [ "l#{i}", "r#{((i - 1) % 3) + 1}" ] }
+    result = run_item(classification(left: 4, categories: 4, answer: key))
+    assert_not_includes codes(result), "E-MATCHING-SIZE"
+    assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
+    # more chips than rows is still refused, and four chips that the key all uses still are
+    assert_includes codes(run_item(classification(left: 4, categories: 5, answer: key))), "E-MATCHING-SIZE"
+    assert_includes codes(run_item(classification(left: 4, categories: 4))), "E-MATCHING-SIZE"
+  end
+
   test "D-093: two categories are allowed from 6 rows" do
     result = run_item(classification(left: 6, categories: 2))
     assert_equal "passed", result.status, result.findings.map(&:to_h).inspect

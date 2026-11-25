@@ -94,7 +94,7 @@ module Validation
       passage_rules(display, label, seed, f)
       frame_blank(display, label, seed, f) if layered
       SchemaCheck.generated(inst, f, seed: seed, subject: @subject) if generated && keys.empty? && !layered
-      size_rules(display, label, seed, f)
+      size_rules(display, answer, label, seed, f)
       problems = Answers.shape_problems(@unit.component, answer, display)
       problems.each { |p| f.add("E-GEN-SCHEMA", "#{label}/answer", p, rule: "answer_shape", seed: seed) }
       errors(inst, label, seed, f)
@@ -158,7 +158,7 @@ module Validation
 
     # ---- sizes ---------------------------------------------------------------
 
-    def size_rules(display, label, seed, f)
+    def size_rules(display, answer, label, seed, f)
       case @unit.component
       when "choice"
         n = Array(display["options"]).size
@@ -173,8 +173,8 @@ module Validation
         if display["reuse_right"] == true
           # A classification (D-092): rows share categories, so the right column is shorter than the left.
           judge_rows = judge_min_rows
-          unless (r >= MIN_CATEGORIES || (r == 2 && l >= judge_rows)) && r < l
-            f.add("E-MATCHING-SIZE", "#{label}/display/right", "a classification has 3 or more categories (2 from #{judge_rows} rows) and fewer categories than rows (#{l}), not #{r}", count: r, seed: seed)
+          unless (r >= MIN_CATEGORIES || (r == 2 && l >= judge_rows)) && (r < l || (r == l && distractor_chip?(display, answer)))
+            f.add("E-MATCHING-SIZE", "#{label}/display/right", "a classification has 3 or more categories (2 from #{judge_rows} rows) and fewer categories than rows (#{l}), or as many when one of them is never the right answer (a distractor), not #{r}", count: r, seed: seed)
           end
         elsif r != l + 1
           f.add("E-MATCHING-SIZE", "#{label}/display/right", "the right column has n+1 entries (#{l + 1}), not #{r}", count: r, seed: seed)
@@ -186,6 +186,14 @@ module Validation
           f.add("E-MATCHING-RIGHT-MARKUP", "#{label}/display/right/#{i}/text", "the right column is plain text (no $, no backslash, no **): write x \u2264 -2, not LaTeX", seed: seed)
         end
       end
+    end
+
+    # A classification chip that no row's key uses: a distractor («why» among because, so, but). It takes the place of the row a classification
+    # would need to have fewer chips than rows, so such an item need not grow to 5 rows (W-MATCHING-ROWS above 4).
+    def distractor_chip?(display, answer)
+      key = Answers.matching_raw(answer).first or return false
+      used = key.values.uniq
+      Array(display["right"]).any? { |o| o.is_a?(Hash) && !used.include?(o["id"].to_s) }
     end
 
     # Two categories (a judge) are allowed from MIN_ROWS_TWO_CATEGORIES rows in a diagnosis item and, in a practice item, from
