@@ -183,8 +183,8 @@ function animate(oldBoxes, root, reduced) {
 // The translation panel of a figure, or null when none of its texts has an Italian: a `.tr` of the alt's translation and the list «target → italiano» (D-402).
 export function translationPanel(data, ctx) {
   const alt = typeof data?.alt_it === "string" ? translationOf(data.alt_it, ctx) : null
-  // the names the layout draws in the language of the lesson: a sentence's role names, a mirror's sides and link kinds
-  const named = data?.type === "sentence" ? roleNamePairs(data, ctx.subject, ctx.lang) : data?.type === "mirror" ? mirrorChromePairs(data, ctx.lang) : []
+  // the names the layout draws in the language of the lesson: a sentence's role names, a mirror's sides and link kinds, a type's own `chromePairs` (a tense line's axis, a word's legend)
+  const named = data?.type === "sentence" ? roleNamePairs(data, ctx.subject, ctx.lang) : data?.type === "mirror" ? mirrorChromePairs(data, ctx.lang) : moduleFor(data?.type)?.chromePairs?.(data, ctx.lang) ?? []
   const pairs = [...figureStrings(data).map((text) => [text, translationOf(text, ctx)]).filter(([, italian]) => italian !== null), ...named.filter(([text]) => !figureStrings(data).includes(text))]
   if (alt === null && pairs.length === 0) return null
   const panel = translationNode(null, { tag: "div" })

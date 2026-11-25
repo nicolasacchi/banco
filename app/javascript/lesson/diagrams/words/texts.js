@@ -19,11 +19,11 @@ export const TEXT = {
   note_label: "Nota"
 }
 
-// The chrome words of the mirror in the language of a bilingual lesson (D-402), by the lesson's language: the figure draws these and says the Italian
-// ones (TEXT) in its translation panel, like a sentence's role names. Only the keys the mirror draws; a legacy lesson draws TEXT.
+// The chrome words of the mirror and of the word_parts legend in the language of a bilingual lesson (D-402), by the lesson's language: the figure draws these and says
+// the Italian ones (TEXT) in its translation panel, like a sentence's role names. Only the keys these figures draw; a legacy lesson draws TEXT.
 export const TARGET_TEXT = {
-  en: { link_same: "same", link_meaning: "same meaning", link_shift: "changes", link_false_friend: "false friend", link_none: "no partner", italian_side: "Italian", english_side: "English", spanish_side: "Spanish", pair_number: "Pair" },
-  es: { link_same: "igual", link_meaning: "mismo significado", link_shift: "cambia", link_false_friend: "falso amigo", link_none: "sin pareja", italian_side: "italiano", english_side: "inglés", spanish_side: "español", pair_number: "Pareja" }
+  en: { mark_stem: "root", mark_ending: "ending", mark_change: "changing letters", mark_attached: "attached piece", strong_key: "Stress here", link_same: "same", link_meaning: "same meaning", link_shift: "changes", link_false_friend: "false friend", link_none: "no partner", italian_side: "Italian", english_side: "English", spanish_side: "Spanish", pair_number: "Pair" },
+  es: { mark_stem: "raíz", mark_ending: "terminación", mark_change: "letras que cambian", mark_attached: "pieza añadida", strong_key: "Aquí va el acento", link_same: "igual", link_meaning: "mismo significado", link_shift: "cambia", link_false_friend: "falso amigo", link_none: "sin pareja", italian_side: "italiano", english_side: "inglés", spanish_side: "español", pair_number: "Pareja" }
 }
 
 // The caps the layouts mirror (config/banco/validation_rules.yml, lesson2.types).

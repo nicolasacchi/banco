@@ -14,6 +14,9 @@ export { schema }
 export const type = "timeline"
 export const states = stateCount
 
+// The «target → italiano» pairs of the words the layout draws itself in a bilingual lesson (the axis of a tense line): for the figure's translation panel
+export const chromePairs = (data, lang) => (data?.scale === "years" ? [] : tense.chromePairs(lang))
+
 const YEAR_KEYS = ["from", "to", "every", "centuries", "lanes", "periods", "events", "spans", "measure"]
 const TENSE_KEYS = ["window", "marks"]
 

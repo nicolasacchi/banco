@@ -36,4 +36,19 @@ export const TEXT = {
   legend_title: "Che cosa vuol dire"
 }
 
+// The three words the tense scale draws around its axis, in the language of a bilingual lesson (D-402), by the lesson's language: the figure draws these and
+// its translation panel says the Italian ones (TEXT.now, before, after), like the mirror's sides. A legacy lesson draws TEXT.
+export const TARGET_TEXT = {
+  en: { now: "now", before: "before", after: "after" },
+  es: { now: "ahora", before: "antes", after: "después" }
+}
+
+export const chromeOf = (lang) => TARGET_TEXT[lang] ?? null
+
+// The «word in the language of the lesson → Italian» pairs of the axis words, for the figure's translation panel. Empty in a legacy lesson.
+export function tenseChromePairs(lang) {
+  const words = chromeOf(lang)
+  return words ? ["now", "before", "after"].map((k) => [words[k], TEXT[k]]) : []
+}
+
 export const fill = (template, vars = {}) => template.replace(/%\{(\w+)\}/g, (_, k) => String(vars[k]))

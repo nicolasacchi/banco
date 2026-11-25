@@ -3,7 +3,7 @@
 // was decided), the Italian question beside it. "prima" and "dopo" are named, "adesso" is a dashed line through every row.
 import { label, plain, roleInfo, shape, words } from "lesson/diagrams/common"
 import { arrowhead } from "lesson/diagrams/graph/kit"
-import { fill, TEXT } from "lesson/diagrams/time/texts"
+import { chromeOf, fill, TEXT, tenseChromePairs } from "lesson/diagrams/time/texts"
 
 export const CAPS = { tense_mark_words: 8, label_words: 6 }
 const LANG_OF = { text_en: "english", text_es: "spanish" }
@@ -65,6 +65,10 @@ export function printedTense(eff) {
   return out
 }
 
+// The words of the axis: Italian, or the language of a bilingual lesson with the label carrying that language (the render check leaves such a label out and the
+// figure's panel says its Italian, D-402).
+export const chromePairs = (lang) => tenseChromePairs(lang)
+
 const shapeOf = (ctx, role) => roleInfo(ctx.palette, ctx.subject, role ?? "muted")?.shape ?? "circle"
 
 export function buildTense(data, ctx, eff, legendRow) {
@@ -82,11 +86,14 @@ export function buildTense(data, ctx, eff, legendRow) {
   const marks = eff.marks ?? []
   const roles = []
   let y = 6
+  const chrome = select ? null : chromeOf(ctx.lang)
+  const word = (key) => chrome?.[key] ?? TEXT[key]
+  const lang = chrome ? ctx.lang : undefined
 
   // the header: "adesso" over the axis, "prima" and "dopo" under its ends
   if (!select) {
-    const w = Math.ceil(ctx.measure(TEXT.now, f).w)
-    label(ctx, TEXT.now, Math.max(4, Math.min(nowX - w / 2, W - 4 - w)), y, { anchor: "start", cls: "dg-tl-now", key: "now" })
+    const w = Math.ceil(ctx.measure(word("now"), f).w)
+    label(ctx, word("now"), Math.max(4, Math.min(nowX - w / 2, W - 4 - w)), y, { anchor: "start", cls: "dg-tl-now", key: "now", lang })
   }
   y += lineH + 4
   const axisY = y
@@ -94,8 +101,8 @@ export function buildTense(data, ctx, eff, legendRow) {
   for (let v = Math.ceil(lo); v <= hi; v++) shape(ctx, "line", { x1: xOf(v), y1: axisY, x2: xOf(v), y2: axisY + (v === 0 ? 14 : 7), cls: `dg-tl-tick${v === 0 ? " dg-tl-tick-major" : ""}`, key: `tick:${v}` })
   y = axisY + 18
   if (!select) {
-    label(ctx, `← ${TEXT.before}`, 8, y, { anchor: "start", cls: "dg-tl-side", key: "before" })
-    label(ctx, `${TEXT.after} →`, W - 8, y, { anchor: "end", cls: "dg-tl-side", key: "after" })
+    label(ctx, `← ${word("before")}`, 8, y, { anchor: "start", cls: "dg-tl-side", key: "before", lang })
+    label(ctx, `${word("after")} →`, W - 8, y, { anchor: "end", cls: "dg-tl-side", key: "after", lang })
   }
   y += lineH + 6
   const rowsTop = y

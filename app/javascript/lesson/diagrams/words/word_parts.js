@@ -8,7 +8,7 @@ import { effectiveState, finish, label, listIt, shape, stateCount, words as word
 import { run } from "lesson/diagrams/run"
 import { arrowhead, polyline } from "lesson/diagrams/graph/kit"
 import * as Words from "lesson/lib/words"
-import { CAPS, TEXT, countIt, markWord } from "lesson/diagrams/words/texts"
+import { CAPS, TEXT, chromeOf, countIt, markWord } from "lesson/diagrams/words/texts"
 
 export { schema }
 export const type = "word_parts"
@@ -230,6 +230,28 @@ export function printed(data, state = 0) {
   return [...new Set(out.filter((x) => x != null && x !== "").map(String))]
 }
 
+// The marks and the strong-syllable key a state's legend draws: the marks of the pieces that appear, in the order of the words, and whether the key of the
+// strong syllable follows (one rule for the layout and for the panel's pairs). A decode view and a select figure draw no legend.
+function legendOf(eff) {
+  if (eff.view === "decode") return { marks: [], strong: false }
+  const infos = (eff.words ?? []).map(analyse).filter((i) => !i.error && i.key)
+  return { marks: [...new Set(infos.filter((i) => !i.plain).flatMap((i) => i.pieces.map((p) => p.mark)))], strong: infos.some((i) => i.syllables && i.stress && i.syllables.length > 1) }
+}
+
+// The «target → italiano» pairs of the legend words the layout draws in the language of a bilingual lesson, for the figure's panel (empty in a legacy lesson).
+export function chromePairs(data, lang) {
+  const words = chromeOf(lang)
+  if (!words) return []
+  const keys = []
+  const add = (key) => { if (!keys.includes(key)) keys.push(key) }
+  for (let i = 0; i < stateCount(data); i++) {
+    const { marks, strong } = legendOf(effectiveState(data, i))
+    marks.forEach((m) => add(`mark_${m}`))
+    if (strong) add("strong_key")
+  }
+  return keys.map((k) => [words[k], TEXT[k]])
+}
+
 // ---- select targets ---------------------------------------------------------------------------------------------------------------
 
 const wordsOf = (data) => effectiveState(data, 0).words
@@ -389,13 +411,18 @@ function build(data, ctx) {
     return y
   }
 
+  // the legend's words: Italian, or the language of a bilingual lesson with the label carrying that language (the figure's panel says the Italian, D-402)
+  const chrome = select ? null : chromeOf(ctx.lang)
+  const chromeWord = (key) => chrome?.[key] ?? TEXT[key]
+  const chromeLang = chrome ? ctx.lang : undefined
+
   // a key to the marks of the pieces that appear: a small box in the style of the mark, then its word
   function legend(marks, top) {
     let x = marginX
     let y = top
     const sw = Math.round(f * 1.2)
     for (const mark of marks) {
-      const text = markWord(mark)
+      const text = chromeWord(`mark_${mark}`)
       const m = ctx.measure(text, f)
       const need = sw + 6 + m.w + 18
       if (x + need > W - marginX && x > marginX) {
@@ -404,7 +431,7 @@ function build(data, ctx) {
       }
       if (mark === "change") shape(ctx, "rect", { x, y: y + (lineH - sw) / 2 + 1, w: sw, h: sw - 2, r: 0, cls: "dg-wp-box dg-wp-change dg-wp-swatch", key: `key:${mark}` })
       else shape(ctx, "line", { x1: x, y1: y + lineH / 2, x2: x + sw, y2: y + lineH / 2, cls: `dg-wp-ul dg-wp-ul-${mark}`, key: `key:${mark}` })
-      label(ctx, text, x + sw + 6, y, { anchor: "start", cls: "dg-wp-key", key: `key:${mark}:t` })
+      label(ctx, text, x + sw + 6, y, { anchor: "start", cls: "dg-wp-key", key: `key:${mark}:t`, lang: chromeLang })
       x += need
     }
     return y + lineH + 8
@@ -413,7 +440,7 @@ function build(data, ctx) {
   function strongKey(top) {
     const r = Math.max(4, Math.round(f * 0.22))
     shape(ctx, "circle", { cx: marginX + r + 2, cy: top + lineH / 2, r, cls: "dg-wp-dot", key: "key:dot" })
-    label(ctx, TEXT.strong_key, marginX + 2 * r + 12, top, { anchor: "start", cls: "dg-wp-key", key: "key:dot:t" })
+    label(ctx, chromeWord("strong_key"), marginX + 2 * r + 12, top, { anchor: "start", cls: "dg-wp-key", key: "key:dot:t", lang: chromeLang })
     return top + lineH + 8
   }
 
@@ -437,10 +464,9 @@ function build(data, ctx) {
   })
   if (!select && eff.view !== "decode") {
     // one key for the whole figure: the marks that appear, then the dot of the strong syllable
-    const infos = eff.words.map(analyse).filter((i) => !i.error && i.key)
-    const marks = [...new Set(infos.filter((i) => !i.plain).flatMap((i) => i.pieces.map((p) => p.mark)))]
+    const { marks, strong } = legendOf(eff)
     if (marks.length) y = legend(marks, y)
-    if (infos.some((i) => i.syllables && i.stress && i.syllables.length > 1)) y = strongKey(y)
+    if (strong) y = strongKey(y)
   }
   return finish(ctx, y, { states: stateCount(data), state: ctx.state, op: eff.op_it ?? null })
 }
