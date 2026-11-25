@@ -1314,7 +1314,6 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "tag",
               "text_it"
             ],
             "properties": {

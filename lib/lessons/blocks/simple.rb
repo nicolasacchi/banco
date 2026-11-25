@@ -50,7 +50,7 @@ module Lessons
 
       def procedure(block, ctx)
         block["steps"].to_a.each_with_index do |s, i|
-          ctx.tag("steps/#{i}/tag", s["tag"])
+          ctx.tag("steps/#{i}/tag", s["tag"]) if s["tag"] # a step may have no tag: no chip (D-402)
           next unless s["example_tex"]
 
           begin
