@@ -187,6 +187,7 @@ module Lessons
       type = data["type"]
       declared = Diagrams.schema_def(type).fetch("properties").keys
       declared += R2_TWINS + [ MATERIAL ] if type == "table" # the Italian of a table's cells, next to the cells in the subject's language (D-402), and the marker that has none
+      declared += [ MATERIAL ] if type == "concept_map" # the marker of a map whose nodes are verb forms with no Italian (D-402, round 6)
       solution = Diagrams.solution_fields(type)
       merged = Diagrams.merge_states(data)
       out = merged.slice(*declared).except(*solution)

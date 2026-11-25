@@ -77,4 +77,11 @@ class BilingualToolingSixTest < ActiveSupport::TestCase
     assert_empty labels(md)
     assert_empty labels(two_checks("A drink goes with which word?", "Quale parola va bene?"))
   end
+
+  test "a concept_map that is form material is served with its marker, so the page draws its nodes without a translation (round 6)" do
+    map = { "type" => "concept_map", "alt_it" => "Una mappa del verbo play con tre forme.", "root" => "r", "translate_material" => false,
+            "nodes" => [ { "id" => "r", "text_it" => "play" }, { "id" => "a", "text_it" => "plays" } ], "edges" => [ { "from" => "r", "to" => "a" } ] }
+    assert_equal false, Lessons::StudentBody.diagram_generic(map)["translate_material"]
+    assert_not Lessons::StudentBody.diagram_generic(map.except("translate_material")).key?("translate_material")
+  end
 end
