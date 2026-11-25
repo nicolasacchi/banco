@@ -326,6 +326,24 @@ func runWorkSubmit(e *env, args []string) error {
 	return err
 }
 
+// runWorkRetry asks for a revision's validation again without a new revision (POST /api/v1/work/revisions/:revision/retry, D-402): only when it failed on
+// the server's time limit alone, or has no verdict because its job was lost (a restart). Anything else is E-RETRY-REFUSED.
+func runWorkRetry(e *env, args []string) error {
+	fs := flag.NewFlagSet("work retry", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	dry := fs.Bool("dry-run", false, "check that a retry is allowed and queue nothing")
+	fs.Bool("json", false, "JSON output (the default)")
+	pos, err := parseFlags(fs, args)
+	if err != nil {
+		return err
+	}
+	const next = "banco work retry REV"
+	if len(pos) != 1 || !idRe.MatchString(pos[0]) {
+		return newErr(ExitUsage, "E-USAGE", "revision", "work retry takes one revision id (a number)", next)
+	}
+	return send(e, "work retry", "POST", "/api/v1/work/revisions/"+url.PathEscape(pos[0])+"/retry", nil, *dry)
+}
+
 // runWorkStatus prints the validation of a revision (GET /api/v1/work/revisions/:revision).
 // With --wait it polls until the verdict is final: exit 0 for passed, 3 for failed
 // (the codes are on stderr), 6 when the validation ended in error or the wait ran out.
@@ -357,11 +375,12 @@ func runWorkStatus(e *env, args []string) error {
 			return err
 		}
 		var st struct {
-			Status   string            `json:"status"`
-			Settled  bool              `json:"settled"`
-			Ahead    int               `json:"queue_ahead"`
-			Codes    []string          `json:"codes"`
-			Findings []json.RawMessage `json:"findings"`
+			Status      string            `json:"status"`
+			Settled     bool              `json:"settled"`
+			TimeoutOnly bool              `json:"timeout_only"`
+			Ahead       int               `json:"queue_ahead"`
+			Codes       []string          `json:"codes"`
+			Findings    []json.RawMessage `json:"findings"`
 		}
 		if err := json.Unmarshal(body, &st); err != nil {
 			return newErr(ExitServer, "E-HTTP", "", "the server's answer is not JSON: "+err.Error(), "banco health")
@@ -380,6 +399,9 @@ func runWorkStatus(e *env, args []string) error {
 				ce := newErr(ExitValidation, "E-VALIDATION-FAILED", "revision", "validation failed: "+strings.Join(st.Codes, ", "), "fix the files and banco work submit DIR --dry-run")
 				if len(st.Codes) > 0 {
 					ce.Code = st.Codes[0]
+				}
+				if st.TimeoutOnly {
+					ce.Next = "the server's time limit, not your files: do not change them; ask for another go: banco work retry " + pos[0]
 				}
 				if len(st.Codes) == 1 && st.Codes[0] == "E-VERIFY-MISSING" {
 					ce.Next = "the files are clean: a verifier runs banco work open ITEM --role verifier and writes verify.mjs"

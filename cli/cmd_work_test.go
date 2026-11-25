@@ -347,6 +347,38 @@ func TestWorkStatusWaitFailedExitsThree(t *testing.T) {
 	}
 }
 
+func TestWorkStatusWaitTimeoutOnlyPointsAtTheRetry(t *testing.T) {
+	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":8,"status":"failed","settled":true,"timeout_only":true,"codes":["E-GEN-TIMEOUT"],"findings":[{"code":"E-GEN-TIMEOUT"}]}`})
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "status", "8", "--wait")
+	e := assertErrJSON(t, r.stderr, "E-GEN-TIMEOUT")
+	if !strings.Contains(e.Next, "banco work retry 8") || strings.Contains(e.Next, "fix the files") {
+		t.Errorf("a time limit of the server is not the author's to fix: %+v", e)
+	}
+}
+
+func TestWorkRetryAsksForAnotherValidationOfTheSameRevision(t *testing.T) {
+	srv, seen := sequenceServer(t, [2]string{"202", `{"revision_id":8,"enqueued":true,"status":"failed","next":"banco work status 8 --wait"}`})
+	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "retry", "8")
+	if r.exit != 0 || !strings.Contains(r.stdout, `"enqueued":true`) {
+		t.Fatalf("exit %d stdout %s stderr %s", r.exit, r.stdout, r.stderr)
+	}
+	if len(*seen) != 1 || (*seen)[0].method != "POST" || (*seen)[0].path != "/api/v1/work/revisions/8/retry" || (*seen)[0].dry != "" {
+		t.Errorf("request: %+v", *seen)
+	}
+	r = runCLI(t, srv.URL, envToken("bnc_x"), "work", "retry", "8", "--dry-run")
+	if r.exit != 0 || (*seen)[1].dry != "1" {
+		t.Errorf("--dry-run: exit %d %+v", r.exit, *seen)
+	}
+	if r = runCLI(t, srv.URL, envToken("bnc_x"), "work", "retry", "x"); r.exit != ExitUsage || len(*seen) != 2 {
+		t.Errorf("a revision is a number: exit %d, %d requests", r.exit, len(*seen))
+	}
+	refused, _ := sequenceServer(t, [2]string{"409", `{"code":"E-RETRY-REFUSED","field":"revision","message":"neither","next":"banco work status 8 --wait"}`})
+	if r = runCLI(t, refused.URL, envToken("bnc_x"), "work", "retry", "8"); r.exit == 0 {
+		t.Errorf("a refusal is an error: %s", r.stderr)
+	}
+	assertErrJSON(t, r.stderr, "E-RETRY-REFUSED")
+}
+
 func TestWorkStatusWaitVerifyMissingOnlyPointsAtTheVerifier(t *testing.T) {
 	srv, _ := sequenceServer(t, [2]string{"200", `{"revision_id":8,"status":"failed","settled":true,"codes":["E-VERIFY-MISSING"]}`})
 	r := runCLI(t, srv.URL, envToken("bnc_x"), "work", "status", "8", "--wait")

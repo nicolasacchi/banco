@@ -141,6 +141,15 @@
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
     },
     {
+      "name": "work retry",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/work/revisions/:revision/retry",
+      "args": ["revision"],
+      "flags": ["--dry-run"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-RETRY-REFUSED"]
+    },
+    {
       "name": "skill-graph open",
       "local": false,
       "method": "GET",
@@ -300,6 +309,15 @@
       "path": "/api/v1/lesson-revisions/:revision",
       "args": ["revision"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
+      "name": "lesson render",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/lesson-revisions/:revision/render",
+      "args": ["revision"],
+      "flags": ["--retry", "--dry-run"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-RETRY-REFUSED"]
     },
     {
       "name": "lesson shots",

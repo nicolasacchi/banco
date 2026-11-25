@@ -190,6 +190,28 @@ func runLessonStatus(e *env, args []string) error {
 	return runKeyed(e, keyedCommand{"lesson status", "/api/v1/lesson-revisions/", "", "", idRe, "revision", "a revision id (a number)", "banco lesson status REV"}, args)
 }
 
+// lesson render REV --retry: draw a lesson revision's render again without a new revision (D-402). The server allows it only when the latest render failed on
+// its time limits alone (`lesson status` says so: timeout_only); anything else is E-RETRY-REFUSED. --retry is required: the render runs by itself at submit.
+func runLessonRender(e *env, args []string) error {
+	fs := flag.NewFlagSet("lesson render", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	retry := fs.Bool("retry", false, "draw the render again (only a render that failed on the server's time limits alone)")
+	dry := fs.Bool("dry-run", false, "check that a retry is allowed and queue nothing")
+	fs.Bool("json", false, "JSON output (the default)")
+	pos, err := parseFlags(fs, args)
+	if err != nil {
+		return err
+	}
+	const next = "banco lesson render REV --retry"
+	if len(pos) != 1 || !idRe.MatchString(pos[0]) {
+		return newErr(ExitUsage, "E-USAGE", "revision", "lesson render takes one argument: a revision id (a number)", next)
+	}
+	if !*retry {
+		return newErr(ExitUsage, "E-USAGE", "retry", "lesson render only draws again a render that failed on the server's time limits alone: give --retry (the render runs by itself when a lesson is submitted; banco lesson status "+pos[0]+" tells whether it timed out)", next)
+	}
+	return send(e, "lesson render", "POST", "/api/v1/lesson-revisions/"+url.PathEscape(pos[0])+"/render", nil, *dry)
+}
+
 // lesson shots REV --dir D: the screenshots of the render check (D-249, A12.2), one WebP per card and viewport, so that
 // a multimodal reviewer looks at every card. Files are named card-NN_WIDTHxHEIGHT-theme.webp (card-00 is the cover, with the lesson's hero figure); a further
 // state of a card (D-311: another exercise of «Prova tu», the closed parts opened) is card-NN-STATE_WIDTHxHEIGHT-theme.webp.

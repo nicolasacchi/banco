@@ -27,6 +27,10 @@ const defaultItemShotsDir = "banco-figures"
 // defaultItemShotsTimeout is the wait of `--wait` in seconds: a Chrome lane with a queue of validations takes longer than 5 minutes (D-402 waves).
 const defaultItemShotsTimeout = 1200
 
+// itemShotsWaitCap is the longest `--wait` goes on in all, whatever the queue does (D-402): the wait is a stretch without progress (--timeout), renewed each
+// time the queue in front of the request gets shorter, so a long queue is waited out; the cap is only the last stop (a variable, so that a test can lower it).
+var itemShotsWaitCap = 6 * time.Hour
+
 type itemShotsList struct {
 	Status    string            `json:"status"`
 	RenderID  int               `json:"render_id"`
@@ -95,7 +99,7 @@ func runItemShots(e *env, args []string) error {
 	dir := fs.String("dir", "", "folder for the images: DIR/REV/instance-NN_390x844.webp (default "+defaultItemShotsDir+")")
 	wait := fs.Bool("wait", false, "wait until the render is done (the Chrome lane runs two jobs at a time and says its place in the queue)")
 	force := fs.Bool("force", false, "draw the revision again even if it has been drawn")
-	timeout := fs.Int("timeout", defaultItemShotsTimeout, "seconds to wait with --wait (a busy Chrome lane can take many minutes)")
+	timeout := fs.Int("timeout", defaultItemShotsTimeout, "seconds to wait with --wait without the queue moving (a busy Chrome lane can take many minutes; the wait starts again each time the queue in front gets shorter, up to a cap of 6 hours in all)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
@@ -138,16 +142,24 @@ func runItemShots(e *env, args []string) error {
 		return rerr
 	}
 	if *wait {
-		deadline := time.Now().Add(time.Duration(*timeout) * time.Second)
-		told := -1
+		started := time.Now()
+		deadline := started.Add(time.Duration(*timeout) * time.Second)
+		limit := started.Add(itemShotsWaitCap)
+		told, nearest := -1, -1
 		for {
 			if list, err = e.itemShots(rev); err != nil {
 				return err
 			}
-			// the place in the queue, said on stderr each time it changes (stdout stays the one JSON answer)
+			// the place in the queue, said on stderr each time it changes (stdout stays the one JSON answer); each step forward renews the wait
 			if list.Ahead != nil && *list.Ahead != told && !list.done() {
 				told = *list.Ahead
-				fmt.Fprintf(e.stderr, "item shots %s: queued, %d render requests ahead (item validations and lesson renders run first)\n", rev, told)
+				fmt.Fprintf(e.stderr, "item shots %s: queued, %d render requests ahead (item validations and lesson renders run first; waited %d s, the wait goes on while the queue moves)\n", rev, told, int(time.Since(started).Seconds()))
+			}
+			if list.Ahead != nil && !list.done() && (nearest < 0 || *list.Ahead < nearest) {
+				if nearest >= 0 {
+					deadline = time.Now().Add(time.Duration(*timeout) * time.Second)
+				}
+				nearest = *list.Ahead
 			}
 			if list.done() && list.RenderID > after {
 				break
@@ -155,8 +167,11 @@ func runItemShots(e *env, args []string) error {
 			if list.Status == "error" && list.RenderID > after {
 				return newErr(ExitServer, "E-CHROME-UNAVAILABLE", "revision", "the render could not run (Chrome did not answer): "+list.Message, "retry later: "+fetch+" --force")
 			}
+			if time.Now().After(limit) {
+				return newErr(ExitServer, "E-TIMEOUT", "revision", "the render did not finish within "+itemShotsWaitCap.String()+" (the cap of --wait, however the queue moves; "+strconv.Itoa(max(nearest, 0))+" render requests were ahead at the last look): run the command again to keep waiting", fetch)
+			}
 			if time.Now().After(deadline) {
-				return newErr(ExitServer, "E-TIMEOUT", "revision", "the render did not finish within "+strconv.Itoa(*timeout)+" s (the Chrome lane runs two jobs at a time and may be busy): run the command again to keep waiting, with a longer --timeout SECONDS (this run "+strconv.Itoa(*timeout)+", default "+strconv.Itoa(defaultItemShotsTimeout)+")", fetch+" --timeout "+strconv.Itoa(2**timeout))
+				return newErr(ExitServer, "E-TIMEOUT", "revision", "the render did not finish within "+strconv.Itoa(*timeout)+" s without the queue moving (the Chrome lane runs two jobs at a time and may be busy): run the command again to keep waiting, with a longer --timeout SECONDS (this run "+strconv.Itoa(*timeout)+", default "+strconv.Itoa(defaultItemShotsTimeout)+")", fetch+" --timeout "+strconv.Itoa(2**timeout))
 			}
 			time.Sleep(interval)
 		}

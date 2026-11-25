@@ -59,7 +59,8 @@ type itemShotsServer struct {
 	postCode int
 	sha      string
 	gone     string
-	ahead    []int // the queue_ahead of each queued answer (the last repeats); none: the server says nothing
+	ahead    []int         // the queue_ahead of each queued answer (the last repeats); none: the server says nothing
+	delay    time.Duration // each answer of the list takes this long
 }
 
 func (s *itemShotsServer) handler(w http.ResponseWriter, req *http.Request) {
@@ -79,6 +80,7 @@ func (s *itemShotsServer) handler(w http.ResponseWriter, req *http.Request) {
 			_, _ = w.Write([]byte(`{"code":"E-AUTH","field":"authorization","message":"a bot_read token only reads","next":"x"}`))
 		}
 	case req.URL.Path == "/api/v1/item-revisions/12/shots":
+		time.Sleep(s.delay)
 		status := s.statuses[min(s.asked, len(s.statuses)-1)]
 		aheadJSON := ""
 		if status == "queued" && len(s.ahead) > 0 {
@@ -242,6 +244,52 @@ func TestItemShotsWaitSaysItsPlaceInTheQueueOnStderrWhenItChanges(t *testing.T) 
 	res = runItemShotsCLI(t, srv2.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
 	if res.exit != 0 || strings.Contains(res.stderr, "ahead") {
 		t.Errorf("no queue_ahead: exit %d stderr %s", res.exit, res.stderr)
+	}
+}
+
+// a queue of n requests that gets one shorter at every look, then the render: n+1 queued answers and a verdict
+func movingQueue(t *testing.T, n int, delay time.Duration) (*httptest.Server, *itemShotsServer) {
+	t.Helper()
+	statuses := make([]string, 0, n+2)
+	ahead := make([]int, 0, n+1)
+	for i := 0; i <= n; i++ {
+		statuses = append(statuses, "queued")
+		ahead = append(ahead, n-i)
+	}
+	srv, s := newItemShotsServer(t, 202, append(statuses, "passed")...)
+	s.ahead, s.delay = ahead, delay
+	return srv, s
+}
+
+func TestItemShotsWaitGoesOnWhileTheQueueGoesDown(t *testing.T) {
+	// 60 looks of 25 ms are 1.5 s of waiting with --timeout 1: only the queue moving each look keeps the wait alive
+	srv, _ := movingQueue(t, 60, 25*time.Millisecond)
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait", "--timeout", "1")
+	if res.exit != 0 {
+		t.Fatalf("the queue kept moving but the wait gave up: exit %d stderr %s", res.exit, res.stderr)
+	}
+	for _, want := range []string{", 59 render requests ahead", ", 30 render requests ahead", ", 1 render requests ahead"} {
+		if !strings.Contains(res.stderr, want) {
+			t.Errorf("stderr should print the place in the queue %q: %s", want, res.stderr)
+		}
+	}
+	// a queue that stands still is the old timeout: the same wait, the same 1 s, and the answer says the queue did not move
+	srv2, s2 := newItemShotsServer(t, 202, "queued")
+	s2.ahead, s2.delay = []int{40}, 25*time.Millisecond
+	res = runItemShotsCLI(t, srv2.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait", "--timeout", "1")
+	if res.exit != ExitServer || !strings.Contains(res.stderr, "E-TIMEOUT") || !strings.Contains(res.stderr, "without the queue moving") {
+		t.Fatalf("a queue that does not move times out: exit %d stderr %s", res.exit, res.stderr)
+	}
+}
+
+func TestItemShotsWaitHasAnOverallCap(t *testing.T) {
+	old := itemShotsWaitCap
+	itemShotsWaitCap = 300 * time.Millisecond
+	t.Cleanup(func() { itemShotsWaitCap = old })
+	srv, _ := movingQueue(t, 500, 20*time.Millisecond)
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait", "--timeout", "1")
+	if res.exit != ExitServer || !strings.Contains(res.stderr, "E-TIMEOUT") || !strings.Contains(res.stderr, "the cap of --wait") {
+		t.Fatalf("the cap: exit %d stderr %s", res.exit, res.stderr)
 	}
 }
 

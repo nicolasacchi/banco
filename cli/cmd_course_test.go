@@ -43,6 +43,7 @@ func TestContractListsTheCourseCommands(t *testing.T) {
 		"lesson open":          {"GET", "/api/v1/lessons/:lesson"},
 		"lesson submit":        {"POST", "/api/v1/lessons/submit"},
 		"lesson status":        {"GET", "/api/v1/lesson-revisions/:revision"},
+		"lesson render":        {"POST", "/api/v1/lesson-revisions/:revision/render"},
 		"lesson shots":         {"GET", "/api/v1/lesson-revisions/:revision/shots"},
 		"lesson-review open":   {"GET", "/api/v1/lesson-revisions/:revision/review"},
 		"lesson-review submit": {"POST", "/api/v1/lesson-revisions/:revision/review"},
@@ -281,6 +282,44 @@ func TestLessonOpenSchemaFlagIsSentAndChecked(t *testing.T) {
 	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "open", "ripasso.math.demo-equations", "--dir", dir, "--schema", "3")
 	if res.exit != ExitUsage || !strings.Contains(res.stderr, "E-USAGE") {
 		t.Fatalf("--schema 3: exit %d, stderr %s", res.exit, res.stderr)
+	}
+}
+
+func TestLessonRenderRetryAsksTheServerForAnotherDraw(t *testing.T) {
+	srv, rec := recordingServer(t)
+	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "render", "12", "--retry")
+	if res.exit != 0 {
+		t.Fatalf("lesson render --retry: exit %d, stderr %s", res.exit, res.stderr)
+	}
+	if rec.method != "POST" || rec.path != "/api/v1/lesson-revisions/12/render" || rec.dry != "" {
+		t.Errorf("request: %+v", rec)
+	}
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "render", "12", "--retry", "--dry-run")
+	if res.exit != 0 || rec.dry != "1" {
+		t.Errorf("--dry-run: exit %d, %+v", res.exit, rec)
+	}
+	// without --retry nothing is asked: the render runs by itself, and only a timed-out one is drawn again
+	*rec = recorded{}
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "render", "12")
+	if res.exit != ExitUsage || !strings.Contains(res.stderr, "--retry") || rec.method != "" {
+		t.Errorf("without --retry: exit %d stderr %s request %+v", res.exit, res.stderr, rec)
+	}
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "render", "abc", "--retry")
+	if res.exit != ExitUsage || rec.method != "" {
+		t.Errorf("a revision is a number: exit %d %+v", res.exit, rec)
+	}
+}
+
+func TestLessonRenderRetryRefusedIsTheServersAnswer(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		w.WriteHeader(409)
+		_, _ = w.Write([]byte(`{"code":"E-RETRY-REFUSED","field":"revision","message":"the latest render did not fail on the server's time limits alone","next":"banco lesson status 12"}`))
+	}))
+	t.Cleanup(srv.Close)
+	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "render", "12", "--retry")
+	if res.exit == 0 || !strings.Contains(res.stderr, "E-RETRY-REFUSED") || !strings.Contains(res.stderr, "banco lesson status 12") {
+		t.Errorf("refusal: exit %d stderr %s", res.exit, res.stderr)
 	}
 }
 
