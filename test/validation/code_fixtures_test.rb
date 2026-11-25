@@ -414,6 +414,11 @@ class CodeFixturesTest < ActiveSupport::TestCase
     },
     "E-LANG-TRANSLATION-LANG" => -> { lang_codes { |i| i["prompt"]["stem_it"] = "Choose the two words that fill the gaps, in the order." } },
     "E-LANG-TRANSLATION-COPY" => -> { lang_codes { |i| i["prompt"]["stem_it"] = i["prompt"]["stem_en"] } },
+    # the links of a mirror row cross: the two sentences order the pieces differently (D-402, round 7)
+    "W-MIRROR-ORDER" => lambda {
+      row = { "pieces_it" => %w[Ieri mangio pesce], "pieces_es" => %w[pescado comí ayer], "links" => [ [ 0, 2, "same" ], [ 1, 1, "same" ], [ 2, 0, "same" ] ] }
+      Lessons::Diagrams.check({ "type" => "mirror", "alt_it" => "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.", "rows" => [ row ] }, subject: "spanish").map(&:code).uniq
+    },
     "W-TOPIC-LANG-MIXED" => lambda {
       found = Validation::Findings.new
       subject = Struct.new(:key).new("english")

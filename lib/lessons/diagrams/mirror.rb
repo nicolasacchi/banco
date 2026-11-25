@@ -64,6 +64,17 @@ module Lessons
           end
         end
 
+        # W-MIRROR-ORDER (D-402): the narrow figure orders the pairs by the Italian sentence (round 5), so a target column whose linked pieces come in another order
+        # reads scrambled. Two links cross when the Italian pieces and the pieces of the target language are in opposite orders.
+        def order_warning(row, i, links, lang, c)
+          crossed = links.sort_by { |l| [ l[0], l[1] ] }.each_cons(2).find { |a, b| b[1] < a[1] }
+          return unless crossed
+
+          c.add("W-MIRROR-ORDER", "/rows/#{i}/links", "the row #{i + 1} links the pieces in a different order in the two sentences (Italian piece #{crossed[0][0] + 1} goes to piece #{crossed[0][1] + 1} of #{lang}, " \
+                "Italian piece #{crossed[1][0] + 1} to piece #{crossed[1][1] + 1}): the narrow figure follows the Italian sentence, so the #{lang} column reads scrambled; pick parallel sentences, " \
+                "whose pieces come in the same order, or split the row", rule: "order-#{i}")
+        end
+
         def row_checks(row, i, key, lang, c)
           at = "/rows/#{i}"
           it = row["pieces_it"]
@@ -86,6 +97,7 @@ module Lessons
           end
           return if links.any? { |l| l[0] >= it.size || l[1] >= tg.size }
 
+          order_warning(row, i, links, lang, c)
           notes = row["notes"].to_a
           noted = []
           notes.each_with_index do |n, k|
