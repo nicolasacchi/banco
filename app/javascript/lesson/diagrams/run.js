@@ -31,6 +31,7 @@ export function run(data, opts, mod) {
     if (bad) return fail(bad.path, bad.message, "E-LESSON-DIAGRAM")
     const altWords = words(data.alt_it)
     if (altWords < 5 || altWords > 50) return fail("/alt_it", "alt_it has 5 to 50 words", "E-LESSON-ALT")
+    if (String(data.alt_it ?? "").includes("[[")) return fail("/alt_it", "alt_it is plain text: use «…» for a quoted word, not [[..]] markup", "E-LESSON-ALT")
     const subject = opts?.subject ?? "math"
     const known = roleNames(palette, subject)
     for (const { path, role } of walkRoles(data)) {

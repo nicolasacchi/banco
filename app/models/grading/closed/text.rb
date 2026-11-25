@@ -42,13 +42,17 @@ module Grading
         accepted = ([ spec.answer ] + spec.accept).map { |t| normalize(t.to_s, case_sensitive: spec.case_sensitive) }
         return Closed.result("correct", normalized: answer) if accepted.include?(answer)
         return Closed.result("correct", normalized: answer) if same_direction_as_any?(answer, accepted)
-        return Closed.result("correct", normalized: answer) if spec.contractions == "en" && accepted.any? { |t| Contractions.same?(t, answer, case_sensitive: spec.case_sensitive) }
+        contracted = spec.contractions == "en"
+        # A fragment that starts with 's/'d is ambiguous ("'s scared" is "is scared" or "has scared"): a declared error value that is one of its
+        # readings keeps precedence, so the contraction never turns an error value into a right answer.
+        if contracted && Contractions.fragment?(answer)
+          fragment_errors = declared_codes(spec, answer)
+          return Closed.result("typical_error", error_codes: fragment_errors, normalized: answer) if fragment_errors.any?
+        end
+        return Closed.result("correct", normalized: answer) if contracted && accepted.any? { |t| Contractions.same?(t, answer, case_sensitive: spec.case_sensitive) }
         return Closed.invalid("spaces_in_code") if spaced_code?(answer, accepted)
 
-        declared = Closed.error_hit(spec, answer) do |v, a|
-          written = normalize(v.to_s, case_sensitive: spec.case_sensitive)
-          written == a || (spec.contractions == "en" && Contractions.same?(written, a, case_sensitive: spec.case_sensitive))
-        end
+        declared = declared_codes(spec, answer)
         return Closed.result("typical_error", error_codes: declared, normalized: answer) if declared.any?
 
         if (slip = accent_slip(spec, answer, accepted))
@@ -61,6 +65,14 @@ module Grading
         return Closed.result("near_miss", normalized: answer) if near_miss?(spec, answer, accepted)
 
         Closed.result("wrong", normalized: answer)
+      end
+
+      # The codes of the declared error values that the answer equals (or, with contractions on, reads as).
+      def declared_codes(spec, answer)
+        Closed.error_hit(spec, answer) do |v, a|
+          written = normalize(v.to_s, case_sensitive: spec.case_sensitive)
+          written == a || (spec.contractions == "en" && Contractions.same?(written, a, case_sensitive: spec.case_sensitive))
+        end
       end
 
       # A code made only of bits or of letters (001110, GHCC) typed in groups: the content is

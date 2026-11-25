@@ -100,6 +100,56 @@ class GradingContractionsTest < ActiveSupport::TestCase
     assert_equal "correct", both.verdict, "the contracted key is the key, not the error"
   end
 
+  # Round 5 of the bilingual tooling: the filler of a gap after a subject starts with the contraction («'s scared»); an author never lists it in accept.
+  test "a gap fragment that starts with 's, 'm, 're, 'd is read as its full form against the key, and the key's fragment against the full form" do
+    gap = ->(answer, **opts) { spec(answer, display: { "stem_it" => "My friend ___ of deep water." }, **opts) }
+    grade = ->(s, typed) { Grading::Closed.grade(s, typed).verdict }
+    assert_equal "correct", grade.(gap.("is scared"), "'s scared")
+    assert_equal "correct", grade.(gap.("is scared"), "’s scared"), "a curly apostrophe"
+    assert_equal "correct", grade.(gap.("is scared"), "is scared")
+    assert_equal "correct", grade.(gap.("'s scared"), "is scared"), "the reverse: key «'s scared», answer «is scared»"
+    assert_equal "correct", grade.(gap.("'s scared"), "'s scared")
+    assert_equal "correct", grade.(gap.("am not hungry"), "'m not hungry")
+    assert_equal "correct", grade.(gap.("'m not hungry"), "am not hungry")
+    assert_equal "correct", grade.(gap.("are late"), "'re late")
+    assert_equal "correct", grade.(gap.("would rather go"), "'d rather go")
+    assert_equal "wrong", grade.(gap.("is scared"), "'s afraid")
+    assert_equal "wrong", grade.(gap.("is scared"), "'m scared")
+    assert_equal "wrong", grade.(gap.("is scared"), "was scared")
+    assert_equal "wrong", grade.(gap.("is scared"), "'d scared"), "'d is would or had, never is"
+    assert_equal "wrong", grade.(gap.("'s scared", contractions: nil, subject: "spanish"), "is scared"), "another subject is never expanded"
+  end
+
+  test "a lesson check of an English lesson reads the fragment of its gap the same way" do
+    check = lesson_check("is scared", "prompt_it" => "My friend ___ of deep water.")
+    assert Lessons::Checks.grade(check, "'s scared", subject: "english").right?
+    assert Lessons::Checks.grade(check, "is scared", subject: "english").right?
+    assert Lessons::Checks.grade(lesson_check("'m not hungry", "prompt_it" => "I ___ today."), "am not hungry", subject: "english").right?
+    assert Lessons::Checks.grade(check, "'s scared", subject: "spanish").wrong?, "another subject never expands"
+    assert Lessons::Checks.grade(check, "'s afraid", subject: "english").wrong?
+  end
+
+  test "'s as a fragment is has only when the key says has: «'s gone» is not «is gone» for a key «has gone», and a noun's 's is still a possessive" do
+    assert_equal [ "is scared", "has scared" ], Contractions.readings("'s scared")
+    assert_equal [ "anna's scared" ], Contractions.readings("Anna's scared"), "only the first word is a fragment"
+    assert_equal "correct", verdict("has gone", "'s gone")
+    assert_equal "correct", verdict("is gone", "'s gone")
+    assert_equal "wrong", verdict("was gone", "'s gone")
+    assert_equal "wrong", verdict("Anna is gone", "Anna 's gone")
+  end
+
+  test "a fragment never turns a declared error value into a right answer: the error keeps precedence, as for a whole form" do
+    errors = [ { "code" => "wrong_aux", "value" => "has scared" } ]
+    gap = spec("is scared", display: { "stem_it" => "My friend ___ of deep water." }, errors: errors)
+    hit = Grading::Closed.grade(gap, "'s scared")
+    assert_equal [ "typical_error", [ "wrong_aux" ] ], [ hit.verdict, hit.error_codes ], "'s scared reads as has scared, a declared error"
+    assert_equal "correct", Grading::Closed.grade(gap, "is scared").verdict
+    assert_equal "typical_error", Grading::Closed.grade(gap, "has scared").verdict
+    other = spec("is scared", display: { "stem_it" => "My friend ___ of deep water." }, errors: [ { "code" => "wrong_tense", "value" => "was scared" } ])
+    assert_equal "correct", Grading::Closed.grade(other, "'s scared").verdict, "the error is not one of the readings"
+    assert_equal "typical_error", Grading::Closed.grade(other, "was scared").verdict
+  end
+
   test "its and whose have no apostrophe: they are never read as a verb" do
     assert_equal [ "its cover" ], Contractions.readings("its cover")
     assert_equal "wrong", verdict("its cover", "it is cover")

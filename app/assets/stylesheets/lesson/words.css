@@ -43,6 +43,7 @@
 .dg-mr-box { fill: var(--surface); stroke: var(--text); stroke-width: 2.5; }
 .dg-mr-neutral { fill: var(--surface); stroke: var(--text); }
 .dg-mr-link { fill: none; stroke: var(--text); stroke-width: 3; stroke-linecap: round; }
+.dg-mr-meaning { stroke-dasharray: 16 5 3 5; }
 .dg-mr-shift { stroke-dasharray: 10 7; }
 .dg-mr-false_friend { stroke-dasharray: 2 8; stroke-width: 4; }
 .dg-mr-mark { fill: var(--text); stroke: var(--surface); stroke-width: 2; }

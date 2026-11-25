@@ -89,8 +89,10 @@ Available now. Our code computes what can be computed; you write the words and t
   - A select check can ask for `targets: pieces` or `targets: syllables`; the ids are `w1p2` (the second piece of the first word) and `w1s3` (its third syllable).
     The figure the student taps shows the pieces or the syllables alike, with no mark.
 - **`mirror`**: the Italian over the other language, 1 to 3 rows, at most 12 words a side (`pieces_it`, and `pieces_es` or `pieces_en`). A piece `'Glie+lo'` is one
-  word written joined. Each link is `[it piece, other piece, same | shift | false_friend]`. A `shift`, a `false_friend` and every piece with no link needs a note
-  (`note_it`, at most 12 words) that says why. Links that are all `same` need `same_ok: true`. Select ids: `r1i2` (Italian) and `r1t3` (other language).
+  word written joined. Each link is `[it piece, other piece, same | meaning | shift | false_friend]`: `same` is the same word in both languages (drawn «uguale»), `meaning`
+  is another word with the same meaning (es «tu» and it «tuo»: drawn «stesso significato»). A `shift`, a `false_friend` and every piece with no link needs a note
+  (`note_it`, at most 12 words) that says why. Links that are all `same` need `same_ok: true`. A piece with no partner stays in its place in the sentence with an empty
+  slot opposite; in a bilingual lesson the figure's words («same», «igual», «cambia») are drawn in the language of the lesson, their Italian in its panel. Select ids: `r1i2` (Italian) and `r1t3` (other language).
 - **`dialogue`** (one per card): `speakers` (1 to 3 invented first names of at most 12 characters, `voice` 1 to 3), `lines` (2 to 12, each at most 12 words, in
   `text_en` or `text_es`, and `gloss_it` always: the student opens one gloss at a time). `transcript: hidden` only if the card works without it: a device with no
   accepted voice always shows the text. The lines count as words open by default (`E-LESSON-APPARATUS-WORDS`).

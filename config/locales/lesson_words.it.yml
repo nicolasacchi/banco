@@ -11,6 +11,7 @@ it:
       mark_change: "lettere che cambiano"
       mark_attached: "pezzo attaccato"
       link_same: "uguale"
+      link_meaning: "stesso significato"
       link_shift: "cambia"
       link_false_friend: "falso amico"
       link_none: "senza coppia"

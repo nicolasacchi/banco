@@ -6,6 +6,7 @@
 import * as N from "lesson/num"
 import { figureStrings } from "lesson/diagrams/common"
 import { roleNamePairs } from "lesson/diagrams/sentence"
+import { mirrorChromePairs } from "lesson/diagrams/words/texts"
 import { button, clear, el, icon, spriteHref, svg, uid } from "lesson/dom"
 import { FAMILY, HOME_PALETTE, STATUS, describe, layout, load, moduleFor, stateCount } from "lesson/diagrams/registry"
 import { tryValues, equationTex } from "lesson/diagrams/balance"
@@ -182,8 +183,9 @@ function animate(oldBoxes, root, reduced) {
 // The translation panel of a figure, or null when none of its texts has an Italian: a `.tr` of the alt's translation and the list «target → italiano» (D-402).
 export function translationPanel(data, ctx) {
   const alt = typeof data?.alt_it === "string" ? translationOf(data.alt_it, ctx) : null
-  const roles = data?.type === "sentence" ? roleNamePairs(data, ctx.subject, ctx.lang) : [] // the role names the layout draws in the language of the lesson
-  const pairs = [...figureStrings(data).map((text) => [text, translationOf(text, ctx)]).filter(([, italian]) => italian !== null), ...roles.filter(([text]) => !figureStrings(data).includes(text))]
+  // the names the layout draws in the language of the lesson: a sentence's role names, a mirror's sides and link kinds
+  const named = data?.type === "sentence" ? roleNamePairs(data, ctx.subject, ctx.lang) : data?.type === "mirror" ? mirrorChromePairs(data, ctx.lang) : []
+  const pairs = [...figureStrings(data).map((text) => [text, translationOf(text, ctx)]).filter(([, italian]) => italian !== null), ...named.filter(([text]) => !figureStrings(data).includes(text))]
   if (alt === null && pairs.length === 0) return null
   const panel = translationNode(null, { tag: "div" })
   panel.setAttribute("class", "tr dg-tr")

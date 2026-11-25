@@ -1,13 +1,13 @@
 // mirror (WAVE2 2.6, T3): the Italian sentence over the target language, piece by piece. A piece written 'Glie+lo' is one word written joined.
-// Links join a piece of one side to a piece of the other: same, shift, false_friend, told apart by the line (solid, dashed, dotted) and by a
-// mark on it, never by colour alone. Wide: two lines of boxes with the links between them. Narrow (a phone) or crowded: one numbered pair for each
+// Links join a piece of one side to a piece of the other: same (the same word), meaning (another word, the same meaning), shift, false_friend, told apart
+// by the line (solid, dash-dot, dashed, dotted) and by a mark on it, never by colour alone. Wide: two lines of boxes with the links between them. Narrow (a phone) or crowded: one numbered pair for each
 // link, one under the other. Notes sit under the pairs, each beginning with its piece. The Ruby twin is lib/lessons/diagrams/mirror.rb; both run
 // test/fixtures/diagrams/types/mirror.json.
 import schema from "lesson/diagram_schemas/mirror"
 import palette from "lesson/palette"
 import { finish, label, roleInfo, shape, stateCount } from "lesson/diagrams/common"
 import { run } from "lesson/diagrams/run"
-import { CAPS, TEXT } from "lesson/diagrams/words/texts"
+import { CAPS, TEXT, chromeOf } from "lesson/diagrams/words/texts"
 
 export { schema }
 export const type = "mirror"
@@ -17,6 +17,8 @@ const TARGET_KEYS = { pieces_en: "en", pieces_es: "es" }
 const TEACHES = { en: "english", es: "spanish" }
 const NEUTRAL_ALT = "Una frase in italiano e la stessa frase in un'altra lingua, divise in pezzi: tocca il pezzo che la domanda chiede."
 const caps = CAPS.mirror
+// A note is plain text (it is read aloud and printed as written): a quoted word is written in «…», never in a [[lang:..]] span.
+const PLAIN_TEXT = "plain text: use «…» for a quoted word, not [[..]] markup"
 
 const show = (piece) => piece.replaceAll("+", "")
 const wordsIn = (pieces) => pieces.reduce((n, p) => n + show(p).split(/\s+/).filter(Boolean).length, 0)
@@ -79,9 +81,10 @@ function checkRow(row, i, key, lang, ctx, dia, map) {
     noted.add(`${n.side}-${n.piece}`)
     const words = n.note_it.trim().split(/\s+/).length
     if (words > 12) return dia(`${nat}/note_it`, `a note has ${words} words (at most 12)`)
+    if (n.note_it.includes("[[")) return dia(`${nat}/note_it`, PLAIN_TEXT)
   }
   for (const [k, l] of links.entries()) {
-    if (l[2] === "same") continue
+    if (l[2] === "same" || l[2] === "meaning") continue
     if (!noted.has(`it-${l[0]}`) && !noted.has(`${lang}-${l[1]}`)) return dia(`${at}/notes`, `the link ${k + 1} (${kindWord(l[2])}) needs a note on one of its pieces (note_it)`)
   }
   for (let p = 0; p < it.length; p++) if (!links.some((l) => l[0] === p) && !noted.has(`it-${p}`)) return dia(`${at}/notes`, `the Italian piece ${p + 1} has no link: it needs a note that says why`)
@@ -179,6 +182,25 @@ export function selectForm(data) {
 
 // ---- layout -----------------------------------------------------------------------------------------------------------------------
 
+// The pairs of a narrow row, in sentence order: one for each link, one for each piece with no link (the other side empty). The Italian side keeps its
+// order: a pair stands where its Italian piece does, a piece of the other language with no link stands after the pair of the nearest piece before it that
+// has one (first of all when none has). So a piece that has no partner is never moved to the end of the row.
+export function pairsOf(row, key, links) {
+  const it = row.pieces_it
+  const tg = row[key]
+  const pairs = links.map(([a, b, kind]) => ({ a, b, kind, order: [a, 0, b] }))
+  it.forEach((_, a) => { if (!links.some((l) => l[0] === a)) pairs.push({ a, b: null, kind: "none", order: [a, 0, 0] }) })
+  const anchorOf = (p) => {
+    for (let q = p - 1; q >= 0; q--) {
+      const hits = links.filter((l) => l[1] === q)
+      if (hits.length) return Math.max(...hits.map((l) => l[0]))
+    }
+    return -1
+  }
+  tg.forEach((_, b) => { if (!links.some((l) => l[1] === b)) pairs.push({ a: null, b, kind: "none", order: [anchorOf(b), 1, b] }) })
+  return pairs.sort((x, y) => x.order[0] - y.order[0] || x.order[1] - y.order[1] || x.order[2] - y.order[2]).map(({ a, b, kind }) => ({ a, b, kind }))
+}
+
 function build(data, ctx) {
   const select = ctx.mode === "select"
   const W = ctx.width
@@ -196,6 +218,20 @@ function build(data, ctx) {
 
   const roleOf = (row, side, k) => (row.roles ?? []).find((r) => r.side === side && r.piece === k)?.role
   const iconOf = (role) => (role ? roleInfo(palette, ctx.subject, role)?.icon : null)
+  // The chrome words (sides, link kinds, «senza coppia», «Coppia»): Italian, or the language of a bilingual lesson with the label carrying that language,
+  // so the figure's panel says their Italian (mirrorChromePairs). Nothing of it is drawn in select mode.
+  const words = select ? null : chromeOf(ctx.lang)
+  const chromeLang = words ? ctx.lang : undefined
+  const word = (key) => words?.[key] ?? TEXT[key]
+  const kindOf = (kind) => word(`link_${kind}`)
+  const sideOf = (side) => word({ it: "italian_side", en: "english_side", es: "spanish_side" }[side])
+
+  // The mark of a link kind on its line, centred on (cx, cy): the shift a diamond, the false friend a triangle, the same meaning a circle.
+  function linkMark(kind, cx, cy, key) {
+    if (kind === "shift") shape(ctx, "marker", { shape: "diamond", x: cx - 9, y: cy - 9, w: 18, h: 18, cls: "dg-mr-mark", key })
+    if (kind === "false_friend") shape(ctx, "marker", { shape: "triangle", x: cx - 10, y: cy - 10, w: 20, h: 20, cls: "dg-mr-mark", key })
+    if (kind === "meaning") shape(ctx, "marker", { shape: "circle", x: cx - 8, y: cy - 8, w: 16, h: 16, cls: "dg-mr-mark", key })
+  }
 
   // Where a piece's icon and text go in a box w wide. Beside each other; but when the box wraps its text (a phone) and one word of the text
   // is wider than the room beside the icon, the icon goes above the text, which then has the box's whole width (a word never wraps: it
@@ -244,7 +280,7 @@ function build(data, ctx) {
     const links = select ? [] : row.links ?? []
     const wide = !ctx.forceNarrow && W >= 520 && wideFits(row, key)
     if (several && !select) {
-      const t = label(ctx, `${TEXT.pair_number} ${i + 1}`, marginX, y, { anchor: "start", cls: "dg-mr-title", key: `r${i + 1}:title` })
+      const t = label(ctx, `${word("pair_number")} ${i + 1}`, marginX, y, { anchor: "start", cls: "dg-mr-title", key: `r${i + 1}:title`, lang: chromeLang })
       y += t.h + 4
     }
     if (wide || select) wideRow(row, i, key, lang, links)
@@ -268,7 +304,7 @@ function build(data, ctx) {
 
   function wideRow(row, i, key, lang, links) {
     if (!select) {
-      const c = label(ctx, sideWord("it"), marginX, y, { anchor: "start", cls: "dg-mr-side", key: `r${i + 1}:side-it` })
+      const c = label(ctx, sideOf("it"), marginX, y, { anchor: "start", cls: "dg-mr-side", key: `r${i + 1}:side-it`, lang: chromeLang })
       y += c.h + 2
     }
     const top = sideLine(row, "it", row.pieces_it, undefined, y, "i", i)
@@ -277,7 +313,7 @@ function build(data, ctx) {
     const bottomTop = y + span
     let below = bottomTop
     if (!select) {
-      const c = label(ctx, sideWord(lang), marginX, bottomTop, { anchor: "start", cls: "dg-mr-side", key: `r${i + 1}:side-tg` })
+      const c = label(ctx, sideOf(lang), marginX, bottomTop, { anchor: "start", cls: "dg-mr-side", key: `r${i + 1}:side-tg`, lang: chromeLang })
       below = bottomTop + c.h + 2
     }
     const bottom = sideLine(row, lang, row[key], lang, below, "t", i)
@@ -291,21 +327,18 @@ function build(data, ctx) {
       shape(ctx, "line", { x1, y1, x2, y2, cls: `dg-mr-link dg-mr-${kind}`, key: `r${i + 1}:l${k}` })
       const mx = (x1 + x2) / 2
       const my = (y1 + y2) / 2
-      if (kind === "shift") shape(ctx, "marker", { shape: "diamond", x: mx - 9, y: my - 9, w: 18, h: 18, cls: "dg-mr-mark", key: `r${i + 1}:l${k}:m` })
-      if (kind === "false_friend") shape(ctx, "marker", { shape: "triangle", x: mx - 10, y: my - 10, w: 20, h: 20, cls: "dg-mr-mark", key: `r${i + 1}:l${k}:m` })
+      linkMark(kind, mx, my, `r${i + 1}:l${k}:m`)
     })
     y = below + bottom.h
     if (!select) y = legend(links, y + 8)
   }
 
-  // narrow: one numbered pair for each link; the pieces without a link follow, alone
+  // narrow: one numbered pair for each link, in sentence order (pairsOf): a piece without a link keeps its place, with an empty slot opposite
   function listRow(row, i, key, lang, links) {
     const plate = Math.round(f * 0.8)
     const lx = marginX + 2 * plate + 10
     const columnFor = (arrow) => Math.floor((W - 2 * marginX - 2 * plate - 10 - arrow) / 2)
-    const pairs = links.map(([a, b, kind]) => ({ a, b, kind }))
-    row.pieces_it.forEach((_, p) => { if (!links.some((l) => l[0] === p)) pairs.push({ a: p, b: null, kind: "none" }) })
-    row[key].forEach((_, p) => { if (!links.some((l) => l[1] === p)) pairs.push({ a: null, b: p, kind: "none" }) })
+    const pairs = pairsOf(row, key, links)
     // a word that does not fit its column would cross its box (D-310): first the columns get a little wider (the link's room down to its
     // mark, the boxes' side padding down to 4 px); a word wider still (a large text size on a phone) puts each pair one piece under the other
     const longest = (piece) => Math.max(0, ...show(piece).split(/\s+/).filter(Boolean).map((w) => ctx.measure(w, f).w))
@@ -323,7 +356,7 @@ function build(data, ctx) {
     const rx = lx + colW + arrowW
     pairs.forEach((pr, n) => {
       const hs = [pr.a != null ? placement(row, "it", pr.a, row.pieces_it[pr.a], colW, true).h : 0, pr.b != null ? placement(row, lang, pr.b, row[key][pr.b], colW, true).h : 0]
-      if (pr.kind === "none") hs.push(ctx.measure(TEXT.link_none, f, colW - 8).h)
+      if (pr.kind === "none") hs.push(ctx.measure(word("link_none"), f, colW - 8).h)
       const h = Math.max(...hs, lineH) + 2 * pad
       const cy = y + h / 2
       shape(ctx, "circle", { cx: marginX + plate, cy, r: plate, cls: "dg-numplate", key: `r${i + 1}:n${n}` })
@@ -332,14 +365,13 @@ function build(data, ctx) {
       if (pr.b != null) pieceBox(row, lang, pr.b, row[key][pr.b], lang, rx, y, colW, `${idOf(i, "t", pr.b)}:${n}`, { h, wrap: true })
       if (pr.kind !== "none") {
         shape(ctx, "line", { x1: lx + colW + 3, y1: cy, x2: rx - 3, y2: cy, cls: `dg-mr-link dg-mr-${pr.kind}`, key: `r${i + 1}:l${n}` })
-        if (pr.kind === "shift") shape(ctx, "marker", { shape: "diamond", x: lx + colW + arrowW / 2 - 9, y: cy - 9, w: 18, h: 18, cls: "dg-mr-mark", key: `r${i + 1}:l${n}:m` })
-        if (pr.kind === "false_friend") shape(ctx, "marker", { shape: "triangle", x: lx + colW + arrowW / 2 - 10, y: cy - 10, w: 20, h: 20, cls: "dg-mr-mark", key: `r${i + 1}:l${n}:m` })
+        linkMark(pr.kind, lx + colW + arrowW / 2, cy, `r${i + 1}:l${n}:m`)
       } else {
-        label(ctx, TEXT.link_none, pr.a != null ? rx + 4 : lx + 4, cy - lineH / 2, { anchor: "start", maxW: colW - 8, cls: "dg-mr-none", key: `r${i + 1}:none${n}` })
+        label(ctx, word("link_none"), pr.a != null ? rx + 4 : lx + 4, cy - lineH / 2, { anchor: "start", maxW: colW - 8, cls: "dg-mr-none", key: `r${i + 1}:none${n}`, lang: chromeLang })
       }
       y += h + 6
       if (pr.kind !== "none") {
-        const l = label(ctx, kindWord(pr.kind), lx, y - 2, { anchor: "start", cls: "dg-mr-kind", key: `r${i + 1}:k${n}` })
+        const l = label(ctx, kindOf(pr.kind), lx, y - 2, { anchor: "start", maxW: W - lx - marginX, cls: "dg-mr-kind", key: `r${i + 1}:k${n}`, lang: chromeLang })
         y += l.h
       }
       y += 8
@@ -359,13 +391,12 @@ function build(data, ctx) {
       if (pr.kind !== "none") {
         shape(ctx, "line", { x1: linkX, y1: y + 3, x2: linkX, y2: y + linkH - 3, cls: `dg-mr-link dg-mr-${pr.kind}`, key: `r${i + 1}:l${n}` })
         const my = y + linkH / 2
-        if (pr.kind === "shift") shape(ctx, "marker", { shape: "diamond", x: linkX - 9, y: my - 9, w: 18, h: 18, cls: "dg-mr-mark", key: `r${i + 1}:l${n}:m` })
-        if (pr.kind === "false_friend") shape(ctx, "marker", { shape: "triangle", x: linkX - 10, y: my - 10, w: 20, h: 20, cls: "dg-mr-mark", key: `r${i + 1}:l${n}:m` })
-        label(ctx, kindWord(pr.kind), linkX + 20, y + Math.round((linkH - lineH) / 2), { anchor: "start", maxW: boxW - 42, cls: "dg-mr-kind", key: `r${i + 1}:k${n}` })
+        linkMark(pr.kind, linkX, my, `r${i + 1}:l${n}:m`)
+        label(ctx, kindOf(pr.kind), linkX + 20, y + Math.round((linkH - lineH) / 2), { anchor: "start", maxW: boxW - 42, cls: "dg-mr-kind", key: `r${i + 1}:k${n}`, lang: chromeLang })
         y += linkH
       }
       if (pr.b != null) y += pieceBox(row, lang, pr.b, row[key][pr.b], lang, lx, y, boxW, `${idOf(i, "t", pr.b)}:${n}`, { wrap: true }).h
-      if (pr.kind === "none") y += 4 + label(ctx, TEXT.link_none, lx + 4, y + 4, { anchor: "start", maxW: boxW - 8, cls: "dg-mr-none", key: `r${i + 1}:none${n}` }).h
+      if (pr.kind === "none") y += 4 + label(ctx, word("link_none"), lx + 4, y + 4, { anchor: "start", maxW: boxW - 8, cls: "dg-mr-none", key: `r${i + 1}:none${n}`, lang: chromeLang }).h
       const cy = (top + y) / 2
       shape(ctx, "circle", { cx: marginX + plate, cy, r: plate, cls: "dg-numplate", key: `r${i + 1}:n${n}` })
       label(ctx, String(n + 1), marginX + plate, cy - Math.ceil(f * 0.7), { anchor: "middle", cls: "dg-numlabel", key: `r${i + 1}:n${n}:t` })
@@ -398,16 +429,15 @@ function build(data, ctx) {
     let x = marginX
     let t = top
     for (const kind of kinds) {
-      const m = ctx.measure(kindWord(kind), f)
+      const m = ctx.measure(kindOf(kind), f)
       const need = 40 + 8 + m.w + 18
       if (x + need > W - marginX && x > marginX) {
         x = marginX
         t += lineH + 6
       }
       shape(ctx, "line", { x1: x, y1: t + lineH / 2, x2: x + 40, y2: t + lineH / 2, cls: `dg-mr-link dg-mr-${kind}`, key: `key:${kind}` })
-      if (kind === "shift") shape(ctx, "marker", { shape: "diamond", x: x + 11, y: t + lineH / 2 - 9, w: 18, h: 18, cls: "dg-mr-mark", key: `key:${kind}:m` })
-      if (kind === "false_friend") shape(ctx, "marker", { shape: "triangle", x: x + 10, y: t + lineH / 2 - 10, w: 20, h: 20, cls: "dg-mr-mark", key: `key:${kind}:m` })
-      label(ctx, kindWord(kind), x + 48, t, { anchor: "start", cls: "dg-mr-key", key: `key:${kind}:t` })
+      linkMark(kind, x + 20, t + lineH / 2, `key:${kind}:m`)
+      label(ctx, kindOf(kind), x + 48, t, { anchor: "start", cls: "dg-mr-key", key: `key:${kind}:t`, lang: chromeLang })
       x += need
     }
     return kinds.length ? t + lineH + 6 : top

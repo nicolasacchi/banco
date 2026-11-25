@@ -64,7 +64,8 @@ module Lessons
     MARKER = "translate_material"
     # Form material, by base and the pointer of the hash that holds it, once a marker is in force above it (see the module comment): an instance's
     # `display.stem`, the `text` of an option, element or row (items and lesson checks), the `final` of a solution or of a `try` exercise and the `text` of that
-    # exercise (the sentence with its blank). A `table`'s `header` and `rows` are material under the marker when the hash is of `type: table`.
+    # exercise (the sentence with its blank). A `table`'s `rows` are material under the marker when the hash is of `type: table`; so is its `header`, unless the table
+    # writes `header_it` (the headers are chrome: a pair `header` + `header_it` is allowed beside material cells, and is drawn with its translation).
     MATERIAL = {
       "stem" => %r{/display\z},
       "text" => %r{/(?:options|elements|left|right)/\d+\z|/exercises/\d+\z},
@@ -157,7 +158,7 @@ module Lessons
     def material?(hash, base, pointer, marker)
       return true if hash["type"] == "mistake" && MISTAKE_MATERIAL.include?(base)
       return true if base == SENTENCE && hash.key?("component")
-      return hash["type"] == "table" if marker && %w[header rows].include?(base)
+      return hash["type"] == "table" && !(base == "header" && hash.key?("header_it")) if marker && %w[header rows].include?(base)
 
       marker && MATERIAL[base]&.match?(pointer) ? true : false
     end

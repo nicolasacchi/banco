@@ -260,6 +260,77 @@
       }
     },
     {
+      "name": "mirror-meaning-link-and-unlinked-first",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Il tuo libro e tu libro: tuo diventa tu, che ha lo stesso significato; l'articolo non c'è in spagnolo.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Il",
+              "tuo",
+              "libro"
+            ],
+            "pieces_es": [
+              "Tu",
+              "libro"
+            ],
+            "links": [
+              [
+                1,
+                0,
+                "meaning"
+              ],
+              [
+                2,
+                1,
+                "same"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "it",
+                "piece": 0,
+                "note_it": "lo spagnolo non mette l'articolo"
+              }
+            ]
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "Il",
+            "tuo",
+            "libro",
+            "Tu",
+            "Il tuo libro",
+            "Tu libro",
+            "Italiano",
+            "Spagnolo",
+            "lo spagnolo non mette l'articolo",
+            "stesso significato",
+            "uguale",
+            "senza coppia",
+            "Italiano: Il tuo libro. Spagnolo: Tu libro. tuo e Tu: stesso significato. libro e libro: uguale. Nota su Il: lo spagnolo non mette l'articolo. Il: senza coppia."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "r1i1",
+            "r1i2",
+            "r1i3",
+            "r1t1",
+            "r1t2"
+          ]
+        }
+      }
+    },
+    {
       "name": "mirror-same-is-the-point",
       "subject": "spanish",
       "schema": "valid",
@@ -1020,6 +1091,42 @@
                 "side": "es",
                 "piece": 0,
                 "note_it": "una nota che ha davvero troppe parole per essere letta con comodità da chi fa fatica a leggere"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "mirror-note-with-markup",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/rows/0/notes/0/note_it",
+      "layout": "error",
+      "data": {
+        "type": "mirror",
+        "alt_it": "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.",
+        "rows": [
+          {
+            "pieces_it": [
+              "Io"
+            ],
+            "pieces_es": [
+              "Yo"
+            ],
+            "links": [
+              [
+                0,
+                0,
+                "shift"
+              ]
+            ],
+            "notes": [
+              {
+                "side": "es",
+                "piece": 0,
+                "note_it": "scrivi [[es:yo]], senza il verbo"
               }
             ]
           }

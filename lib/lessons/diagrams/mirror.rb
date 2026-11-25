@@ -3,13 +3,15 @@
 module Lessons
   module Diagrams
     # mirror (WAVE2 2.6, T3): the Italian sentence over the target language, piece by piece, with links between the pieces (same, shift,
-    # false_friend). A piece written 'Glie+lo' is one word written joined. The target language is read from the keys (pieces_en or pieces_es, one
+    # false_friend, meaning). A piece written 'Glie+lo' is one word written joined. The target language is read from the keys (pieces_en or pieces_es, one
     # for the whole figure, E-LESSON-LANG). The browser twin is lesson/diagrams/words/mirror.js; both run test/fixtures/diagrams/types/mirror.json.
     module Mirror
       extend Contract
 
       TARGET_KEYS = { "pieces_en" => "en", "pieces_es" => "es" }.freeze
       TEACHES = { "en" => "english", "es" => "spanish" }.freeze
+      # A note is plain text (it is read aloud and printed as written): a quoted word is written in «…», never in a [[lang:..]] span.
+      PLAIN_TEXT = "plain text: use «…» for a quoted word, not [[..]] markup"
       NEUTRAL_ALT = "Una frase in italiano e la stessa frase in un'altra lingua, divise in pezzi: tocca il pezzo che la domanda chiede."
 
       class << self
@@ -100,9 +102,10 @@ module Lessons
             noted << [ n["side"], n["piece"] ]
             words = n["note_it"].split.size
             c.diagram("#{nat}/note_it", "a note has #{words} words (at most 12)", rule: "note-words#{nat}") if words > 12
+            c.diagram("#{nat}/note_it", PLAIN_TEXT, rule: "note-markup#{nat}") if n["note_it"].include?("[[")
           end
           links.each_with_index do |(a, b, kind), k|
-            next if kind == "same"
+            next if %w[same meaning].include?(kind)
 
             c.diagram("#{at}/notes", "the link #{k + 1} (#{kind_word(kind)}) needs a note on one of its pieces (note_it)", rule: "note-missing#{at}-#{k}") unless noted.include?([ "it", a ]) || noted.include?([ lang, b ])
           end

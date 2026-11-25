@@ -426,6 +426,19 @@ test("form material (translate_material: false): a table's cells and a mistake's
   assert.equal(mistake.querySelector(".mistake-why .tr").textContent, "Aggiungi -s.", "the why is still paired")
 })
 
+test("a table of forms (translate_material: false) keeps the translation of its headers when it has header_it; its cells still draw none (D-402, round 5)", () => {
+  const body = fixture("served_lesson.json")
+  const ctx = scoped(contextOf(body), body.cards[0])
+  const block = { type: "table", n: 3, translate_material: false, header: ["Subject", "Verb"], header_it: ["Soggetto", "Verbo"], rows: [["he", "plays"]] }
+  const node = renderTable(block, ctx)
+  assert.deepEqual(trNodes(node).map((n) => n.textContent), ["Soggetto", "Verbo"], "the headers are chrome: drawn with their Italian")
+  assert.equal(node.querySelectorAll("thead th[data-translated]").length, 2)
+  assert.equal(trNodes(node.querySelector("tbody")).length, 0, "the cells are forms, with no Italian")
+  assert.ok(node.querySelector("tbody td [data-tr-exempt], tbody td[data-tr-exempt]"), "the cells are exempt from the render check")
+  const bare = renderTable({ ...block, header_it: undefined }, ctx)
+  assert.deepEqual(trNodes(bare), [], "a header with no Italian is as the cells are: no translation, none missing")
+})
+
 test("a served table figure that is form material passes the schema check and carries the marker to the drawing", () => {
   const figure = { type: "table", alt_it: "A table of forms: the subject and the verb.", header: ["Subject", "Verb"], rows: [["he", "plays"]], translate_material: false, tr: {} }
   const scene = layoutFigure(figure, { width: 320, fontPx: 16, subject: "english", measure: (text) => ({ w: String(text).length * 8, h: 20 }), state: 0 })

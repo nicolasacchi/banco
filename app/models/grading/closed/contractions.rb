@@ -9,6 +9,12 @@ module Grading
     # reading ("it's" is "it is" and "it has"); two texts are the same when some reading of one equals some reading of the other.
     #
     # It is on for the typed answers of the subject english (D-398, `option`), and for a check that asks for it (`contractions: en`).
+    #
+    # A fragment (round 5 of the bilingual tooling): a text that STARTS with a suffix of the table, "'s scared", "'d better", is the
+    # filler of a gap after a subject ("My friend ___ of deep water"). With nothing before it there is no noun for a possessive, so
+    # the ambiguous forms are read too: "'s" is "is" or "has", "'d" is "would" or "had". The key decides which reading is meant:
+    # "'s scared" is right for "is scared" and for "has scared", and wrong for "was scared". Only the first word is read so: an "'s"
+    # after a word keeps the rule above.
     module Contractions
       APOSTROPHE = /[‘’‛ʼ`´′]/
       MAX_READINGS = 16
@@ -38,12 +44,26 @@ module Grading
       # the first letter of the contraction ("Doesn't" is "Does not", "I'd" is "I would"), so a case-sensitive answer stays case-sensitive.
       def readings(text, case_sensitive: false)
         words = text.to_s.gsub(APOSTROPHE, "'").split(" ")
-        options = words.map { |w| word_readings(w, case_sensitive: case_sensitive) }
+        options = words.each_with_index.map { |w, i| (i.zero? && fragment_readings(w)) || word_readings(w, case_sensitive: case_sensitive) }
         out = [ [] ]
         options.each do |choices|
           out = out.flat_map { |prefix| choices.map { |c| prefix + [ c ] } }.first(MAX_READINGS)
         end
         out.map { |ws| ws.join(" ") }.uniq
+      end
+
+      # Does the text start with a bare suffix of the table ("'s scared", "'m not hungry")? Such an answer is the end of a sentence
+      # whose subject is on the screen, and a declared error value that is one of its readings is graded before the key (Text.grade).
+      def fragment?(text)
+        first = text.to_s.gsub(APOSTROPHE, "'").split(" ").first
+        !fragment_readings(first).nil?
+      end
+
+      # The readings of a bare suffix word ("'s" is is or has), whether or not the table marks it ambiguous; nil for any other word.
+      def fragment_readings(word)
+        return nil unless word&.start_with?("'")
+
+        Contractions.table.find { |r| r["short"].start_with?("'") && r["short"].downcase == word.downcase }&.fetch("long")&.map { |l| l.downcase.strip }
       end
 
       def same?(a, b, case_sensitive: false) = (readings(a, case_sensitive: case_sensitive) & readings(b, case_sensitive: case_sensitive)).any?

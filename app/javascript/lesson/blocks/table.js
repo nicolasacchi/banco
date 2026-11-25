@@ -45,8 +45,10 @@ export function tableNode(table, ctx) {
   const node = el("table", { class: keepsGrid(table) ? "dg-table dg-keep" : "dg-table" })
   if (table.caption_it) node.appendChild(renderInlineRich(table.caption_it, el("caption"), ctx))
   const cells = materialOf(table, ctx) // `translate_material: false`: the cells are forms, with no Italian (D-402)
+  // the headers are chrome, not material: a header written with its `header_it` keeps its translation beside material cells (without one it is as the cells are)
+  const heads = table.header_it ? ctx : cells
   const head = el("tr")
-  table.header.forEach((h, i) => head.appendChild(renderInlineRich(h, el("th", { scope: "col" }), cells, { italian: table.header_it?.[i] })))
+  table.header.forEach((h, i) => head.appendChild(renderInlineRich(h, el("th", { scope: "col" }), heads, { italian: table.header_it?.[i] })))
   node.appendChild(el("thead", {}, head))
   const body = el("tbody")
   for (const [r, row] of table.rows.entries()) {

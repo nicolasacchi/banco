@@ -117,6 +117,7 @@ module Lessons
       alt = data["alt_it"].to_s.split.size
       lo, hi = Validation::Rules.get(:lesson2, :alt_words)
       c.add("E-LESSON-ALT", "/alt_it", "alt_it has #{alt} words (#{lo} to #{hi})", rule: "alt") unless (lo..hi).cover?(alt)
+      c.add("E-LESSON-ALT", "/alt_it", "alt_it is plain text: use «…» for a quoted word, not [[..]] markup", rule: "alt-markup") if data["alt_it"].to_s.include?("[[")
       mod.static(data, c) if mod.respond_to?(:static)
       states = effective_states(data)
       if states.empty?
