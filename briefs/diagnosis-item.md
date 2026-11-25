@@ -1,10 +1,10 @@
 ---
 name: diagnosis-item
-version: 3
+version: 4
 formats: banco.item/1
 ---
 
-# Brief: diagnosis items (version 3)
+# Brief: diagnosis items (version 4)
 
 You write items for the entry diagnosis of one student: closed questions that
 show, skill by skill, what the student already does well, what to revisit and
@@ -21,7 +21,7 @@ Before you write, search what exists: `banco search "WORDS" --subject KEY` finds
 ## What you write
 
 A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
-`verify.mjs` is written only by a verifier session, who never sees the generator.
+`verify.mjs` is written only by a verifier session, who never sees the generator. **Making an existing generator bilingual changes what `verify.mjs` reads**: `display.stem_it` becomes `display.stem_en` (`stem_es` in spanish), and an author cannot touch `verify.mjs` (`E-VERIFY-AUTHOR`): submit the bilingual generator, then a **verifier session** (`banco work open ITEM --role verifier`) changes `display.stem_it` to `stem_<lang>` in `verify.mjs` and submits it; until then the item is `awaiting_verifier` (`E-VERIFY-STALE`).
 
 - `verify.mjs` contract: an ES module with a named export `verify(instance)` (sync or
   async) returning `{ok: boolean, reason_it?: string}`; `ok` must be exactly `true` to
@@ -44,7 +44,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
   are snake_case and come from the registry or are new and descriptive. The engine reads the
   errors of a skill from the graph alone: a new code must first be in the `errors` of that skill
   in the graph (with the same `implicates`), else `W-ERROR-NOT-IN-GRAPH` and the code is treated
-  as unclassified (descent into every parent).
+  as unclassified (descent into every parent). Copying the `implicates` of the graph into the catalogue is how you clear `W-ERROR-NOT-IN-GRAPH`, and it is never an `E-COMPOSITE`: the engine reads the graph, so an entry that repeats the graph's list is the graph's to fix; `E-COMPOSITE` is for an `implicates` that the item adds or changes (the engine ignores it) on a skill that is not a composite of them.
 - A `number` error whose value is a non-terminating decimal (a calculator result such as 9,8067 or
   3,3333) is declared with `round_to`: `{code, value: "9,81", round_to: 2}` matches every answer
   that rounds half up to 9,81 at 2 decimals. It never matches the key (`E-GEN-SCHEMA` if it would).
@@ -127,7 +127,7 @@ A revision is a folder: `item.json`, optionally `generator.mjs`, and `assets/`.
    text of the correct option appears nowhere outside the options (stem, table,
    figure alt, SVG text; in a testlet, also the passage: a key option of 20 or
    more characters found word for word in `passage_it` is `E-SOLUTION-IN-DISPLAY`).
-   Options, rows and steps are shuffled for every student, so a solution step or final never says «dall'alto», «nell'ordine delle righe», «la prima frase», «l'opzione b» or names `l1`, `r2`, `e3`: name the option by its text (`W-SOLUTION-STORED-ORDER`, a warning).
+   Options, rows and steps are shuffled for every student, so a solution step or final never says «dall'alto», «nell'ordine delle righe», «la prima frase», «l'opzione b» or names `l1`, `r2`, `e3`: name the option by its text (`W-SOLUTION-STORED-ORDER`, a warning). «La prima frase» and «le frasi in alto» are read as the stored order only when the options or elements are themselves sentences; when the options are the words or forms of one sentence, «nella prima frase» is the stem's own and is quiet.
    A formula never ends in a spacing command (`\;`, `\,`, `\quad`) right before a mark: `$C_3H_6$.`, not `$C_3H_6\;$.` (`W-MATH-SPACE-PUNCT`, a warning).
 6. **Readability** (plain language for readers who need it). Italian sentences of
    at most 25 words; the instruction (stem) at most 60 words; bold only on key
@@ -204,10 +204,10 @@ short answers and testlets too (a testlet's sub items inherit the flag). What ch
 - **Rule 6, readability.** The Italian lint runs on **every** `_it` text of a bilingual item, `passage_it` and `model_answer_it` included (they are the Italian
   translations there: the passage is `passage_en|_es` + `passage_it`, the model answer `model_answer_en|_es` + `model_answer_it`). The target text is
   linted as the target language: sentences of at most 12 words, the instruction at most 60, words of the first 3 000 of the language (`teaches_en|_es` for
-  the others, at most 40 words; the lemma is enough, no inflected forms), common given names only (Tom, Amy, Emma, Jack, Sophie; Lucía, Carlos, Marta, Pablo), never the student's or his household's.
+  the others, at most 40 words; the lemma is enough, no inflected forms), common given names only (Tom, Amy, Emma, Jack, Sophie; Lucía, Carlos, Marta, Pablo), never the student's or his household's. A form of a word the item teaches is covered by its stem (`teaches_es: [limpiar]` covers «limpié» and «limpiamos»; the key, the accepted answers and the error values of the item are covered the same way), an irregular form by its verb («slept», «ate», «fui» need nothing: `config/banco/lexicon/{en,es}_irregular.txt`) and the A2 school words (exam, piano, guitar, calculator; piano, guitarra, horario) are in `{en,es}_school.txt`. A quotation in «...», “...” or "..." is not counted in the 12 words either, in the instruction, the hints, the messages, the steps and the solution alike.
 - **Rule 5, no key in the text.** The scans run twice, on the target text and on the Italian one (the student can always open it): `E-SOLUTION-IN-DISPLAY`
   (the Italian of the key option is looked for as well), `E-SUPPORT-LEAK`, `W-TESTLET-LEAK`, `W-ANSWER-IN-STEM`, `W-MESSAGE-GIVES-KEY`. No exercise
-  whose Italian text is the answer.
+  whose Italian text is the answer. A key that is one of the 200 most frequent words of the language (`hace`, `must`, `need`) or a phrase of up to three such words (`have to`, `hay que`) is read like a function word: «si hace falta» does not leak «hace», «Write have to», «have to» in quotes or next to the frame still do.
 - **A reading passage is a comprehension text.** The passage's Italian is **not** shown to the student before he answers (it appears with the solution, or when the
   item or sub items are closed), otherwise he would answer from the Italian: write it, complete and faithful, but never rely on it in the questions. The
   instruction and the question stems have their Italian as usual, and so do the options.

@@ -1,10 +1,10 @@
 ---
 name: lesson
-version: 4
+version: 5
 formats: banco.lesson/2
 ---
 
-# Brief: lessons (version 4, `banco.lesson/2`)
+# Brief: lessons (version 5, `banco.lesson/2`)
 
 You write one topic of the course for one student: a lesson made of short cards, one idea each, with
 a picture or a diagram on every idea, small questions to answer on the page, worked examples that
@@ -513,7 +513,7 @@ glossary:
   - {term_en: "modal verb", term_it: "verbo modale", def_en: "A verb that helps another verb.", def_it: "Un verbo che aiuta un altro verbo."}
 ```
 
-`book_it` stays Italian only (it points to the Italian textbook). `[[g:modal verb]]` in target text names `term_en`; in the Italian text `[[g:verbo modale]]` names `term_it`.
+`book_it` stays Italian only (it points to the Italian textbook). `[[g:modal verb]]` in target text names `term_en`; in the Italian text `[[g:verbo modale]]` names `term_it`. A term is letters, spaces, hyphens, apostrophes and parentheses, and may start with a hyphen: `[[g:-ing form]]`, `[[g:imperativo (modo del verbo)]]`.
 
 **Headings.** The title is the target text; the tag adds the Italian: `## Can + the base verb {idea short="Base verb" short_it="Verbo base" it="Can + il verbo base" icon=hand-helping}`
 (`short_it` is 2 to 28 characters like `short`). A part: `# Modals {it="I modali"}`. Without `it=` the title has no translation: `E-LANG-PAIR-MISSING`.
@@ -548,7 +548,7 @@ A titled fence (`callout`, `procedure`, `cases`, `more`) writes its Italian titl
 sees the target text; the Italian opens with the button «Traduzione» (the card, or one block), or always if he set it in Impostazioni.
 
 **Table cells.** A `table` block (and a figure of type `table`) keeps its cells in `header` / `rows` **in the target language** and adds the Italian as `header_it` /
-`rows_it`, the same shape (same number of columns and rows). A **table of forms** (`have got`, `watch → watches`) has no honest Italian: say `translate_material: false` on the table (block or figure) and write the cells in the target language only, with `caption_*` paired.
+`rows_it`, the same shape (same number of columns and rows). **An empty cell** is written `""` (in both layers: `""` in `rows` and in `rows_it`) and is drawn blank; so is a blank corner `header` cell. A **table of forms** (`have got`, `watch → watches`) has no honest Italian: say `translate_material: false` on the table (block or figure) and write the cells in the target language only, with `caption_*` paired.
 
 **Form material is not translated.** In a check or a `try` exercise that tests a form, `translate_material: false` (on the `check` block, on the exercise, or on a check inside an exercise) makes the options, rows and elements (`text_en` with no `text_it`), the exercise's sentence with its blank (`text_en`) and its `final_en` target-only: a translation would give the key away («beve» / «bere»). The `prompt_*` (the instruction, never the sentence with the blank), `explain_*`, `message_*`, `solution_*` and the steps stay paired. A `mistake` block's `wrong_en` and `right_en` are always target-only (no `wrong_it`, no marker; a translation would be the same for both), its `why_*` and `group_*` are a pair. An Italian text beside material is `E-LANG-PAIR-ORPHAN`. Form material is read for the level like any target text (`W-LANG-LEVEL`): a form it teaches goes in `teaches_en|es`, unless it is the key or a declared error value of the check (the taught forms are not flagged).
 
@@ -556,7 +556,7 @@ sees the target text; the Italian opens with the button «Traduzione» (the card
 
 **`label_*` or the legacy pairs.** A `word_parts` word's `form_en` with its gloss `label_it`, a dialogue line's `text_en` with `gloss_it` and a mirror's `pieces_it` / `pieces_en` are already pairs: write only the Italian gloss, never `label_en`. Every other label, note, caption, `op_*`, `alt_*` is a pair `label_en` + `label_it`.
 
-A `word_parts` decode word's `parts_it` and `meaning_it` stand alone like `label_it`; a pair `parts_es` + `parts_it` needs both sides complete. A tense `timeline` mark keeps its sentence in `text_en|es` (no `text_it`); its `label_en` + `label_it` are a pair.
+A `word_parts` decode word's `parts_it` and `meaning_it` stand alone like `label_it`; a pair `parts_es` + `parts_it` needs both sides complete. `meaning_it` is optional: a decode word may carry `parts_it` alone (one meaning for each piece), and the dry run and the render check say the same about it. A tense `timeline` mark keeps its sentence in `text_en|es` (no `text_it`); its `label_en` + `label_it` are a pair.
 
 **Metalanguage and Italian quoted in target text.** Quote the words you talk about, «-es», «he plays»: words inside «...» or `[[en:..]]` are not read for the level, nor counted as Italian or Spanish in an Italian text (`E-LANG-TRANSLATION-LANG` ignores them). An Italian word inside target text is `[[it:..]]` or «...» (no `E-LESSON-LANG`, not a word of the level). Grammar words (verb, noun, singular, plural, sílaba, tilde, femenino, pronombre...) and the beginner words (thirteen, grandad, pen, lección...) are in `config/banco/lexicon/{en,es}_{grammar,basic}.txt`; `teaches_en|_es` takes up to 150 more. A sentence ends at `.`, `?`, `!` also after a lone letter and inside `.»` `?»`; a `;` splits; at most 12 words each. Words in «...» and `[[es:..]]` spans are not counted in the 12 words; a colon followed by a quote, a capital or a span (or after a closing quote) ends a sentence. To quote a form in Italian text, write `[[es:..]]`: the Italian copy of a target form is then no `E-LANG-TRANSLATION-COPY`. A topic may carry `teaches_en|es` too. The level check reads lemmas («aprendes», «buscas», «quedáis» and «tenéis» pass when «aprender», «buscar», «quedar» and «tener» do): do not list inflected forms in `teaches_*`.
 
@@ -586,7 +586,7 @@ explanation in `alt` and `caption` (pairs), and the Italian names of the roles i
 the same bold words, the same colour roles (`[[subject:...]]` in both texts; the Italian one may say `[[subject|it:...]]`) and the same `[[g:..]]` terms
 (`E-LANG-PAIR-SHAPE`). A translation that is the target text copied (`E-LANG-TRANSLATION-COPY`), that is not Italian (`E-LANG-TRANSLATION-LANG`), a target text
 that holds Italian words (`E-LESSON-LANG`), two equal target strings with two different Italian ones in one block (`E-LANG-PAIR-CONFLICT`), a translation with no
-target (`E-LANG-PAIR-ORPHAN`) and a `_en` pair in a lesson without the flag, or a `_en` in a spanish lesson (`E-LANG-BILINGUAL-FLAG`) are refused. Two equal target strings with two Italian versions: a warning (`W-LANG-PAIR-CONFLICT`) up to 3 words, an error beyond; a step that repeats the exercise `final` with another Italian is a warning too.
+target (`E-LANG-PAIR-ORPHAN`) and a `_en` pair in a lesson without the flag, or a `_en` in a spanish lesson (`E-LANG-BILINGUAL-FLAG`) are refused. Two equal target strings with two Italian versions: a warning (`W-LANG-PAIR-CONFLICT`) up to 3 words, an error beyond; a step that repeats the exercise `final` with another Italian is a warning too. Two equal target texts whose Italian has the same words (a full stop, a capital letter or markup does not make another translation) are no conflict. A short text made of words that both languages share («La tilde», «La persona», «Haber cambia con la persona»; at most 6 words, each an easy word of the language or in the glossary / `teaches_*`, no `el`, `los`, `que`, no letter Italian lacks) with the same text in the Italian is no copy.
 
 **The topic's title in the course map is not yours.** `title_en|es` of the topic in the course map belongs to the **course revision** (the orchestrator's `banco course` work), never
 to the lesson or the topic file: ignore `W-TOPIC-LANG-MIXED` when it names only that title (it clears when the course revision has the pair). The lesson's own `title_*` is yours.
@@ -594,7 +594,7 @@ to the lesson or the topic file: ignore `W-TOPIC-LANG-MIXED` when it names only 
 **Level.** The target text is held to the target lint (`E-READ`: at most 12 words a sentence; `W-LANG-LEVEL`: the first 3000 words, the glossary, `teaches_en` /
 `teaches_es`, the common given names); the Italian to the Italian lint (25 words, `W-GULPEASE` on the translated core prose). The budgets (words a card,
 500 core words) count the target text. A `[[en:..]]` span inside English text is redundant (`W-LANG-SPAN-REDUNDANT`) unless it marks a unit the lesson discusses
-(a glossary term, a `teaches_en` word); the Italian text keeps its `[[en:..]]` spans for English words quoted in Italian. The check is by lemma, so a regular inflection of a word of the list needs no entry in `teaches_en|es`.
+(a glossary term, a `teaches_en` word); the Italian text keeps its `[[en:..]]` spans for English words quoted in Italian. The check is by lemma, so a regular inflection of a word of the list needs no entry in `teaches_en|es`; the same holds for what the lesson teaches (a form of a `teaches_en|es` word or of a glossary term is matched by its stem: `teaches_es: [limpiar]` covers «limpié»), for an irregular form, read as its verb («slept», «ate», «fui»: `config/banco/lexicon/{en,es}_irregular.txt`) and for the A2 school words (exam, piano, guitar, homework: `{en,es}_school.txt`). A `word_parts` form such as `writ|ing` is read as the joined word («writing»), never as its pieces. The wrong side of a `mistake` (`wrong_en|es`) is a misspelling on purpose and is not read for the level; its `right_en|es` is. A quotation in «...», “...” or "..." is not counted in the 12-word cap.
 
 **Never a leak by translation.** The student can always open the Italian: a question whose Italian text is the answer (a «translate this» check whose Italian
 prompt is the key, vocabulary matching whose Italian side gives the answer) is a flaw even if no check refuses it; the reviewer files it as `translation_leak`.

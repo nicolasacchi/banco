@@ -11,7 +11,7 @@ class BriefTest < ActiveSupport::TestCase
     assert_equal NAMES, Brief.names
     NAMES.each do |name|
       brief = Brief.find(name)
-      assert_equal({ "review" => 4, "solve" => 3, "lesson" => 4, "lesson-review" => 3, "lesson-english" => 3, "lesson-spanish" => 3, "diagnosis-item" => 3, "practice-item" => 2 }.fetch(name) { VERSION_2.include?(name) ? 2 : 1 }, brief.version, name)
+      assert_equal({ "review" => 4, "solve" => 3, "lesson" => 5, "lesson-review" => 3, "lesson-english" => 4, "lesson-spanish" => 4, "diagnosis-item" => 4, "practice-item" => 3 }.fetch(name) { VERSION_2.include?(name) ? 2 : 1 }, brief.version, name)
       assert_equal name, brief.name
       assert_operator brief.body.size, :>, 800, name
     end

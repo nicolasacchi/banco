@@ -1,6 +1,6 @@
 ---
 name: lesson-spanish
-version: 3
+version: 4
 formats: banco.lesson/2
 ---
 
@@ -72,7 +72,9 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
   a hint restates the rule and never counts or names the mistakes; the message after a wrong answer names the mistake, not the right word; an example step's `tag` prints a chip above a blank step, so it never gives the answer.
 - **The persons rule, said this way every time:** «¿El sujeto es yo y otra persona? Es nosotros. ¿Es tú y otra persona, sin yo? Es vosotros. Yo solo y tú solo no cambian.»
 - **Everyday words as keys (round 6).** When the keys are function words («in, on, at», «es, son, hay, está»), a hint or a message may still use them: it is refused only when the word is quoted or named as the answer, or stands next to the frame of the key. Write natural sentences.
+- **Everyday words as keys (round 7).** The rule holds for any of the 200 most frequent words of the language (`must`, `need`, `hace`) and for a phrase of up to three such words (`have to`, `hay que`): «si hace falta» or «think about have to» is no leak of the key; «Write have to», the phrase in quotes or next to the frame still is.
 - **Times.** A clock time such as 8:45 counts as one token in the 12-word cap.
+- **Round 7 level.** A form of a word you teach (`teaches_*`, the glossary) is matched by its stem; an irregular form («slept», «ate», «fui») by its verb; the A2 school words (exam, piano, guitar) are known. A `word_parts` form `writ|ing` is read as «writing». The wrong side of a `mistake` is not read for the level. A quotation in «...» is not counted in the 12 words. A short text of shared words with the same Italian («La tilde», «presente») is no copy. A table cell may be `""`; a decode word may carry `parts_it` alone; `[[g:-ing form]]` and a glossary term with parentheses are allowed.
 - **A colon before ¿ or ¡ ends a sentence** for the 12-word cap: «Pregunta: ¿Dónde está?» is two.
 - Grammar terms are Spanish, with the Italian term in the glossary pair (`term_es: "verbo irregular"`, `term_it: "verbo irregolare"`).
 - The forms of verbs come from `spanish/verbs`: irregular forms only from the table.
