@@ -156,26 +156,30 @@ class ChromeRunnerTest < ActiveSupport::TestCase
     Runner.instance_variable_set(:@local_pid, kept[1])
   end
 
-  test "the reaper disposes contexts that are not ours and keeps the ones we own; a context is disposed in ensure" do
+  test "the reaper disposes contexts that are not ours and keeps the ones we own; a context is disposed in ensure (our own are never disposed by it)" do
     require_chrome!
-    Runner.session do |session|
-      mine = session.open_context
-      orphan = session.browser.contexts.create
-      assert_includes session.browser.contexts.map { |id, _| id }, orphan.id
-      session.reap
-      ids = session.browser.contexts.map { |id, _| id }
-      assert_includes ids, mine.id
-      assert_not_includes ids, orphan.id
-      session.close_context(mine)
-      assert_not_includes session.browser.contexts.map { |id, _| id }, mine.id
-    end
-    # A context left by a run that died is cleaned at the start of the next one (a real
-    # Chrome may keep a default context of its own: compare with what was there before).
-    baseline = nil
-    Runner.session { |session| baseline = session.browser.contexts.map { |id, _| id }.sort }
-    Runner.session { |session| session.browser.contexts.create }
-    Runner.session do |session|
-      assert_equal baseline, session.browser.contexts.map { |id, _| id }.sort
+    # a lock of its own: the reaper runs only when no other run holds the other slot, and the shared lock is held by the parallel workers of the gate
+    # (each process has a Chrome of its own, so nothing here can reach another worker's contexts)
+    with_private_lock do
+      Runner.session do |session|
+        mine = session.open_context
+        orphan = session.browser.contexts.create
+        assert_includes session.browser.contexts.map { |id, _| id }, orphan.id
+        session.reap
+        ids = session.browser.contexts.map { |id, _| id }
+        assert_includes ids, mine.id
+        assert_not_includes ids, orphan.id
+        session.close_context(mine)
+        assert_not_includes session.browser.contexts.map { |id, _| id }, mine.id
+      end
+      # A context left by a run that died is cleaned at the start of the next one (a real
+      # Chrome may keep a default context of its own: compare with what was there before).
+      baseline = nil
+      Runner.session { |session| baseline = session.browser.contexts.map { |id, _| id }.sort }
+      Runner.session { |session| session.browser.contexts.create }
+      Runner.session do |session|
+        assert_equal baseline, session.browser.contexts.map { |id, _| id }.sort
+      end
     end
   end
 

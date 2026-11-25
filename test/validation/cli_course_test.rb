@@ -91,7 +91,7 @@ class CliCourseTest < ActiveSupport::TestCase
 
     # The lesson as written is not accepted twice with the wrong base, and a bad lesson is refused with its code.
     File.write(File.join(dir, "lesson.md"), L.build(front: { "skills" => [ SKILL ] }, sections: { "idea_it" => "Il valore x^2 è grande." }))
-    code, _o, err, = banco("lesson", "submit", dir, "--dry-run")
+    code, err, = banco("lesson", "submit", dir, "--dry-run") # a dry-run refusal is the output: stdout
     assert_equal 3, code
     assert_equal "E-LESSON-MARKUP", err["code"]
 

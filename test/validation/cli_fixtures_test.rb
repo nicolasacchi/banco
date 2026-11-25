@@ -113,7 +113,7 @@ class CliFixturesTest < ActiveSupport::TestCase
       }
     JS
     dir = item_dir("leaky", F.generated_files(generator: source, verify: nil))
-    code, _out, err, _o, e = banco("work", "submit", dir, "--dry-run")
+    code, err, _err, _o, e = banco("work", "submit", dir, "--dry-run")
     assert_equal 3, code, e
     assert_equal "E-SOLUTION-IN-DISPLAY", err["code"]
     assert(err["findings"].any? { |f| f["code"] == "E-SOLUTION-IN-DISPLAY" && f["field"].start_with?("generated") })
@@ -127,14 +127,14 @@ class CliFixturesTest < ActiveSupport::TestCase
     assert_equal 0, code, e
     # The author cannot add verify.mjs (A-04); the verifier's wrong one is what fails.
     File.write(File.join(dir, "verify.mjs"), wrong)
-    code, _out, err, _o, e = banco("work", "submit", dir, "--dry-run")
+    code, err, _err, _o, e = banco("work", "submit", dir, "--dry-run")
     assert_equal 3, code, e
     assert_equal "E-VERIFY-AUTHOR", err["code"]
     vdir = File.join(@tmp, "badverify-v")
     code, _out, _err, _o, e = banco("work", "open", "badverify", "--role", "verifier", "--dir", vdir, as: :verifier)
     assert_equal 0, code, e
     File.write(File.join(vdir, "verify.mjs"), wrong)
-    code, _out, err, _o, e = banco("work", "submit", vdir, "--dry-run", as: :verifier)
+    code, err, _err, _o, e = banco("work", "submit", vdir, "--dry-run", as: :verifier)
     assert_equal 3, code, e
     assert_equal "E-VERIFY-REJECTS", err["code"]
     assert_equal 1, ItemRevision.count

@@ -102,7 +102,7 @@ class ValidateItemRevisionJobTest < ActiveJob::TestCase
     assert_equal "chrome", ValidateItemRevisionJob.new.queue_name
     queues = YAML.load_file(Rails.root.join("config/queue.yml"), aliases: true)["default"]["workers"]
     chrome = queues.find { |w| w["queues"] == "chrome" }
-    assert_equal 1, chrome["threads"], "one thread: Chrome is used by one run at a time"
+    assert_equal Validation::ChromeRunner::SLOTS, chrome["threads"], "as many threads as Chrome has slots: two runs at a time"
   end
 
   test "an unknown revision is ignored" do
