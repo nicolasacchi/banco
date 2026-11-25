@@ -231,16 +231,25 @@ module Validation
     # W-MESSAGE-GIVES-KEY (D-171): an error message is shown after a wrong answer on any instance
     # of the item, so it must not state the key of one (brief, writing rule 4). Keys shorter than
     # MESSAGE_KEY_MIN_CHARS (a bare number, a one-word name) are too common in prose to flag.
+    # A key that is an everyday word of the language taught (estamos, estáis: Validation::KeyWords) is stated only when the target-language message quotes it, names
+    # it as the answer or has it with the frame words of an instance that has it as its key.
     MESSAGE_KEY_MIN_CHARS = 6
 
     def message_gives_key(unit, list)
-      needles = list.flat_map { |inst| testlet_needles(unit, { display: inst["display"], answer: inst["answer"], accept: inst["accept"] }) }
-      needles = needles.uniq.select { |n| Answers.plain(n).length >= MESSAGE_KEY_MIN_CHARS }
+      frames = Hash.new { |h, k| h[k] = [] }
+      list.each do |inst|
+        frame = KeyWords.frame(Lessons::Lang.pick(inst["display"].to_h, "stem")).presence || KeyWords.frame(Lessons::Lang.pick(unit.body["prompt"].to_h, "stem"))
+        testlet_needles(unit, { display: inst["display"], answer: inst["answer"], accept: inst["accept"] }).each { |n| frames[n] << frame }
+      end
+      needles = frames.keys.select { |n| Answers.plain(n).length >= MESSAGE_KEY_MIN_CHARS }
       return if needles.empty?
 
+      lang = @bilingual ? Lessons::Lang.target(@subject) : nil
       Array(unit.body["error_catalogue"]).each_with_index do |entry, i|
         %w[message_it message_en message_es].each do |key|
-          n = needles.find { |t| Answers.contains_after_lead?(entry[key].to_s, t) }
+          text = entry[key].to_s
+          target = key == "message_#{lang}"
+          n = needles.find { |t| target && KeyWords.everyday?(t, lang) ? frames[t].any? { |frame| KeyWords.leak?(text, t, frame: frame) } : Answers.contains_after_lead?(text, t) }
           next unless n
 
           @findings.add("W-MESSAGE-GIVES-KEY", "#{unit.path}/error_catalogue/#{i}/#{key}", "the message states the key of an instance (#{n.to_s[0, 30].inspect}); a message points at the step, never at an answer", code: entry["code"])

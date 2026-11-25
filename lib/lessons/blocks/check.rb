@@ -187,7 +187,7 @@ module Lessons
         built = Array(check["answer"]).filter_map { |id| tiles.find { |t| t["id"] == id }&.values_at(*TEXT_KEYS)&.compact&.first }.join(" ")
         squash = ->(s) { s.to_s.delete("$").gsub(/\s+/, " ").strip.downcase }
         if built.size >= 6 && squash.call(check["prompt_it"]).include?(squash.call(built))
-          ctx.add("W-CHECK-ANSWER-IN-PROMPT", "prompt_it", "the sentence to build appears in its own prompt")
+          ctx.add("W-CHECK-ANSWER-IN-PROMPT", ctx.slot("prompt_it"), "the sentence to build appears in its own prompt")
         end
       end
 
@@ -283,7 +283,7 @@ module Lessons
         prompt = squash.call(cue.call(needle.match?(/\A\p{L}{1,2}\z/) ? prompt_sentence(check["prompt_it"]) : check["prompt_it"]))
 
         hit = prompt.match?(/(?<![\p{L}\p{N},])#{Regexp.escape(needle)}(?![\p{L}\p{N}]|,\d)/)
-        ctx.add("W-CHECK-ANSWER-IN-PROMPT", "prompt_it", "the answer #{answer.inspect} appears in its own prompt") if hit
+        ctx.add("W-CHECK-ANSWER-IN-PROMPT", ctx.slot("prompt_it"), "the answer #{answer.inspect} appears in its own prompt") if hit
       end
     end
   end

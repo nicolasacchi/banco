@@ -88,13 +88,14 @@ class BilingualMaterialTest < ActiveSupport::TestCase
     assert_includes at(run_item(item), "E-LANG-BILINGUAL-FLAG"), "/translate_material"
   end
 
-  test "a material sentence is not a word of the level; the same word in a hint is" do
+  test "a material sentence is read for the level like the hint, as the student reads it in the target language alone; teaches_en clears both" do
     item = material
     item["instances"][0]["display"]["stem_en"] = "On Saturdays I ___ my brujúla and then I ___ the shopping."
     item["instances"][0]["hints_en"] = [ "The brujúla is a compass.", "Think of the nouns.", "Say it aloud." ]
     item["instances"][0]["hints_it"] = [ "La brujúla è una bussola.", "Pensa ai nomi.", "Dillo ad alta voce." ]
-    levels = run_item(item).findings.select { |f| f.code == "W-LANG-LEVEL" && f.detail[:words].to_a.include?("brujúla") }
-    assert_equal [ "/instances/0/hints_en/0" ], levels.map(&:field)
+    levels = ->(doc) { run_item(doc).findings.select { |f| f.code == "W-LANG-LEVEL" && f.detail[:words].to_a.include?("brujúla") }.map(&:field).sort }
+    assert_equal [ "/instances/0/display/stem_en", "/instances/0/hints_en/0" ], levels.call(item)
+    assert_empty levels.call(item.merge("teaches_en" => [ "brujúla" ]))
   end
 
   test "the Italian of a material sentence is not a negative instruction (W-NEGATIVE-STEM); the instruction is" do

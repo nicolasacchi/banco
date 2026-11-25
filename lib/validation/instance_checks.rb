@@ -423,8 +423,9 @@ module Validation
       return if texts.empty?
 
       needles = distinct_needles(support_needles(display, answer, inst))
+      frame = key_frame(display)
       texts.each do |field, text|
-        needle = needles.find { |n| Answers.contains_after_lead?(text, n, min: support_min) }
+        needle = needles.find { |n| key_leak?(text, n, frame) }
         next unless needle
 
         f.add("E-SUPPORT-LEAK", field, "the answer format or the steps state the key or a declared error value (#{needle.to_s[0, 30].inspect})", seed: seed)
@@ -434,6 +435,21 @@ module Validation
     # A short numeric key or error value (12, 5) is exactly what a format example states, so
     # numbers have no length floor here (whole-token match: 12 is not found in 123).
     def support_min = %w[number fraction].include?(@unit.component) ? 1 : Answers::MIN_LEAK_CHARS
+
+    # The shortest key text the scans of a hint and of the supports collect: a word key of a target-language item reaches two letters (in, on, at, es), where
+    # KeyWords decides what is a leak; any other key keeps support_min.
+    def key_min = @lang && @unit.component == "normalized_text" ? 2 : support_min
+
+    # The words around the gap of the instance's sentence (the display's stem, else the item's), for the everyday keys (KeyWords).
+    def key_frame(display) = Validation::KeyWords.frame(display["stem_it"]).presence || Validation::KeyWords.frame(@unit.body.dig("prompt", "stem_it"))
+
+    # Does +text+ state the key +needle+? An everyday word of the language taught (KeyWords.everyday?) only when it is quoted, named as the answer or stands with
+    # the frame words; any other key wherever it stands in the text but as the first word of a line (Answers.contains_after_lead?).
+    def key_leak?(text, needle, frame)
+      return Validation::KeyWords.leak?(text, needle, frame: frame) if Validation::KeyWords.everyday?(needle, @lang)
+
+      Answers.plain(needle).length >= support_min && Answers.contains_after_lead?(text, needle, min: support_min)
+    end
 
     # In the Italian layer only the distinctive needles are looked for (see scan_italian); the target layer reads them all.
     def distinct_needles(needles) = @distinct ? needles.select { |n| distinct?(n) } : needles
@@ -464,7 +480,7 @@ module Validation
           [ option && option["text"].to_s, (@target_key if key) ].compact
         else
           accept = key ? @unit.accept + Array(inst["accept"]) : []
-          Answers.key_texts(@unit.component, value, accept: accept, min: support_min) + ordering_texts(display, value) + matching_texts(display, value)
+          Answers.key_texts(@unit.component, value, accept: accept, min: key_min) + ordering_texts(display, value) + matching_texts(display, value)
         end
       end.uniq
     rescue ArgumentError, TypeError
@@ -669,10 +685,11 @@ module Validation
     def key_hints(display, answer, inst, hints, label, seed, f)
       shown = Canonical.strings(display).map(&:last).join(" ") + " " + @unit.body["prompt"].to_h.slice("stem_it", "table", "quote").to_json
       shown += " " + Canonical.strings(@shown).map(&:last).join(" ") + " " + @target_prompt.to_h.slice("stem_it", "table", "quote").to_json if @shown
-      needles = distinct_needles(Answers.key_texts(@unit.component, answer, accept: @unit.accept + Array(inst["accept"]), min: support_min))
-                .reject { |n| Answers.contains?(shown, n, min: support_min) }
+      needles = distinct_needles(Answers.key_texts(@unit.component, answer, accept: @unit.accept + Array(inst["accept"]), min: key_min))
+                .reject { |n| Answers.contains?(shown, n, min: key_min) }
+      frame = key_frame(display)
       hints.each_with_index do |hint, i|
-        needle = needles.find { |n| Answers.contains_after_lead?(hint, n, min: support_min) }
+        needle = needles.find { |n| key_leak?(hint, n, frame) }
         next unless needle
 
         f.add("E-HINT-KEY", "#{label}/hints_it/#{i}", "the hint states the key (#{needle.to_s[0, 30].inspect}): a hint points at the next step, never at the answer", seed: seed)

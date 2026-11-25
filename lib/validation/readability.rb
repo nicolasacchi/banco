@@ -142,6 +142,8 @@ module Validation
     SINGLE_BEFORE_NOUN = /\b(un|uno|una)\s+(?:solo|sola)\b/
     # "non danno solo energia", "non solo": "not only" is not an absolute claim (D-197); same clause, up to 3 words between.
     NOT_ONLY = /\bnon\s+(?:\p{L}+\s+){0,3}?(?:solo|soltanto)\b/
+    # "quasi tutti", "quasi sempre", "quasi mai", "non sempre", "non tutti": a qualified claim leaves room for the exception, so it is no absolute word (D-402).
+    QUALIFIED = /\b(?:quasi|praticamente|non)\s+(?:sempre|ovunque|tutti)\b|\bquasi\s+(?:mai|nessuno)\b/
     SINGLE_ADJECTIVE = /\b((?:un|uno|una|il|lo|la|i|gli|le|ogni|questo|questa|quel|quella)(?:'|\s+)\p{L}+)\s+(?:solo|sola|soli|sole)(?=\s*(?:[,.;:!?)]|\z)|\s+(?:non|si)\b)/
 
     def warnings(text, plain, sentences, words, field, role, findings, negation: true)
@@ -161,6 +163,7 @@ module Validation
       lower = lower.gsub(SINGLE_ADJECTIVE, '\\1 ')                                 # "un giorno solo": "single", not "only" (D-189)
       lower = lower.gsub(SINGLE_BEFORE_NOUN, '\\1')
       lower = lower.gsub(NOT_ONLY) { |m| m.sub(/\s*\b(?:solo|soltanto)\z/, "") }
+      lower = lower.gsub(QUALIFIED, " ")
       if (w = Rules.list(:readability, :absolute_words).find { |a| lower.match?(/\b#{Regexp.escape(a)}\b/) })
         findings.add("W-ABSOLUTE", field, "an absolute word (#{w}) needs a counterexample check", word: w)
       end
@@ -179,7 +182,10 @@ module Validation
 
     # ---- helpers ---------------------------------------------------------------
 
-    def count_words(text) = text.gsub(DOTTED, "x").scan(WORD).size
+    # A clock time (8:45, 12:05) is one token, not two numbers around a colon.
+    CLOCK = /(?<![\p{L}\p{N}:])\d{1,2}:\d{2}(?![\p{L}\p{N}])/
+
+    def count_words(text) = text.gsub(DOTTED, "x").gsub(CLOCK, "x").scan(WORD).size
 
     # A quotation, «...» or “...”: a form or a sentence the text talks about, which the cap on a sentence does not read word by word.
     QUOTATION = /«[^»]*»|“[^”]*”/

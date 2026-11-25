@@ -7,6 +7,9 @@ module Lessons
     class Context
       attr_reader :subject, :catalogue, :findings
       attr_accessor :path, :line, :base, :card_level
+      # The target language of a bilingual lesson (nil for any other): the block checks read the target layer through its `_it` slots, and a finding about such a
+      # text names the author's own key (`prompt_es`, see +slot+).
+      attr_accessor :lang
 
       # catalogue: the set of error codes of the lesson's skills (nil = unknown: no W-MISTAKE-CODE)
       # resolver: ->(block_line, pointer_in_the_block's_yaml) { the line of that field | nil }
@@ -22,6 +25,9 @@ module Lessons
         @line = nil
         @base = ""
       end
+
+      # The name of an `_it` slot as the author wrote it in a bilingual lesson: `prompt_it` is `prompt_es` there (the target text), and stays `prompt_it` anywhere else.
+      def slot(name) = lang ? name.sub(/_it\z/, "_#{lang}") : name
 
       # Inside the block at +path+ (JSON pointer in the body) that opens at +line+; +base+ is where the checked part
       # sits in the block's YAML ("steps/1/blank" for the blank of the second step).
