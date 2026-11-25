@@ -36,7 +36,7 @@ module Validation
     # to the caller; +conflicts+ is off for an item (its instances are not one translation table); +material+: the marker `translate_material: false` is in force
     # above +doc+ (an instance is checked on its own, the item's root says it): form material has no pair, and an Italian text beside it is E-LANG-PAIR-ORPHAN.
     # Returns +findings+.
-    def check(findings, doc, lang:, prefix: "", line: nil, skip: nil, conflicts: true, r2: true, material: false)
+    def check(findings, doc, lang:, prefix: "", line: nil, skip: nil, conflicts: true, r2: true, material: false, known: [])
       table = {}
       Lessons::Bilingual.pairs(doc, lang, "", false, material) do |pointer, base, target, italian|
         next if skip&.call(pointer, base)
@@ -63,7 +63,7 @@ module Validation
           shape_problems(target, italian).each { |problem| add.call("E-LANG-PAIR-SHAPE", "#{base}: the translation differs in shape: #{problem}") }
           add.call("E-LESSON-LANG", "#{names[0]} holds Italian words (a key ending in _#{pair_lang} holds that language only)") if %w[en es].include?(pair_lang) && Lessons::Lang.italian?(target)
           add.call("E-LANG-TRANSLATION-LANG", "#{names[1]} is not Italian: it holds words of #{pair_lang == 'es' ? 'Spanish' : 'English'}", it_field) if translation_lang?(italian, pair_lang)
-          add.call("E-LANG-TRANSLATION-COPY", "#{names[1]} is the same text as #{names[0]}: write the translation", it_field) if base != "term" && copy?(target, italian, pair_lang)
+          add.call("E-LANG-TRANSLATION-COPY", "#{names[1]} is the same text as #{names[0]}: write the translation", it_field) if base != "term" && copy?(target, italian, pair_lang, known: known)
           conflict(findings, table, field, target, italian, at) if conflicts
         end
       end
@@ -128,11 +128,14 @@ module Validation
       first = table[key]
       if first.nil?
         table[key] = [ italian, field ]
-      elsif plain(first[0]) != plain(italian)
+      elsif !same_italian?(first[0], italian)
         short = key.scan(Readability::WORD).size <= SHORT_LABEL_WORDS || [ field, first[1] ].any? { |f| FINAL_FIELD.match?(f) } # a label of a few words (a state, a verb form) reads differently in two places, and a final is repeated by a step: only the first translation is shown
         findings.add(short ? "W-LANG-PAIR-CONFLICT" : "E-LANG-PAIR-CONFLICT", field, "the same text has another translation at #{first[1]}: the translation table is keyed by the target text, so write one Italian for it", rule: "conflict-#{field}", **at)
       end
     end
+
+    # Two Italian texts are the same translation when they have the same words: a full stop, a capital letter or markup does not make another translation.
+    def same_italian?(one, other) = plain(one).scan(Readability::WORD) == plain(other).scan(Readability::WORD)
 
     # ---- shape parity ---------------------------------------------------------------------------------------------------------
 
@@ -187,8 +190,25 @@ module Validation
     # [[en:..]] / [[es:..]] spans or «...»-quoted forms (a form is the same in both languages), in either language, is no copy; nor is a text whose only other words
     # are shared connectors («con», «a», «e») or pieces of words. The Italian one is read too: «[[es:hacer]]: [[es:hago]]» beside «hacer: hago» quotes its forms on purpose.
     # A label of three words or fewer with nothing in it that Italian lacks («Una cosa» beside «una cosa») is one word of the two languages, no copy (+shared_label?+).
-    def copy?(target, italian, lang = nil)
-      plain(target) == plain(italian) && [ target, italian ].all? { |text| own_words?(text) } && !shared_label?(target, lang)
+    def copy?(target, italian, lang = nil, known: [])
+      plain(target) == plain(italian) && [ target, italian ].all? { |text| own_words?(text) } && !shared_label?(target, lang) && !shared_text?(target, lang, known)
+    end
+
+    SHARED_TEXT_WORDS = 6
+
+    # A short text whose every word is a word of the language that Italian shares («Haber cambia con la persona», «La tilde»): the same in both languages, no copy.
+    # No word that is outside the easy words of the language and its +known+ words (the glossary, teaches_<lang>), no letter or digraph Italian lacks (FOREIGN), no
+    # function word of the language that Italian lacks (TARGET_WORDS), at most SHARED_TEXT_WORDS words. A text of a language that is not known (+lang+ nil) is never one.
+    def shared_text?(text, lang, known = [])
+      return false unless lang && Lessons::Lexicon::LANGS.include?(lang)
+
+      plain = plain(text)
+      words = plain.scan(Readability::WORD)
+      return false if words.empty? || words.size > SHARED_TEXT_WORDS || plain.match?(FOREIGN)
+      return false if (words & Lessons::Lang::TARGET_WORDS.fetch(lang, [])).any?
+
+      known = known.to_set
+      words.all? { |w| known.include?(w) || Lessons::Lexicon.known?(lang, w) }
     end
 
     # Letters and digraphs that Italian does not use (j k w x y ñ ¿ ¡ á í ú ü, th sh ck ee oo ou, -ing): a label with one of them, or with a function word of the language

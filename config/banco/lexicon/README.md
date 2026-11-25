@@ -33,3 +33,11 @@ exercise or a lesson («Tom plays football», «Lucía come pan») is a name, ne
 - **`{en,es}_basic.txt`**: beginner words every A1 learner has by the first lessons (numbers, family, school things, days, months, colours, animals, clothes, classroom verbs) that the first 3000 words of the frequency list lack. Words already inside the first 3000 are not repeated; phrases are listed word by word.
 - **Source and licence:** written for this repository, not derived from the frequency lists; no licence of their own beyond the repository's.
 - **Changed** only through a D entry, like the other files here.
+
+# School words and irregular forms (D-402, round 7)
+
+`en_school.txt` and `es_school.txt` hold the school words of an A2 learner that the first 3000 words lack (*exam, piano, guitar, calculator; piano, guitarra, horario, recreo*). Like `{en,es}_basic.txt`: one word per line, lower case, `#` comments, read only by `Lessons::Lexicon` (an allowlist, so the word and its inflections are no `W-LANG-LEVEL` warning), written for this repository. The list is short and plain on purpose: a school word that is not obvious goes into `teaches_en` / `teaches_es` of the lesson or the item.
+
+`en_irregular.txt` and `es_irregular.txt` map an irregular form to its verb, one line a verb: `sleep: slept`, `ir: voy vas va ... fui fuiste fue ...` (the preterite, the participle, the irregular present, the forms that the regular endings and the Snowball stem do not reach). A form that belongs to two verbs (*fui*: ir and ser) stands under both. `Lessons::Lexicon.verbs` reads them: an irregular form is known when its verb is one of the easy words (the first 3000, `grammar`, `basic`, `school`) or its stem, and the same holds against `teaches_<lang>`: «slept» is covered by `teaches_en: [sleep]`. The two tables of `config/banco/data/{english,spanish}/verbs` are schemas only for now (no written table, `Lessons::Verbs` is a stub), so these lists are the only irregular forms the level check reads; they are not vetted data, they only say which forms belong to a verb already known.
+- **Source and licence:** written for this repository, not derived from the frequency lists; no licence of their own beyond the repository's.
+- **Changed** only through a D entry, like the other files here.

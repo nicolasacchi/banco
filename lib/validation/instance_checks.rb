@@ -575,18 +575,25 @@ module Validation
     LIST_NOUN = "rig(?:a|he)|elenco|lista|opzion[ei]|frasi?|voci?|risposta|risposte|elementi|elemento|passi|passo"
     PLACE = "in alto|in basso|a sinistra|a destra"
     # «la prima guerra mondiale» is quiet: only «prima» followed by a word for a row, and not of a passage («la prima frase del testo»).
-    STORED_ORDER_POSITION = Regexp.union(
-      /\bdall'alto\b/, /\bdal basso\b/,
-      /\bnell'ordine\s+(?:delle\s+(?:righe|opzioni|frasi|risposte)|dell'elenco)\b/,
-      /\bnell'ordine\s+in\s+cui\s+(?:ti\s+)?(?:sono\s+)?(?:elencat|mostrat|presentat|scritt)\w*/,
-      /\b(?:#{ORDINAL})\s+(?:#{ROW_NOUN})\b(?!\s+(?:del|dello|della|dei|nel|nella)\s+(?:testo|brano|passo|paragrafo|citazione|poesia|lettera|versi?|strofa|canto|periodo))/,
-      /\b(?:#{LIST_NOUN})\b[^.;:!?]{0,25}\b(?:#{PLACE})\b/, /\b(?:#{PLACE})\b[^.;:!?]{0,25}\b(?:#{LIST_NOUN})\b/,
-      /\b(?:opzione|risposta|alternativa|scelta|lettera)\s+[a-e](?=\s*[).,;:!?»"]|\s*'(?!\p{L})|\s*\z)/
-    )
+    # «la prima frase» and «le frasi in alto» point at a list only when the list holds sentences (see +sentence_list?+): with the words or forms of a single sentence, or
+    # one sentence of material and nothing to shuffle, the «frase» is the stem's own and the text is quiet.
+    STORED_ORDER_ALTERNATIVES = lambda do |nouns, list_nouns|
+      Regexp.union(
+        /\bdall'alto\b/, /\bdal basso\b/,
+        /\bnell'ordine\s+(?:delle\s+(?:righe|opzioni|frasi|risposte)|dell'elenco)\b/,
+        /\bnell'ordine\s+in\s+cui\s+(?:ti\s+)?(?:sono\s+)?(?:elencat|mostrat|presentat|scritt)\w*/,
+        /\b(?:#{ORDINAL})\s+(?:#{nouns})\b(?!\s+(?:del|dello|della|dei|nel|nella)\s+(?:testo|brano|passo|paragrafo|citazione|poesia|lettera|versi?|strofa|canto|periodo))/,
+        /\b(?:#{list_nouns})\b[^.;:!?]{0,25}\b(?:#{PLACE})\b/, /\b(?:#{PLACE})\b[^.;:!?]{0,25}\b(?:#{list_nouns})\b/,
+        /\b(?:opzione|risposta|alternativa|scelta|lettera)\s+[a-e](?=\s*[).,;:!?»"]|\s*'(?!\p{L})|\s*\z)/
+      )
+    end
+    STORED_ORDER_POSITION = STORED_ORDER_ALTERNATIVES.call(ROW_NOUN, LIST_NOUN)
+    STORED_ORDER_POSITION_WORDS = STORED_ORDER_ALTERNATIVES.call(ROW_NOUN.sub("frase|", ""), LIST_NOUN.sub("|frasi?", ""))
 
     def stored_order(display, inst, label, seed, f)
       solution = inst["solution"].is_a?(Hash) ? inst["solution"] : {}
       ids = stored_order_ids(display)
+      sentences = sentence_list?(display)
       texts = Array(solution["steps"]).each_with_index.filter_map { |s, i| [ "#{label}/solution/steps/#{i}/text_it", s["text_it"] ] if s.is_a?(Hash) }
       texts << [ "#{label}/solution/final", solution["final"] ]
       hints = inst["hints_it"] ? [ label, inst["hints_it"] ] : [ @unit.path, @unit.body["hints_it"] ]
@@ -594,7 +601,7 @@ module Validation
       texts.each do |field, text|
         next unless text.is_a?(String)
 
-        found = stored_order_phrase(text, ids) or next
+        found = stored_order_phrase(text, ids, sentences: sentences) or next
         f.add("W-SOLUTION-STORED-ORDER", field,
               "the text points at the stored order (#{found.inspect}): the options, rows and steps are shuffled for every student, so name the option by its text, never by its place, letter or id",
               seed: seed)
@@ -605,10 +612,21 @@ module Validation
       %w[options left right elements].flat_map { |k| Array(display[k]).filter_map { |o| o["id"].to_s if o.is_a?(Hash) } }
     end
 
-    def stored_order_phrase(text, ids)
+    SENTENCE_WORDS = 4
+
+    # Does a shuffled list of the display (options, elements, left, right) hold at least two sentences? «La prima frase» names a place in such a list; where the material is
+    # one sentence and the options are its words or forms, nothing of the sentence is shuffled and the «frase» is the stem's own.
+    def sentence_list?(display)
+      %w[options elements left right].any? do |key|
+        Array(display[key]).count { |o| o.is_a?(Hash) && (o["text"].to_s.match?(/[.!?…]\s*\z/) || o["text"].to_s.scan(Readability::WORD).size >= SENTENCE_WORDS) } >= 2
+      end
+    end
+
+    def stored_order_phrase(text, ids, sentences: true)
       plain = text.gsub(/\$[^$]*\$/, " ")
       lower = plain.unicode_normalize(:nfkc).downcase.tr("\u2019", "'")
-      return lower[STORED_ORDER_POSITION] if lower.match?(STORED_ORDER_POSITION)
+      position = sentences ? STORED_ORDER_POSITION : STORED_ORDER_POSITION_WORDS
+      return lower[position] if lower.match?(position)
 
       # An id with a digit (o1, l1, r2, e3) is a token of its own, written as it is stored; a lone letter only as «a)».
       ids.each do |id|

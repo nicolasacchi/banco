@@ -1,19 +1,24 @@
 # frozen_string_literal: true
 
 module Validation
-  # Keys that are everyday words of the language taught (D-402, round 6). A key such as «in», «at», «es», «hay», «está» is a function word: it is in every
+  # Keys that are everyday words of the language taught (D-402, round 6 and 7). A key such as «in», «at», «es», «hay», «está» is a function word: it is in every
   # sentence, so the scans that look for the key in a hint (E-HINT-KEY), in the answer format and the steps (E-SUPPORT-LEAK) and in an error message
   # (W-MESSAGE-GIVES-KEY) fired on «Look at the lesson card» and forced the authors into stilted English and Spanish («dónde se encuentra»). For such a key
-  # (three letters or fewer, or a word of the short list of its language) a text leaks it only when
+  # (three letters or fewer, a word of the short list of its language, or one of the FREQUENT most frequent words of the language: «hace» in «si hace falta»,
+  # «must», «need») a text leaks it only when
   #
   #   - the key is quoted: in «...», “...”, "...", a [[..:..]] span or a code span;
   #   - or the text names it as the answer: «Write at», «la respuesta es está», or a line that is only the key;
   #   - or the key stands in the same sentence as a content word of the frame of the instance (the words just before and just after the gap of its
   #     sentence): «el gato está en la cocina» for «El gato ___ en la cocina».
   #
-  # A longer key, and every key of a legacy (Italian) revision, is scanned as before (Answers.contains_after_lead?).
+  # A key of two or three words that are all everyday («have to», «hay que», «going to») is read the same way: it is the phrase a topic teaches and its
+  # texts say it. A longer key, and every key of a legacy (Italian) revision, is scanned as before (Answers.contains_after_lead?).
   module KeyWords
     SHORT = 3
+    # The first words of the frequency list of a language (config/banco/lexicon/<lang>.txt) that are everyday whatever their length.
+    FREQUENT = 200
+    PHRASE_WORDS = 3
     FUNCTION = {
       "en" => %w[a an the is are am was were be been in on at of to for by with from and or but do does did have has had can will would not it he she we you they
                  i my your his her its our their this that there here no so as if].freeze,
@@ -32,11 +37,16 @@ module Validation
 
     module_function
 
-    # Is +needle+ a key to be read as an everyday word of +lang+ (en or es; nil for any other subject)? Only a single word of letters is.
+    # Is +needle+ a key to be read as an everyday word of +lang+ (en or es; nil for any other subject)? A word of letters is, or a phrase of up to PHRASE_WORDS
+    # words that are all everyday.
     def everyday?(needle, lang)
-      word = Answers.plain(needle)
-      FUNCTION.key?(lang.to_s) && word.match?(/\A\p{L}+\z/) && (word.length <= SHORT || FUNCTION.fetch(lang.to_s).include?(word))
+      phrase = Answers.plain(needle)
+      return false unless FUNCTION.key?(lang.to_s) && phrase.match?(/\A\p{L}+(?: \p{L}+){0,#{PHRASE_WORDS - 1}}\z/)
+
+      phrase.split.all? { |word| everyday_word?(word, lang.to_s) }
     end
+
+    def everyday_word?(word, lang) = word.length <= SHORT || FUNCTION.fetch(lang).include?(word) || Lessons::Lexicon.words(lang, FREQUENT).include?(word)
 
     # Does +text+ leak the everyday key +needle+? +frame+: the frame words of the instance (see +frame+).
     def leak?(text, needle, frame: [])

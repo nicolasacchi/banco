@@ -1,0 +1,80 @@
+# Irregular verb forms of English for W-LANG-LEVEL (D-402, round 7): one line a verb, `verb: form form ...` (past, participle and the other irregular forms).
+# Lower case. Read by Lessons::Lexicon.verbs: a form whose verb is among the easy words (slept, with sleep) is no word to teach. Never shown to the student.
+be: was were been am
+have: had
+do: did done
+go: went gone
+see: saw seen
+take: took taken
+give: gave given
+get: got gotten
+make: made
+say: said
+know: knew known
+think: thought
+come: came
+find: found
+tell: told
+leave: left
+feel: felt
+keep: kept
+run: ran
+write: wrote written
+eat: ate eaten
+drink: drank drunk
+sleep: slept
+speak: spoke spoken
+buy: bought
+bring: brought
+teach: taught
+catch: caught
+fall: fell fallen
+begin: began begun
+break: broke broken
+build: built
+choose: chose chosen
+draw: drew drawn
+drive: drove driven
+fly: flew flown
+forget: forgot forgotten
+hear: heard
+hold: held
+lose: lost
+meet: met
+pay: paid
+ride: rode ridden
+sing: sang sung
+sit: sat
+stand: stood
+swim: swam swum
+throw: threw thrown
+understand: understood
+wear: wore worn
+win: won
+wake: woke woken
+lend: lent
+send: sent
+spend: spent
+sell: sold
+show: shown
+steal: stole stolen
+shoot: shot
+lie: lay lain
+lay: laid
+hang: hung
+hide: hid hidden
+rise: rose risen
+ring: rang rung
+shake: shook shaken
+tear: tore torn
+bite: bit bitten
+blow: blew blown
+dig: dug
+feed: fed
+fight: fought
+freeze: froze frozen
+grow: grew grown
+learn: learnt
+mean: meant
+sink: sank sunk
+stick: stuck

@@ -1,0 +1,35 @@
+# School words an A2 learner of English meets (exam, piano, homework) that the first 3000 of en.txt lack (D-402, round 7).
+# One word per line, lower case. Read by Lessons::Lexicon; never shown to the student. Keep it short and obvious.
+exam
+quiz
+piano
+guitar
+violin
+drums
+flute
+maths
+geography
+biology
+chemistry
+physics
+dictionary
+locker
+canteen
+gym
+classmate
+headteacher
+diploma
+presentation
+essay
+assignment
+lecture
+laboratory
+calculator
+blackboard
+chalk
+folder
+scissors
+glue
+canvas
+semester
+recess

@@ -1,0 +1,31 @@
+# School words an A2 learner of Spanish meets (examen, piano, deberes) that the first 3000 of es.txt lack (D-402, round 7).
+# One word per line, lower case, with its accents. Read by Lessons::Lexicon; never shown to the student. Keep it short and obvious.
+piano
+guitarra
+violín
+batería
+flauta
+matemáticas
+geografía
+biología
+química
+asignatura
+horario
+diccionario
+sacapuntas
+taquilla
+cantina
+patio
+gimnasio
+uniforme
+redacción
+revisión
+laboratorio
+calculadora
+tiza
+carpeta
+tijeras
+pegamento
+pincel
+trimestre
+recreo

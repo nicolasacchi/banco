@@ -66,8 +66,8 @@ module Validation
       lang = Lessons::Lang.target(subject)
       return unless lang && Bilingual.bilingual?(item)
 
-      Bilingual.check(findings, item, lang: lang, conflicts: false)
       known = Array(item["teaches_#{lang}"]).flat_map { |w| w.to_s.downcase.scan(Lessons::Lexicon::WORD) }
+      Bilingual.check(findings, item, lang: lang, conflicts: false, known: known)
       Bilingual.lint_target(findings, item, lang, known: known)
     end
 
@@ -167,15 +167,21 @@ module Validation
     # ---- E-COMPOSITE -----------------------------------------------------------------
 
     # A multi-step item whose errors implicate two or more distinct prerequisites
-    # must measure a composite skill that lists them.
+    # must measure a composite skill that lists them. The engine reads the implicates of
+    # an error from the graph alone (W-ERROR-NOT-IN-GRAPH): an entry that repeats the graph's
+    # own list adds nothing the graph did not already say, so it is the graph's to fix and
+    # not read here; only an implicate that the item adds or changes (which the engine
+    # ignores and W-ERROR-NOT-IN-GRAPH warns about) is held to the rule.
     def composite(item, context, findings)
       bodies = item["kind"] == "testlet" ? Array(item["sub_items"]) : [ item ]
       bodies.each_with_index do |body, i|
-        implicated = Array(body["error_catalogue"]).flat_map { |e| Array(e["implicates"]) }.uniq - [ body["skill"] ]
-        next if implicated.size < 2
-
         skill = context.skill(body["skill"])
         next unless skill # E-SKILL-UNKNOWN says it
+
+        owned = Array(skill["errors"]).to_h { |er| [ er["code"], Array(er["implicates"]).sort ] }
+        entries = Array(body["error_catalogue"]).reject { |e| owned[e["code"]] == Array(e["implicates"]).sort }
+        implicated = entries.flat_map { |e| Array(e["implicates"]) }.uniq - [ body["skill"] ]
+        next if implicated.size < 2
 
         missing = implicated - Array(skill["composite_of"])
         next if missing.empty?

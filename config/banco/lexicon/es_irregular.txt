@@ -1,0 +1,39 @@
+# Irregular verb forms of Spanish for W-LANG-LEVEL (D-402, round 7): one line a verb, `verb: form form ...` (the irregular present, the preterite, the imperfect,
+# the future, the subjunctive and the participle that the regular endings do not give). Lower case, with accents. A form that belongs to two verbs (fui: ir, ser)
+# stands under both. Read by Lessons::Lexicon.verbs: a form whose verb is among the easy words (fui, with ir) is no word to teach. Never shown to the student.
+ser: soy eres es somos sois son fui fuiste fue fuimos fuisteis fueron era eras éramos erais eran sido sea seas seamos seáis sean
+ir: voy vas va vamos vais van fui fuiste fue fuimos fuisteis fueron iba ibas íbamos ibais iban ido yendo vaya vayas vayamos vayáis vayan
+estar: estoy estás está estamos estáis están estuve estuviste estuvo estuvimos estuvisteis estuvieron estaba estabas estábamos estabais estaban estado esté estés estén
+tener: tengo tienes tiene tenemos tenéis tienen tuve tuviste tuvo tuvimos tuvisteis tuvieron tenía tenías teníamos teníais tenían tenido tendré tendrás tendrá tendremos tendrán tendría tenga tengas tengan
+hacer: hago haces hace hacemos hacéis hacen hice hiciste hizo hicimos hicisteis hicieron hacía hecho haré harás hará haremos harán haría haga hagas hagan
+poder: puedo puedes puede podemos podéis pueden pude pudiste pudo pudimos pudisteis pudieron podía podido podré podrás podrá podremos podrán podría pueda puedas puedan pudiendo
+querer: quiero quieres quiere queremos queréis quieren quise quisiste quiso quisimos quisieron quería querido querré querría quiera quieras quieran
+venir: vengo vienes viene venimos venís vienen vine viniste vino vinimos vinieron venía venido vendré vendría venga vengas vengan viniendo
+decir: digo dices dice decimos decís dicen dije dijiste dijo dijimos dijeron decía dicho diré diría diga digas digan diciendo
+dar: doy das da damos dais dan di diste dio dimos dieron daba dado dé des den
+ver: veo ves ve vemos veis ven vi viste vio vimos vieron veía visto vea veas
+saber: sé sabes sabe sabemos sabéis saben supe supiste supo supimos supieron sabía sabido sabré sabría sepa sepas
+poner: pongo pones pone ponemos ponéis ponen puse pusiste puso pusimos pusieron ponía puesto pondré pondría ponga pongas pongan
+salir: salgo sales sale salimos salen saldré saldría salga salgas
+traer: traigo traes trae traemos traen traje trajiste trajo trajimos trajeron traía traído traiga
+oír: oigo oyes oye oímos oyen oyó oyeron oído oiga
+jugar: juego juegas juega jugamos jugáis juegan jugué juegue
+dormir: duermo duermes duerme dormimos dormís duermen durmió durmieron durmiendo duerma
+pedir: pido pides pide pedimos piden pidió pidieron pidiendo pida
+seguir: sigo sigues sigue seguimos siguen siguió siguieron siguiendo siga
+volver: vuelvo vuelves vuelve volvemos vuelven vuelto vuelva
+abrir: abierto
+escribir: escrito
+encontrar: encuentro encuentras encuentra encuentran
+empezar: empiezo empiezas empieza empiezan empecé empiece
+pensar: pienso piensas piensa piensan
+entender: entiendo entiendes entiende entienden
+recordar: recuerdo recuerdas recuerda recuerdan
+contar: cuento cuentas cuenta cuentan
+sentir: siento sientes siente sienten sintió sintieron
+preferir: prefiero prefieres prefiere prefieren prefirió
+morir: muero mueres muere mueren murió murieron muerto
+leer: leyó leyeron leído leyendo
+caer: caigo cae cayó cayeron caído
+conocer: conozco
+traducir: traduzco tradujo

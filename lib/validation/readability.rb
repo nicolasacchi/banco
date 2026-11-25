@@ -187,11 +187,12 @@ module Validation
 
     def count_words(text) = text.gsub(DOTTED, "x").gsub(CLOCK, "x").scan(WORD).size
 
-    # A quotation, «...» or “...”: a form or a sentence the text talks about, which the cap on a sentence does not read word by word.
-    QUOTATION = /«[^»]*»|“[^”]*”/
+    # A quotation, «...», “...” or "...": a form or a sentence the text talks about, which the cap on a sentence does not read word by word. An item and a lesson read the
+    # same three (D-402): the level lint (Bilingual::QUOTED) leaves the same ones.
+    QUOTATION = /«[^»]*»|“[^”]*”|"[^"\n]*"/
 
     # +text+ without its quotations; one that ends with a stop leaves it, so that the sentence ends there as before.
-    def without_quotations(text) = text.gsub(QUOTATION) { |q| q.match?(/[.!?…]\s*[»”]\z/) ? " . " : " " }
+    def without_quotations(text) = text.gsub(QUOTATION) { |q| q.match?(/[.!?…]\s*[»”"]\z/) ? " . " : " " }
 
     def strip_markup(text) = text.gsub(BOLD, '\1').gsub(/^\s*\d+\.\s+/, "")
 

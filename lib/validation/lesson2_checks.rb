@@ -272,7 +272,7 @@ module Validation
       def pairs_check(doc, prefix)
         line = ->(pointer) { pair_line(pointer) }
         if defined?(Validation::Bilingual) && Validation::Bilingual.respond_to?(:check)
-          Validation::Bilingual.check(@findings, doc, lang: @lang, prefix: prefix, line: line)
+          Validation::Bilingual.check(@findings, doc, lang: @lang, prefix: prefix, line: line, known: @known_words.fetch(@lang, []))
         else # until Validation::Bilingual lands (slice 2): completeness only
           Lessons::Bilingual.pairs(doc, @lang).each do |pointer, base, target, italian|
             next if target && italian
@@ -701,12 +701,15 @@ module Validation
       # The words of a check that are its material, never a claim of the lesson (no W-ABSOLUTE): the text around the box of a typed gap, the sentence, an option, a row,
       # a tile or an item. The prompt, the hints and the explanation are the lesson's own words.
       MATERIAL_FIELD = %r{/(?:input_before|input_after|sentence_\w+|(?:options|elements|left|right|tiles|items)/\d+/text_\w+)\z}
+      # The wrong side of a mistake block is a form misspelled on purpose («¿Havéis…?», «cantió»): the level is not read there, in whichever pass reaches it.
+      DELIBERATE_FORM = %r{/wrong_(?:en|es)\z}
 
       # The lint of words of another language (the target-language set, WAVE2 1.8): a short sentence, and words a learner of the lesson knows. A bilingual
       # lesson's target text (@lang) is read by Validation::Bilingual.target_report: sentences split after `.»`, `;` and a lone letter, the level also for form material,
       # quoted forms, spans and pieces of words, and the absolute words (W-ABSOLUTE). +level+ false: no word of the level, no absolute word.
       # +cell+: a cell of a table of forms, read for the level only (it is no sentence: no cap, no absolute word).
       def target_lint(field, lang, text, at, level: true, cell: false)
+        level &&= !field.match?(DELIBERATE_FORM)
         max = rule(:target_sentence_words)
         known = @known_words.fetch(lang, []) + common_names(lang)
         if @lang
@@ -752,7 +755,7 @@ module Validation
               field = "#{at}#{pointer}"
               add("E-LESSON-LANG", field, "#{key} holds #{LANGUAGE_NAMES[lang]} text and #{@subject} does not teach it", line: line, rule: "lang-key-#{field}") unless Lessons::Lang.taught?(@subject, lang) || block_owns_language?(at)
               add("E-LESSON-LANG", field, "#{key} holds Italian words (a key ending in _#{lang} holds #{LANGUAGE_NAMES[lang]} only)", line: line, rule: "lang-italian-#{field}") if %w[en es].include?(lang) && Lessons::Lang.italian?(text)
-              target_lint(field, lang, text, line)
+              target_lint(field, lang, joined_form(key, text), line)
             end
             figures(block).each do |diagram, where|
               langs = Lessons::Lang.languages_in(diagram)
@@ -761,6 +764,15 @@ module Validation
           end
         end
         form_cells
+      end
+
+      # A word_parts form is written in split notation (writ|ing, p[ue]d|o): the level is read on the joined word («writing»), never on its pieces («writ»).
+      def joined_form(key, text)
+        return text unless key.start_with?("form_")
+
+        Lessons::Words.split(text)["word"]
+      rescue Lessons::Words::Refused
+        text
       end
 
       # The cells of a table of forms (`translate_material: false` on a table: `header` and `rows` with no Italian) have no `_<lang>` key to be found by: read them for the level.

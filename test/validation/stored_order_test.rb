@@ -35,7 +35,7 @@ class StoredOrderTest < ActiveSupport::TestCase
   def step(text) = { "steps" => [ { "text_it" => text } ], "final" => "Fatto." }
 
   test "positions of the stored order fire, in the final, in a step and in a hint" do
-    [ "Dall'alto: Linea, Colonna, Cella.", "Nell'ordine delle righe: Linea, Colonna.", "La prima frase è quella giusta.", "Vale l'ultima opzione.",
+    [ "Dall'alto: Linea, Colonna, Cella.", "Nell'ordine delle righe: Linea, Colonna.", "Vale l'ultima opzione.",
      "Guarda la seconda riga.", "Scegli la terza risposta.", "Il primo è in alto nell'elenco.", "La riga a destra è giusta.",
      "Scrivi «dall’alto» come vedi.", "È l'opzione b.", "Scelta: risposta B." ].each do |text|
       assert_equal 1, findings("ordering", ORDERING, solution: final(text)).size, text
@@ -43,6 +43,21 @@ class StoredOrderTest < ActiveSupport::TestCase
     end
     assert_equal 1, findings("choice", CHOICE, hints: [ "Pensa.", "Guarda la prima opzione." ], body: { "kind" => "practice_item" }).size
     assert_equal "/instances/0/hints_it/1", findings("choice", CHOICE, hints: [ "Pensa.", "Guarda la prima opzione." ], body: { "kind" => "practice_item" }).first.field
+  end
+
+  SENTENCES = { "stem_it" => "Ordina.", "elements" => [ { "id" => "e1", "text" => "She plays tennis on Fridays." }, { "id" => "e2", "text" => "He likes to read books." },
+                                                       { "id" => "e3", "text" => "They walk to school with Ana." } ] }.freeze
+
+  test "«la prima frase» is the place of a sentence in a list of sentences; with the words of one sentence, or one sentence of material, nothing is shuffled that it could name (D-402)" do
+    [ "La prima frase è quella giusta.", "Metti la seconda frase in alto.", "Le frasi in alto sono giuste." ].each do |text|
+      assert_equal 1, findings("ordering", SENTENCES, solution: final(text)).size, "a list of sentences: #{text}"
+      assert_empty findings("ordering", ORDERING, solution: final(text)), "a list of words: #{text}"
+    end
+    word_choice = { "stem_it" => "Completa: She ___ tennis.", "options" => [ { "id" => "a", "text" => "play" }, { "id" => "b", "text" => "plays" }, { "id" => "c", "text" => "played" } ] }
+    assert_empty findings("choice", word_choice, solution: step("Nella prima frase manca il verbo."))
+    assert_equal 1, findings("choice", word_choice, solution: step("Guarda la prima opzione.")).size, "a place in the list of options is still the stored order"
+    assert_equal 1, findings("choice", word_choice, solution: step("Vedi a) e poi b).")).size, "so is a letter"
+    assert_equal 1, findings("ordering", ORDERING, solution: final("Dall'alto: Linea, Colonna.")).size, "and a place with no noun"
   end
 
   test "the item-level hints of a practice item are read when the instance has none" do
