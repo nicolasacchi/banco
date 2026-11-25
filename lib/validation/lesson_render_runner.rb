@@ -29,6 +29,17 @@ module Validation
       end
     end
 
+    # The time one revision may take when +shots+ pictures are taken so far: the floor (lesson2.render.budget_seconds) plus
+    # budget_seconds_per_shot for each, never over budget_seconds_max. A lesson of 13 cards with 8 «Prova tu» takes some 66 shots in some 85 s on a quiet
+    # server: a flat 90 s passed or failed with the load, so the render may go on while it keeps taking pictures.
+    def self.budget_for(shots)
+      floor = Rules.get(:lesson2, :render, :budget_seconds)
+      [ floor + (Rules.get(:lesson2, :render, :budget_seconds_per_shot) * shots), [ Rules.get(:lesson2, :render, :budget_seconds_max), floor ].max ].min
+    end
+
+    # Said after every «timeout:» finding: a time limit of the server's Chrome is not a defect of the lesson (RenderLessonRevisionJob draws it again; the author may ask).
+    TIMEOUT_NOTE = "This is the server's time limit, not the content of the lesson: do not change the cards for it; ask for another draw with banco lesson render REV --retry."
+
     DEFINED_WAIT = 20
     LOAD_ATTEMPTS = 3
     READY_WAIT = 30
@@ -42,7 +53,6 @@ module Validation
       @clock = clock
       @core = Rules.get(:lesson2, :render, :core_viewports)
       @extra = Rules.get(:lesson2, :render, :extra_viewports)
-      @budget = Rules.get(:lesson2, :render, :budget_seconds)
       @per_card = Rules.get(:lesson2, :render, :card_viewport_seconds)
     end
 
@@ -61,7 +71,7 @@ module Validation
       @session.context do |ctx|
         viewports.each do |width, height, theme|
           if over_budget?
-            add("E-LESSON-RENDER", nil, "#{width}x#{height}-#{theme}", "timeout: the render of the revision passed #{@budget} s before this viewport")
+            add("E-LESSON-RENDER", nil, "#{width}x#{height}-#{theme}", "timeout: the render of the revision passed #{budget} s before this viewport")
             break
           end
 
@@ -74,7 +84,9 @@ module Validation
 
     private
 
-    def over_budget? = (@clock.call - @started) > @budget
+    def over_budget? = (@clock.call - @started) > budget
+
+    def budget = self.class.budget_for(@shots.size)
 
     # The cards drawn at this viewport: the cover, the core cards, the extra cards when the
     # viewport is listed for them.
@@ -98,7 +110,7 @@ module Validation
       opened = []
       cards_for([ width, height, theme ]).each do |card|
         if over_budget?
-          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s")
+          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{budget} s")
           return
         end
         opened.concat(inspect_card(page, card, viewport, width))
@@ -108,7 +120,7 @@ module Validation
       # one run to the next, so an unchanged card would no longer cost nothing (D-255)
       opened.each do |card, state|
         if over_budget?
-          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s", nil, state)
+          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{budget} s", nil, state)
           return
         end
         inspect_state(page, card, viewport, width, state)
@@ -189,7 +201,7 @@ module Validation
       opened, shown = Array(answer["states"]).partition { |state| state.match?(OPENED) }
       shown.each do |state|
         if over_budget?
-          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{@budget} s", nil, state)
+          add("E-LESSON-RENDER", card["n"], viewport, "timeout: the render of the revision passed #{budget} s", nil, state)
           return []
         end
         inspect_state(page, card, viewport, width, state)
@@ -254,7 +266,9 @@ module Validation
     # One error, once: what a further state of the card repeats (the same message about the same thing) stays the first state's.
     # Answers whether the error was new.
     def add(code, card, viewport, message, where = nil, state = nil)
-      message = message.to_s.first(300)
+      message = message.to_s
+      message = "#{message.first(200)} #{TIMEOUT_NOTE}" if code == "E-LESSON-RENDER" && message.start_with?("timeout:")
+      message = message.first(300)
       return false if @errors.any? { |e| e["code"] == code && e["card"] == card && e["viewport"] == viewport && e["message"] == message && e["where"] == where }
 
       @errors << { "code" => code, "card" => card, "state" => state, "viewport" => viewport, "message" => message, "where" => where }.compact

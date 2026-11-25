@@ -17,9 +17,13 @@
 # programme is its programme: its course skills, lessons and graph cite course.extra_source where the others cite seconda_source.
 # v12: practice.matching_rows_warn, matching_rows_max and judge_min_rows (D-370): W-MATCHING-ROWS above 4 rows of a practice matching, E-MATCHING-ROWS above 6,
 # for a new submission only (a revision that passed under older rules keeps its pass, with the warning); a practice judge from 4 rows (was 6).
+# v13 (D-402, tooling round 7): lesson2.render.budget_seconds is the floor of the render's time and grows with the shots already taken
+# (budget_seconds_per_shot, up to budget_seconds_max): a 13-card lesson with 8 «Prova tu» takes some 66 shots in some 85 s on a quiet server, so a flat 90 s passed
+# or failed with the load; E-MATCHING-SIZE lets a classification have as many chips as rows when a chip is never a right answer (so it needs no fifth row and W-MATCHING-ROWS stays quiet), and
+# W-MATCHING-ROWS warns a two-label matching (a judge) only above 5 rows (practice.matching_two_labels_warn: 3 + 2 can vary, 2 + 2 never can).
 # D-402 added the `lang:` block (bilingual_required) with no number changed and the list empty: no bump. The cut-over, after the last topic of english and
 # spanish is rewritten, fills the list (and bumps the version, so that only NEW revisions need the flag).
-version: 12
+version: 13
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -27,6 +31,7 @@ generator:
   min_distinct_displays: 20   # among the pool (E-GEN-POOL)
   max_problem_ratio: 0.2      # throwing seeds over seeds (E-GEN-POOL, E-GEN-THROW)
   generate_timeout_ms: 2000   # one generate call (E-GEN-TIMEOUT)
+  stale_minutes: 10           # a revision with no verdict row this long, and no job waiting in the queue, lost its job (a restart): `banco work retry` enqueues it again (D-402)
   output_max_bytes: 16384     # canonical JSON of one output (E-GEN-SCHEMA)
   batch: 50                   # seeds per evaluate_async
   batch_timeout_seconds: 15   # a harness timeout is status error, retried
@@ -240,7 +245,9 @@ lesson2:
   min_gulpease: 50            # W-GULPEASE: the whole core prose
   review_points: 11           # E-REVIEW-CHECKLIST (lesson/1 keeps 8)
   render:                     # E-LESSON-RENDER, run by R4 (the server's Chrome); an extra card only at the first core viewport
-    budget_seconds: 90        # one revision
+    budget_seconds: 90        # one revision: the floor (the render is over budget after this many seconds with no shot taken)
+    budget_seconds_per_shot: 2   # ... plus this many seconds for each shot already taken (LessonRenderRunner.budget_for)
+    budget_seconds_max: 600   # ... never more than this
     card_viewport_seconds: 5
     core_viewports: [[390, 844, cream], [1280, 800, cream], [1280, 800, dark]]
     extra_viewports: [[390, 844, cream]]
@@ -345,6 +352,7 @@ practice:                     # practice items (A2.4) and topics (A2.3)
   min_instances_per_code: 3                 # W-PRACTICE-CODE-SPARSE
   matching_rows_warn: 4                     # W-MATCHING-ROWS: a practice matching (a judge too) with more rows than this; the engine counts 4 as hard (D-370)
   matching_rows_max: 6                      # E-MATCHING-ROWS: more rows than this, in a new submission only
+  matching_two_labels_warn: 5               # W-MATCHING-ROWS for a practice matching with two labels (a judge, right/wrong): with 4 rows the split is always 2 + 2 (W-MATCHING-JUDGE-ROWS wants 2 of each), 5 lets it be 3 + 2
   judge_min_rows: 4                         # E-MATCHING-SIZE: a practice judge (two categories) has at least this many rows; a diagnosis judge keeps 6 (D-093, D-370)
 
 # The shots of an item revision as the student sees it on a phone (D-336), on demand, never part of a verdict: an aid for the reviewer and the
