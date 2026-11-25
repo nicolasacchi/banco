@@ -30,6 +30,7 @@ type CLIError struct {
 	Findings []json.RawMessage `json:"findings,omitempty"`
 	DryRun   bool              `json:"dry_run,omitempty"`
 	exit     int
+	onStdout bool // the answer of a dry run: its JSON is the output, on stdout, whatever the exit code
 }
 
 func (e *CLIError) Error() string { return fmt.Sprintf("%s: %s", e.Code, e.Message) }
@@ -47,6 +48,15 @@ func reportError(w io.Writer, err error) int {
 	b, _ := json.Marshal(ce)
 	fmt.Fprintln(w, string(b))
 	return ce.exit
+}
+
+// dryRunAnswer marks a validation refusal of a --dry-run as the command's output: the findings are what the author asked for, so they go to stdout
+// (the exit code stays 3). Every other failure (Chrome busy, a refused token, a usage error) stays an error on stderr.
+func dryRunAnswer(err error, dry bool) error {
+	if ce, ok := err.(*CLIError); ok && dry && ce.exit == ExitValidation {
+		ce.onStdout = true
+	}
+	return err
 }
 
 // exitForStatus maps an HTTP status to an exit code.

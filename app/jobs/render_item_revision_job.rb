@@ -1,5 +1,5 @@
 # The shots of a stored item revision, drawn on demand (D-336): the instances as the student's phone shows them, in the server's Chrome. Runs on the
-# `chrome` queue (one thread, one Chrome at a time, inside ChromeRunner's lock) at a priority (20) below item validation and the lesson render (10) and
+# `chrome` queue (two threads, two Chrome runs at a time, inside ChromeRunner's two-slot lock) at a priority (20) below item validation and the lesson render (10) and
 # the page validations: a verdict gates topics, a shot is for the reviewer. A verdict (passed, failed) is appended to item_renders; Chrome that cannot be reached is not a verdict: the last failed attempt appends an
 # `error` row and the earlier ones only retry (the request's `queued` row stands for the pending job). The job names its request (the `queued` row's id): it
 # draws unless a verdict has been appended since, so a request that was forced draws again a revision that has a verdict, and two jobs for one revision draw once.

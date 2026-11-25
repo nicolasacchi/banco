@@ -8,12 +8,27 @@ module Lessons
     module Try
       TYPED = %w[number fraction normalized_text].freeze
 
+      # The page draws «a)», «b)» before the checks of an exercise that has several: a prompt that starts with its own label shows it twice (D-402).
+      LABEL = /\A\s*\(?[a-h]\)\s|\A\s*[a-h]\.\s/i
+      LABEL_MESSAGE = "the prompt starts with its own label: the page already draws a), b) before the checks of an exercise with several"
+
       module_function
+
+      # [[pointer under the block, prompt]] of the prompts that start with a label, in an exercise with more than one check.
+      def labelled_prompts(block)
+        block["exercises"].to_a.each_with_index.flat_map do |ex, i|
+          checks = ex["checks"]
+          next [] unless checks.is_a?(Array) && checks.size > 1
+
+          checks.each_with_index.filter_map { |c, k| [ "exercises/#{i}/checks/#{k}/prompt_it", c["prompt_it"] ] if c.is_a?(Hash) && c["prompt_it"].is_a?(String) && c["prompt_it"].match?(LABEL) }
+        end
+      end
 
       def check(block, ctx)
         lo, hi = Validation::Rules.get(:lesson2, :try_exercises)
         n = block["exercises"].to_a.size
         ctx.add("E-LESSON-EXERCISES", "exercises", "Prova tu has #{n} exercises (#{lo} to #{hi})", rule: "range") unless (lo..hi).cover?(n)
+        labelled_prompts(block).each { |pointer, _| ctx.add("W-CHECK-LABEL-DOUBLED", pointer, LABEL_MESSAGE, rule: "label-doubled-#{pointer}") }
         per = Validation::Rules.get(:lesson2, :try_checks_per_exercise)
         block["exercises"].to_a.each_with_index do |ex, i|
           checks = ex["checks"] || [ ex["check"] ].compact

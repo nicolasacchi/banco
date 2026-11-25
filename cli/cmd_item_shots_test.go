@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -58,6 +59,7 @@ type itemShotsServer struct {
 	postCode int
 	sha      string
 	gone     string
+	ahead    []int // the queue_ahead of each queued answer (the last repeats); none: the server says nothing
 }
 
 func (s *itemShotsServer) handler(w http.ResponseWriter, req *http.Request) {
@@ -78,6 +80,10 @@ func (s *itemShotsServer) handler(w http.ResponseWriter, req *http.Request) {
 		}
 	case req.URL.Path == "/api/v1/item-revisions/12/shots":
 		status := s.statuses[min(s.asked, len(s.statuses)-1)]
+		aheadJSON := ""
+		if status == "queued" && len(s.ahead) > 0 {
+			aheadJSON = `"queue_ahead":` + strconv.Itoa(s.ahead[min(s.asked, len(s.ahead)-1)]) + `,`
+		}
 		s.asked++
 		id := 6
 		if status == "queued" || len(s.posts) > 0 {
@@ -93,7 +99,7 @@ func (s *itemShotsServer) handler(w http.ResponseWriter, req *http.Request) {
 				`{"instance":2,"seed":"item-shots|12|2","shown_order":{},"viewport":"390x844-cream","width":390,"height":700,"available":true,"path":"/api/v1/item-revisions/12/shots/` + s.sha + `"},` +
 				`{"instance":3,"seed":"item-shots|12|3","shown_order":{},"viewport":"390x844-cream","width":390,"height":700,"available":false,"path":"/api/v1/item-revisions/12/shots/` + s.gone + `"}]`
 		}
-		_, _ = w.Write([]byte(`{"revision_id":12,"status":"` + status + `","render_id":` + string(rune('0'+id)) + `,"message":"Chrome down","errors":[{"code":"E-ITEM-OVERFLOW","instance":2,"message":"wide"}],"notes":[],"instances":3,"seed_note":"n","shots":` + shots + `}`))
+		_, _ = w.Write([]byte(`{"revision_id":12,` + aheadJSON + `"status":"` + status + `","render_id":` + string(rune('0'+id)) + `,"message":"Chrome down","errors":[{"code":"E-ITEM-OVERFLOW","instance":2,"message":"wide"}],"notes":[],"instances":3,"seed_note":"n","shots":` + shots + `}`))
 	case req.URL.Path == "/api/v1/item-revisions/12/shots/"+s.sha:
 		w.Header().Set("Content-Type", "image/webp")
 		_, _ = w.Write([]byte("RIFFxxxxWEBP"))
@@ -213,6 +219,29 @@ func TestItemShotsForceAsksAgainAndTakesTheNewVerdict(t *testing.T) {
 	}
 	if s.asked < 3 {
 		t.Errorf("waited for the new verdict, asked %d times", s.asked)
+	}
+}
+
+func TestItemShotsWaitSaysItsPlaceInTheQueueOnStderrWhenItChanges(t *testing.T) {
+	srv, s := newItemShotsServer(t, 202, "queued", "queued", "queued", "queued", "passed")
+	s.ahead = []int{5, 5, 2, 2}
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
+	if res.exit != 0 {
+		t.Fatalf("exit %d, stderr %s", res.exit, res.stderr)
+	}
+	for _, want := range []string{"5 render requests ahead", "2 render requests ahead"} {
+		if strings.Count(res.stderr, want) != 1 {
+			t.Errorf("stderr should say %q once: %s", want, res.stderr)
+		}
+	}
+	if strings.Contains(res.stdout, "ahead") {
+		t.Errorf("the queue place belongs on stderr, stdout is the JSON answer: %s", res.stdout)
+	}
+	// a server that says nothing about the queue: nothing is printed
+	srv2, _ := newItemShotsServer(t, 202, "queued", "passed")
+	res = runItemShotsCLI(t, srv2.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
+	if res.exit != 0 || strings.Contains(res.stderr, "ahead") {
+		t.Errorf("no queue_ahead: exit %d stderr %s", res.exit, res.stderr)
 	}
 }
 

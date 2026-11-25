@@ -427,6 +427,14 @@ class CodeFixturesTest < ActiveSupport::TestCase
         i["instances"][0]["display"].merge!("stem_en" => "Fill ___ with one word.\nShe ___ to school by bus.", "stem_it" => "Riempi ___ con una parola.\nLei ___ a scuola in autobus.")
       end
     },
+    # the prompt of a check in an exercise with two checks starts with «a)»: the page draws the label itself (D-402, round 6)
+    "W-CHECK-LABEL-DOUBLED" => lambda {
+      checks = [ "a) Which word fits?", "Which one is right?" ].map do |prompt|
+        "      - component: choice\n        prompt_en: \"#{prompt}\"\n        prompt_it: \"Quale parola va bene?\"\n        options:\n          - {id: a, text_en: \"drinks\"}\n          - {id: b, text_en: \"drink\"}\n        answer: b\n"
+      end
+      md = Rails.root.join("test/fixtures/lang/lesson_en_more.md").read.sub(/^    check:\n(?:      .*\n)+?(?=    solution_en)/, "    checks:\n#{checks.join}")
+      Validation::LessonChecks.call(md, subject: "english", context: Lesson2Fixtures.context("english")).findings.map(&:code).uniq
+    },
     # a [[en:..]] span in an English text of the golden lesson (slice 3's lesson checks)
     "W-LANG-SPAN-REDUNDANT" => lambda {
       md = Rails.root.join("test/fixtures/lang/lesson_en.md").read.sub("no -s, no to.", "no [[en:fish]] now.")

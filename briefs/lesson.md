@@ -1,10 +1,10 @@
 ---
 name: lesson
-version: 3
+version: 4
 formats: banco.lesson/2
 ---
 
-# Brief: lessons (version 3, `banco.lesson/2`)
+# Brief: lessons (version 4, `banco.lesson/2`)
 
 You write one topic of the course for one student: a lesson made of short cards, one idea each, with
 a picture or a diagram on every idea, small questions to answer on the page, worked examples that
@@ -395,7 +395,7 @@ number line intervals.
 | `area_model` | products, the box method | `rows`, `cols` (at most 4), `cells` |
 | `cartesian` | lines, systems | `x: [min, max]`, `y: [min, max]`, `grid`, `lines: [{id, eq, label_it?, role?}]` with `eq` as `y = 2x + 1`, `x = 3` or `2x + 3y = 6` (rational coefficients), `points: [{x, y, label_it?, role?, on_lines?: [ids]}]` (a point with `on_lines` lies exactly on each line), `segments` |
 | `sentence` | logical and grammatical analysis | `text_it`, `parts: [{id?, text_it, role, label_it?, question_it?, implied?}]` (exact substrings of `text_it`, in order, at most 10; an `implied` part such as "(noi)" is drawn dashed), `links`, `layout: line\|centre`, `states` with `op_it`, `next_label_it` (a part with the same `id` keeps its role) |
-| `concept_map` (schema) | classifications | `root`, `nodes: [{id, text_it, role?, icon?}]`, `edges: [{from, to, label_it?}]` forming a tree of depth at most 3 with at most 4 children per node, `links` (at most 3 cross links) |
+| `concept_map` (schema) | classifications | `root`, `nodes: [{id, text_it, role?, icon?}]`, `edges: [{from, to, label_it?}]` forming a tree of depth at most 3 with at most 4 children per node, `links` (at most 3 cross links); in a bilingual lesson `translate_material: false` makes the nodes target-only (verb forms: `text_en|es` with no `text_it`), the edge labels stay a pair |
 | `flow` (schema) | procedures, and a loop (Do While) as a flowchart | `nodes: [{id, kind: step\|decision\|end, text_it (at most 80 characters, markup included), role?}]`, `edges: [[from, to, "label"?]]`: one main chain, a decision has 2 or 3 branches, no cycles among the edges; `loops: [{from, to, label_it?}]` (at most 2): the one way back, an arrow from a node under a decision to that decision (see «A flow that repeats»). A decision is drawn as a diamond |
 | `network` | who is linked to whom, by what | `layout: pair\|row\|triangle\|hub\|fan\|grid`, `centre` (hub), `into` (fan), `nodes: [{id, label_it, icon?, role?, note_it?, badge_it?}]` (2 to 8, label 6 words, note 25), `edges: [{from, to, kind, label_it?, what?}]` (at most 12 per state; `kind`: owes, pays, elects, trusts, appoints, commands, advises, votes_laws, vetoes, orders, promises, gives, sends; `what`: goods, money, document, order, promise, signature, information, vote), `holds: [{node, items_it}]`, `everyone: true` (a node "Tutti gli altri", id `everyone`), `filter: true` (hub: kind chips), states with `edges`, `holds`, `hide: [ids]`, `badges`, `op_it`. An arrow never reaches a hidden node |
 | `chain` | causes, effects, cycles | `layout: line\|fan\|ring`, `nodes: [{id, kind: cause\|event\|effect\|stage, area?, text_it}]` (3 to 10, 8 words) written in reading order (a fan: the causes, the one event, its effects), `links: [{from, to, word?, causal?: false, back?: true}]` (a link goes to the next node, or into the event of a fan; word: perché, quindi, per questo, porta a, poi; at most 2 not causal, 1 back, a line only), `remove: true` ("Togli una causa"), states with `show: [ids]`, `op_it`; a ring has stages only |
@@ -550,7 +550,7 @@ sees the target text; the Italian opens with the button «Traduzione» (the card
 **Table cells.** A `table` block (and a figure of type `table`) keeps its cells in `header` / `rows` **in the target language** and adds the Italian as `header_it` /
 `rows_it`, the same shape (same number of columns and rows). A **table of forms** (`have got`, `watch → watches`) has no honest Italian: say `translate_material: false` on the table (block or figure) and write the cells in the target language only, with `caption_*` paired.
 
-**Form material is not translated.** In a check or a `try` exercise that tests a form, `translate_material: false` (on the `check` block, on the exercise, or on a check inside an exercise) makes the options, rows and elements (`text_en` with no `text_it`), the exercise's sentence with its blank (`text_en`) and its `final_en` target-only: a translation would give the key away («beve» / «bere»). The `prompt_*` (the instruction, never the sentence with the blank), `explain_*`, `message_*`, `solution_*` and the steps stay paired. A `mistake` block's `wrong_en` and `right_en` are always target-only (no `wrong_it`, no marker; a translation would be the same for both), its `why_*` and `group_*` are a pair. An Italian text beside material is `E-LANG-PAIR-ORPHAN`.
+**Form material is not translated.** In a check or a `try` exercise that tests a form, `translate_material: false` (on the `check` block, on the exercise, or on a check inside an exercise) makes the options, rows and elements (`text_en` with no `text_it`), the exercise's sentence with its blank (`text_en`) and its `final_en` target-only: a translation would give the key away («beve» / «bere»). The `prompt_*` (the instruction, never the sentence with the blank), `explain_*`, `message_*`, `solution_*` and the steps stay paired. A `mistake` block's `wrong_en` and `right_en` are always target-only (no `wrong_it`, no marker; a translation would be the same for both), its `why_*` and `group_*` are a pair. An Italian text beside material is `E-LANG-PAIR-ORPHAN`. Form material is read for the level like any target text (`W-LANG-LEVEL`): a form it teaches goes in `teaches_en|es`, unless it is the key or a declared error value of the check (the taught forms are not flagged).
 
 **Where the sentence of a form check goes.** A typed gap (`normalized_text`, `number`, `fraction`): in `input_before` / `input_after`, one inline run drawn on the line of the box (a text such as `14.` or `- 5 cm` is text, never a list), with the accent keyboard below the sentence; a typed «Prova tu» exercise whose gaps carry the sentence needs no `text_<lang>` at all. A check with options, rows, tiles or a figure (`choice`, `matching`, `ordering`, `tiles`, `select`): `sentence_en` / `sentence_es` on the check, target-only (no `sentence_it`; an Italian one is `E-LANG-PAIR-ORPHAN`), drawn above the options, never in the prompt. A `try` exercise that is a choice keeps its sentence in the exercise's `text_<lang>`. `sentence_<lang>` on a typed gap or a `span_select` (its text) is `E-LESSON-CHECK`. The text around the box of a typed gap (`input_before`, `input_after`), the sentence, the options and the tiles are not read for `W-ABSOLUTE`.
 
@@ -558,7 +558,7 @@ sees the target text; the Italian opens with the button «Traduzione» (the card
 
 A `word_parts` decode word's `parts_it` and `meaning_it` stand alone like `label_it`; a pair `parts_es` + `parts_it` needs both sides complete. A tense `timeline` mark keeps its sentence in `text_en|es` (no `text_it`); its `label_en` + `label_it` are a pair.
 
-**Metalanguage and Italian quoted in target text.** Quote the words you talk about, «-es», «he plays»: words inside «...» or `[[en:..]]` are not read for the level, nor counted as Italian or Spanish in an Italian text (`E-LANG-TRANSLATION-LANG` ignores them). An Italian word inside target text is `[[it:..]]` or «...» (no `E-LESSON-LANG`, not a word of the level). Grammar words (verb, noun, singular, plural, sílaba, tilde, femenino, pronombre...) and the beginner words (thirteen, grandad, pen, lección...) are in `config/banco/lexicon/{en,es}_{grammar,basic}.txt`; `teaches_en|_es` takes up to 150 more. A sentence ends at `.`, `?`, `!` also after a lone letter and inside `.»` `?»`; a `;` splits; at most 12 words each. Words in «...» and `[[es:..]]` spans are not counted in the 12 words; a colon followed by a quote, a capital or a span (or after a closing quote) ends a sentence. To quote a form in Italian text, write `[[es:..]]`: the Italian copy of a target form is then no `E-LANG-TRANSLATION-COPY`. A topic may carry `teaches_en|es` too.
+**Metalanguage and Italian quoted in target text.** Quote the words you talk about, «-es», «he plays»: words inside «...» or `[[en:..]]` are not read for the level, nor counted as Italian or Spanish in an Italian text (`E-LANG-TRANSLATION-LANG` ignores them). An Italian word inside target text is `[[it:..]]` or «...» (no `E-LESSON-LANG`, not a word of the level). Grammar words (verb, noun, singular, plural, sílaba, tilde, femenino, pronombre...) and the beginner words (thirteen, grandad, pen, lección...) are in `config/banco/lexicon/{en,es}_{grammar,basic}.txt`; `teaches_en|_es` takes up to 150 more. A sentence ends at `.`, `?`, `!` also after a lone letter and inside `.»` `?»`; a `;` splits; at most 12 words each. Words in «...» and `[[es:..]]` spans are not counted in the 12 words; a colon followed by a quote, a capital or a span (or after a closing quote) ends a sentence. To quote a form in Italian text, write `[[es:..]]`: the Italian copy of a target form is then no `E-LANG-TRANSLATION-COPY`. A topic may carry `teaches_en|es` too. The level check reads lemmas («aprendes», «buscas», «quedáis» and «tenéis» pass when «aprender», «buscar», «quedar» and «tener» do): do not list inflected forms in `teaches_*`.
 
 **Flow edge labels.** An edge is `[from, to, "label"]`, a bare string with no `_it` beside it, so the label is written in the target language and its Italian goes in
 `edges_it`, a list **as long as `edges`**, one entry for each edge in the same order: the Italian label, or `~` (null) for an edge with no label.
@@ -586,7 +586,7 @@ explanation in `alt` and `caption` (pairs), and the Italian names of the roles i
 the same bold words, the same colour roles (`[[subject:...]]` in both texts; the Italian one may say `[[subject|it:...]]`) and the same `[[g:..]]` terms
 (`E-LANG-PAIR-SHAPE`). A translation that is the target text copied (`E-LANG-TRANSLATION-COPY`), that is not Italian (`E-LANG-TRANSLATION-LANG`), a target text
 that holds Italian words (`E-LESSON-LANG`), two equal target strings with two different Italian ones in one block (`E-LANG-PAIR-CONFLICT`), a translation with no
-target (`E-LANG-PAIR-ORPHAN`) and a `_en` pair in a lesson without the flag, or a `_en` in a spanish lesson (`E-LANG-BILINGUAL-FLAG`) are refused. Two equal target strings with two Italian versions: a warning (`W-LANG-PAIR-CONFLICT`) up to 3 words, an error beyond.
+target (`E-LANG-PAIR-ORPHAN`) and a `_en` pair in a lesson without the flag, or a `_en` in a spanish lesson (`E-LANG-BILINGUAL-FLAG`) are refused. Two equal target strings with two Italian versions: a warning (`W-LANG-PAIR-CONFLICT`) up to 3 words, an error beyond; a step that repeats the exercise `final` with another Italian is a warning too.
 
 **The topic's title in the course map is not yours.** `title_en|es` of the topic in the course map belongs to the **course revision** (the orchestrator's `banco course` work), never
 to the lesson or the topic file: ignore `W-TOPIC-LANG-MIXED` when it names only that title (it clears when the course revision has the pair). The lesson's own `title_*` is yours.
@@ -594,11 +594,24 @@ to the lesson or the topic file: ignore `W-TOPIC-LANG-MIXED` when it names only 
 **Level.** The target text is held to the target lint (`E-READ`: at most 12 words a sentence; `W-LANG-LEVEL`: the first 3000 words, the glossary, `teaches_en` /
 `teaches_es`, the common given names); the Italian to the Italian lint (25 words, `W-GULPEASE` on the translated core prose). The budgets (words a card,
 500 core words) count the target text. A `[[en:..]]` span inside English text is redundant (`W-LANG-SPAN-REDUNDANT`) unless it marks a unit the lesson discusses
-(a glossary term, a `teaches_en` word); the Italian text keeps its `[[en:..]]` spans for English words quoted in Italian.
+(a glossary term, a `teaches_en` word); the Italian text keeps its `[[en:..]]` spans for English words quoted in Italian. The check is by lemma, so a regular inflection of a word of the list needs no entry in `teaches_en|es`.
 
 **Never a leak by translation.** The student can always open the Italian: a question whose Italian text is the answer (a «translate this» check whose Italian
 prompt is the key, vocabulary matching whose Italian side gives the answer) is a flaw even if no check refuses it; the reviewer files it as `translation_leak`.
 The Italian of an `explain`, a `message` and a `solution` is shown only after the answer, like the target text.
+
+**Limits and wording the checks keep catching (D-402, round 6).**
+
+- **Caps.** The `final_en|es` of a `try` exercise (the short final answer) is at most 120 characters (`E-SCHEMA`): a longer result is a sentence in the solution, not the final. An item's `teaches_en|es` holds at most 40 words (see `banco brief show practice-item`).
+- **Every target word in Italian text is quoted or a span.** «is, are» bare in an Italian sentence is refused as not Italian (`E-LANG-TRANSLATION-LANG`): write «is, are» or `[[en:is]]`. The same for `[[es:..]]` in a spanish lesson.
+- **Never «X takes Y» for «with X, use Y».** «The verb takes -s» says the verb owns an ending; say what the student does: «With he, she or it, add -s». The same for a preposition («after "depend", use on», never «depend takes on»).
+- **A hint restates the rule; it never counts or names the mistakes.** «Look at the verb after he/she/it» is a hint; «You made two mistakes: the -s and the order» is a judge that gives the key away. This holds for the hints of a check, of an exercise and of an item.
+- **A message after a wrong answer names the mistake, not the right word.** «Here the verb has no -s» names it; «Write play» is the key.
+- **An example step's `tag` prints a chip above a blank step.** The chip is on the page before the student answers, so a `tag` must not give the answer (a faded step tagged «+ -s» tells him what to type).
+- **Two checks in one exercise** (`checks:`) get their «a)», «b)» from the page: never write the label in a prompt (`W-CHECK-LABEL-DOUBLED`).
+- **Spanish persons rule** (a spanish lesson, said the same way every time): «¿El sujeto es yo y otra persona? Es nosotros. ¿Es tú y otra persona, sin yo? Es vosotros. Yo solo y tú solo no cambian.»
+
+**An `E-LESSON-BLOCK` refusal names the line of the bad key** (not the block's opening fence) when the YAML gives the key a line; the plain-text fields of a figure (`alt_*`, the `note_*` and `question_*` of a figure, in both languages) refuse `[[..]]` markup: quote with «...».
 
 Names in sentences are common given names (Tom, Amy, Lucía), never the student's or his household's.
 

@@ -31,6 +31,7 @@ type itemShotsList struct {
 	Status    string            `json:"status"`
 	RenderID  int               `json:"render_id"`
 	Message   string            `json:"message"`
+	Ahead     *int              `json:"queue_ahead"`
 	Errors    json.RawMessage   `json:"errors"`
 	Notes     json.RawMessage   `json:"notes"`
 	Instances int               `json:"instances"`
@@ -92,7 +93,7 @@ func runItemShots(e *env, args []string) error {
 	fs := flag.NewFlagSet("item shots", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	dir := fs.String("dir", "", "folder for the images: DIR/REV/instance-NN_390x844.webp (default "+defaultItemShotsDir+")")
-	wait := fs.Bool("wait", false, "wait until the render is done (the Chrome lane runs one job at a time)")
+	wait := fs.Bool("wait", false, "wait until the render is done (the Chrome lane runs two jobs at a time and says its place in the queue)")
 	force := fs.Bool("force", false, "draw the revision again even if it has been drawn")
 	timeout := fs.Int("timeout", defaultItemShotsTimeout, "seconds to wait with --wait (a busy Chrome lane can take many minutes)")
 	fs.Bool("json", false, "JSON output (the default)")
@@ -138,9 +139,15 @@ func runItemShots(e *env, args []string) error {
 	}
 	if *wait {
 		deadline := time.Now().Add(time.Duration(*timeout) * time.Second)
+		told := -1
 		for {
 			if list, err = e.itemShots(rev); err != nil {
 				return err
+			}
+			// the place in the queue, said on stderr each time it changes (stdout stays the one JSON answer)
+			if list.Ahead != nil && *list.Ahead != told && !list.done() {
+				told = *list.Ahead
+				fmt.Fprintf(e.stderr, "item shots %s: queued, %d render requests ahead (item validations and lesson renders run first)\n", rev, told)
 			}
 			if list.done() && list.RenderID > after {
 				break
@@ -149,7 +156,7 @@ func runItemShots(e *env, args []string) error {
 				return newErr(ExitServer, "E-CHROME-UNAVAILABLE", "revision", "the render could not run (Chrome did not answer): "+list.Message, "retry later: "+fetch+" --force")
 			}
 			if time.Now().After(deadline) {
-				return newErr(ExitServer, "E-TIMEOUT", "revision", "the render did not finish within "+strconv.Itoa(*timeout)+" s (the Chrome lane runs one job at a time and may be busy): run the command again to keep waiting, with a longer --timeout SECONDS (this run "+strconv.Itoa(*timeout)+", default "+strconv.Itoa(defaultItemShotsTimeout)+")", fetch+" --timeout "+strconv.Itoa(2**timeout))
+				return newErr(ExitServer, "E-TIMEOUT", "revision", "the render did not finish within "+strconv.Itoa(*timeout)+" s (the Chrome lane runs two jobs at a time and may be busy): run the command again to keep waiting, with a longer --timeout SECONDS (this run "+strconv.Itoa(*timeout)+", default "+strconv.Itoa(defaultItemShotsTimeout)+")", fetch+" --timeout "+strconv.Itoa(2**timeout))
 			}
 			time.Sleep(interval)
 		}

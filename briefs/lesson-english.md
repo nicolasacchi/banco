@@ -1,6 +1,6 @@
 ---
 name: lesson-english
-version: 2
+version: 3
 formats: banco.lesson/2
 ---
 
@@ -65,6 +65,11 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
   lesson that passed before is Italian prose with `_en` keys and `[[en:...]]` spans and is served as it was. One target language per figure.
 - A target-language sentence has at most 12 words; vocabulary beyond the first 3000 words is glossed or listed in `teaches_en`. Use common given names in
   sentences (Tom, Amy, Emma, Jack, Sophie), never the student's or his household's, and no famous people unless the topic is about them.
+- **Round 6 limits and wording** (the whole list is in `banco brief show lesson`, «Limits and wording»): an exercise `final_en` is at most 120 characters; an item's `teaches_en` at most 40 words;
+  every English word inside an Italian text is quoted («is, are») or a span (`[[en:is]]`); never «X takes Y» for «with X, use Y» («depend takes on» is wrong, «after depend, use on» is right);
+  a hint restates the rule and never counts or names the mistakes; the message after a wrong answer names the mistake, not the right word; an example step's `tag` prints a chip above a blank step, so it never gives the answer.
+- **Everyday words as keys (round 6).** When the keys are function words («in, on, at», «es, son, hay, está»), a hint or a message may still use them: it is refused only when the word is quoted or named as the answer, or stands next to the frame of the key. Write natural sentences.
+- **Times.** A clock time such as 8:45 counts as one token in the 12-word cap.
 - Grammar terms are English, with the Italian term in the glossary pair (`term_en: "modal verb"`, `term_it: "verbo modale"`). Invented but plausible contexts.
 - Every dialogue line has its Italian gloss one tap away (`gloss_it`).
 - British English by default (en-GB); contractions are accepted on both sides of a typed answer.

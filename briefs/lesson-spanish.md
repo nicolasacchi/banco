@@ -1,6 +1,6 @@
 ---
 name: lesson-spanish
-version: 2
+version: 3
 formats: banco.lesson/2
 ---
 
@@ -67,6 +67,13 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - A target-language sentence has at most 12 words; vocabulary beyond the first 3000 words is glossed or listed in `teaches_es`. Use common given names in
   sentences (Lucía, Carlos, Marta, Pablo), never the student's or his household's. The tilde and the stress are computed by our engine, never typed by the agent
   (and the accent direction is never tested).
+- **Round 6 limits and wording** (the whole list is in `banco brief show lesson`, «Limits and wording»): an exercise `final_es` is at most 120 characters; an item's `teaches_es` at most 40 words;
+  every Spanish word inside an Italian text is quoted («es, son») or a span (`[[es:es]]`); never «X lleva Y» or «X takes Y» for «con X, usa Y»;
+  a hint restates the rule and never counts or names the mistakes; the message after a wrong answer names the mistake, not the right word; an example step's `tag` prints a chip above a blank step, so it never gives the answer.
+- **The persons rule, said this way every time:** «¿El sujeto es yo y otra persona? Es nosotros. ¿Es tú y otra persona, sin yo? Es vosotros. Yo solo y tú solo no cambian.»
+- **Everyday words as keys (round 6).** When the keys are function words («in, on, at», «es, son, hay, está»), a hint or a message may still use them: it is refused only when the word is quoted or named as the answer, or stands next to the frame of the key. Write natural sentences.
+- **Times.** A clock time such as 8:45 counts as one token in the 12-word cap.
+- **A colon before ¿ or ¡ ends a sentence** for the 12-word cap: «Pregunta: ¿Dónde está?» is two.
 - Grammar terms are Spanish, with the Italian term in the glossary pair (`term_es: "verbo irregular"`, `term_it: "verbo irregolare"`).
 - The forms of verbs come from `spanish/verbs`: irregular forms only from the table.
 - Same meaning, same colour as in Italian: `verb` and `od` are the Italian predicate and object.

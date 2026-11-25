@@ -22,15 +22,17 @@ export function plain(text) {
 // The texts of a figure that a translation can be asked for (D-402): every `<base>_it` string of its data, a list of them too, in the order the data
 // has them, once each (every state's too), and the edge labels of a flow (the third place of each edge: the Italian is in `tr`), the figure's own alt and
 // caption left out (the alt is said first by the panel, the caption has its own translation line), and the `pieces_it` of a mirror, which are the Italian side
-// itself, as is the `label_it` of a word_parts word (a hash with a `form_*`) that the figure's `tr` has no entry for: the legacy gloss, «banana» under «plátano».
+// itself, as are the `label_it`, `parts_it` and `meaning_it` of a word_parts word (a hash with a `form_*`) that the figure's `tr` has no entry for: the Italian
+// gloss, «banana» under «plátano», «giocare» beside the piece «play» (drawn as Italian, lang="it").
 // A bilingual lesson's figure holds the target text in these slots. Pure.
 const WORD_FORM = /^form_(?:en|es|la|it)$/
+const WORD_GLOSS = new Set(["label_it", "parts_it", "meaning_it"])
 export function figureStrings(data) {
   const found = []
   const add = (text) => {
     if (typeof text === "string" && text.trim() !== "" && !found.includes(text)) found.push(text)
   }
-  const legacyGloss = (holder, key, value) => key === "label_it" && Object.keys(holder).some((k) => WORD_FORM.test(k)) && !(data.tr && Object.hasOwn(data.tr, value))
+  const legacyGloss = (holder, key, value) => WORD_GLOSS.has(key) && Object.keys(holder).some((k) => WORD_FORM.test(k)) && !(data.tr && Object.hasOwn(data.tr, value))
   const walk = (value, key, top, holder) => {
     if (typeof value === "string") {
       if (/_it$/.test(key ?? "") && key !== "pieces_it" && !(top && (key === "alt_it" || key === "caption_it")) && !legacyGloss(holder, key, value)) add(value)

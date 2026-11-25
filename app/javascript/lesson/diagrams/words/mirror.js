@@ -17,8 +17,6 @@ const TARGET_KEYS = { pieces_en: "en", pieces_es: "es" }
 const TEACHES = { en: "english", es: "spanish" }
 const NEUTRAL_ALT = "Una frase in italiano e la stessa frase in un'altra lingua, divise in pezzi: tocca il pezzo che la domanda chiede."
 const caps = CAPS.mirror
-// A note is plain text (it is read aloud and printed as written): a quoted word is written in «…», never in a [[lang:..]] span.
-const PLAIN_TEXT = "plain text: use «…» for a quoted word, not [[..]] markup"
 
 const show = (piece) => piece.replaceAll("+", "")
 const wordsIn = (pieces) => pieces.reduce((n, p) => n + show(p).split(/\s+/).filter(Boolean).length, 0)
@@ -81,7 +79,6 @@ function checkRow(row, i, key, lang, ctx, dia, map) {
     noted.add(`${n.side}-${n.piece}`)
     const words = n.note_it.trim().split(/\s+/).length
     if (words > 12) return dia(`${nat}/note_it`, `a note has ${words} words (at most 12)`)
-    if (n.note_it.includes("[[")) return dia(`${nat}/note_it`, PLAIN_TEXT)
   }
   for (const [k, l] of links.entries()) {
     if (l[2] === "same" || l[2] === "meaning") continue

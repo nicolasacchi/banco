@@ -158,6 +158,9 @@ func runWith(args []string, e *env) int {
 		return reportError(e.stderr, newErr(ExitUsage, "E-USAGE", "command", "unknown command: "+strings.Join(args[:min(len(args), 2)], " "), "banco schema"))
 	}
 	if err := match.run(e, args[len(strings.Fields(match.name)):]); err != nil {
+		if ce, ok := err.(*CLIError); ok && ce.onStdout {
+			return reportError(e.stdout, err)
+		}
 		return reportError(e.stderr, err)
 	}
 	return ExitOK

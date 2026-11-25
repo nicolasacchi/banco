@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 37
+version: 38
 
 validation:
   # Skill graph (synchronous).
@@ -186,6 +186,7 @@ validation:
   E-LESSON-CODE-TAB: { stage: ruby, severity: error, description: "A tab character in the text or the output of a code block: indent with four spaces, so that the box and the copy keep the layout (D-329)." }
   W-LESSON-CHECKS-SPARSE: { stage: ruby, severity: warning, description: "Three idea or example cards in a row with no check or step blank." }
   W-CHECK-ANSWER-IN-PROMPT: { stage: ruby, severity: warning, description: "A check's answer text appears in its own prompt." }
+  W-CHECK-LABEL-DOUBLED: { stage: ruby, severity: warning, description: "The prompt of a check in an exercise with several checks starts with its own label (a), b), (a)): the page draws the labels itself, so it shows twice (D-402)." }
   W-MISTAKE-CODE: { stage: ruby, severity: warning, description: "A mistake or check error code that is not in the skills' error catalogue." }
   E-COURSE-SKILL-DUPLICATE: { stage: ruby, severity: error, description: "A course skill key is in the graph it is validated against, or twice in the map." }
   E-COURSE-TOPIC: { stage: ruby, severity: error, description: "The key, kind and subject disagree, duplicate topic, a skill in two topics or of another subject, unknown topic in after, a cycle in after." }

@@ -1,10 +1,10 @@
 ---
 name: practice-item
-version: 1
+version: 2
 formats: banco.item/1
 ---
 
-# Brief: practice items (version 1)
+# Brief: practice items (version 2)
 
 A practice item is an item of kind `practice_item` (`banco.item/1`, `config/banco/schemas/item.json`).
 The student meets it while studying a topic: after a lesson, on one skill, with help on request and an
@@ -36,6 +36,9 @@ stop at `awaiting_teacher`.
   matching have no scan: the reviewer judges.
 - Hints obey the readability rules of messages (`E-READ`, `E-PHRASE`): sentences of at most 25 words,
   the second person, kind, no exam-gaming.
+- A hint restates the rule and never counts or names the mistakes: on a judge item («which of these are wrong?») «Look at the verb after he/she/it» helps, «Two rows are wrong, and one is the -s» is the answer. The same for the message after a wrong answer, which names the mistake and never the right word.
+- Keys that are function words («in, on, at», «es, son, hay»): a hint may use them unless it quotes them, names them as the answer or sets them next to the frame of the key. A clock time such as 8:45 counts as one token in the 12-word cap, and a colon before ¿ or ¡ ends a sentence.
+- Never «X takes Y» for «with X, use Y» in a hint, a message or a solution («the verb takes -s»; say «after he, she or it, add -s»).
 - `diagnosis_item`, `short_answer` and `testlet` items must not carry `level` or `hints_it`.
 - A practice item is never pinned by a blueprint (`E-BLUEPRINT-PRACTICE-ITEM`), and a topic pins only
   practice items.
@@ -89,11 +92,13 @@ student text is written twice**, and both texts are yours to write: never leave 
 - **The target text** (`E-READ`, `W-LANG-LEVEL`, `W-ABSOLUTE`, `E-LESSON-LANG`): sentences of at most **12 words** (a full stop, `?` or `!` ends one, also after a lone letter
   «acaba en n. Lleva» and inside a closing quote `.»` `?»`; a `;` splits), the instruction at most 60; the words of the first 3 000 of the language, plus the grammar words
   (`config/banco/lexicon/{en,es}_grammar.txt`: verb, noun, singular, plural, sílaba, tilde...) and the beginner words (`{en,es}_basic.txt`: thirteen, grandad, pen, lección...);
-  any other word the item teaches goes in the item's optional `teaches_en` / `teaches_es` list (at most 40). Words inside «...» or `[[en:..]]` / `[[es:..]]`, syllable pieces
+  any other word the item teaches goes in the item's optional `teaches_en` / `teaches_es` list (**at most 40 words**, each at most 40 characters). Words inside «...» or `[[en:..]]` / `[[es:..]]`, syllable pieces
   (`ja-mon`, `-es`) and form material are not read for the level. An absolute word (always, never, nobody; siempre, nunca, nadie) is `W-ABSOLUTE` here too; «only» and «solo» are not one, so «Write only the missing words» is fine.
   No Italian word in a `_en` or `_es` text; to quote one write it inside «...» or `[[it:..]]` (an item's page may print `[[it:..]]` as text, `E-ITEM-RENDER`: prefer «...»).
   English is British by default. Use **common given names** (Tom, Amy, Emma, Jack, Sophie; Lucía, Carlos, Marta, Pablo; the lists are in
   `config/banco/lexicon/{en,es}_names.txt`), never the student's or his household's, and no famous person unless the skill is about him. Invented, plausible contexts.
+- **Every target word in Italian text is quoted or a span.** «is, are» bare in an Italian text is refused as not Italian (`E-LANG-TRANSLATION-LANG`): write «is, are» or `[[en:is]]`.
+- **The persons rule of a spanish item**, said this way every time: «¿El sujeto es yo y otra persona? Es nosotros. ¿Es tú y otra persona, sin yo? Es vosotros. Yo solo y tú solo no cambian.»
 - **The Italian text** is a faithful, plain translation (not a gloss, not a hint), at most 25 words a sentence like every Italian text, and it says what the target says:
   nothing added, nothing dropped, the same level. It must be Italian (`E-LANG-TRANSLATION-LANG`) and written, not copied (`E-LANG-TRANSLATION-COPY`).
 - **Same shape in both languages** (`E-LANG-PAIR-SHAPE`, `E-LANG-PAIR-MISSING`, `E-LANG-PAIR-ORPHAN`): the same number of `___` blanks, the same formulas

@@ -362,3 +362,29 @@ func TestLessonSubmitAllowReservedSendsItsHeaderOnlyWithADryRun(t *testing.T) {
 		t.Fatalf("--allow-reserved without --dry-run must be refused before any request: exit %d, sent %q/%q, stderr %s", res.exit, dry, reserved, res.stderr)
 	}
 }
+
+func TestLessonSubmitDryRunRefusalIsOutputOnStdoutWithExitThree(t *testing.T) {
+	body := `{"code":"E-LESSON-BLOCK","field":"/cards/0/blocks/1","message":"m","next":"fix","dry_run":true,"codes":["E-LESSON-BLOCK"],"findings":[{"code":"E-LESSON-BLOCK","severity":"error","field":"/cards/0/blocks/1","message":"m"}]}`
+	srv, _ := sequenceServer(t, [2]string{"422", body}, [2]string{"422", body}, [2]string{"409", `{"code":"E-CHROME-BUSY","field":"chrome","message":"busy","next":"retry"}`})
+	dir := t.TempDir()
+	write(t, dir, "lesson.md", "---\nkey: ripasso.math.demo-equations\n---\n\n## Perché ti serve\nTesto.\n")
+	res := runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir, "--dry-run")
+	if res.exit != ExitValidation {
+		t.Fatalf("exit %d, want 3", res.exit)
+	}
+	if e := assertErrJSON(t, res.stdout, "E-LESSON-BLOCK"); len(e.Codes) != 1 || len(e.Findings) != 1 || !e.DryRun {
+		t.Errorf("the findings are the output: %+v", e)
+	}
+	if res.stderr != "" {
+		t.Errorf("stderr = %q", res.stderr)
+	}
+	// a real submit stays an error on stderr; a conflict of a dry run (Chrome busy) is no verdict and stays on stderr too
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir)
+	if res.exit != ExitValidation || res.stdout != "" {
+		t.Errorf("real submit: exit %d stdout %q", res.exit, res.stdout)
+	}
+	res = runCLI(t, srv.URL, envToken("tok"), "lesson", "submit", dir, "--dry-run")
+	if res.exit != ExitConflict || res.stdout != "" || !strings.Contains(res.stderr, "E-CHROME-BUSY") {
+		t.Errorf("busy dry run: exit %d stdout %q stderr %q", res.exit, res.stdout, res.stderr)
+	}
+}

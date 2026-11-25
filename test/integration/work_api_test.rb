@@ -353,8 +353,9 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     Validation::DryRun.clear_cache  # a repeat would be answered from memory, Chrome never asked
     held = Queue.new
     release = Queue.new
-    holder = Thread.new { Validation::ChromeRunner.with_lock { held << true; release.pop } }
-    held.pop
+    # every slot of the lock (two runs may use Chrome at once)
+    holders = Array.new(Validation::ChromeRunner::SLOTS) { Thread.new { Validation::ChromeRunner.with_lock { held << true; release.pop } } }
+    Validation::ChromeRunner::SLOTS.times { held.pop }
     begin
       ENV["BANCO_DRY_RUN_CHROME_WAIT"] = "0.5"
       submit("gen-1", { "verify.mjs" => F::VERIFY }, base: base, dry: true)
@@ -363,8 +364,8 @@ class WorkApiTest < ActionDispatch::IntegrationTest
       assert_equal "retry in 30 s", json["next"]
     ensure
       ENV.delete("BANCO_DRY_RUN_CHROME_WAIT")
-      release << true
-      holder.join
+      holders.each { release << true }
+      holders.each(&:join)
     end
   end
 

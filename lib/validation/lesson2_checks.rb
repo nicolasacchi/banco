@@ -316,6 +316,10 @@ module Validation
 
       def italian_block(block, path)
         markup_block(block, path, layer: :italian)
+        block_diagrams(block, path, plain_only: true) # the Italian text of a figure's alt, notes and questions is plain text too
+        Lessons::Blocks::Try.labelled_prompts(block).each do |pointer, _|
+          add("W-CHECK-LABEL-DOUBLED", "#{path}/#{pointer}", Lessons::Blocks::Try::LABEL_MESSAGE, line: field_line(block["line"], pointer), rule: "label-doubled-#{path}/#{pointer}-it")
+        end
         Array(block["blocks"]).each_with_index { |inner, k| italian_block(inner, "#{path}/blocks/#{k}") } if block["type"] == "more"
       end
 
@@ -495,24 +499,25 @@ module Validation
         @ctx.add("E-LESSON-EXTRA-WORDS", "", "a more block has #{words} words (at most #{max})", rule: "more-words-#{path}") if words > max
       end
 
-      def block_diagrams(block, path)
+      # +plain_only+: the Italian layer's pass, where a figure has no check but the plain-text one.
+      def block_diagrams(block, path, plain_only: false)
         line = block["line"]
         # the own figure of a select check (a check block, a step blank or an exercise check)
         Lessons::Blocks::Truth.located_checks(block, path).each do |c, at, yaml|
-          diagram_checks(c["diagram"], "#{at}/diagram", line, "#{yaml.empty? ? '' : "/#{yaml}"}/diagram") if c["component"] == "select"
+          diagram_checks(c["diagram"], "#{at}/diagram", line, "#{yaml.empty? ? '' : "/#{yaml}"}/diagram", plain_only: plain_only) if c["component"] == "select"
         end
         case block["type"]
-        when "diagram" then diagram_checks(block["diagram"], "#{path}/diagram", line, "")
-        when "schema" then diagram_checks(block["schema"], "#{path}/schema", line, "")
+        when "diagram" then diagram_checks(block["diagram"], "#{path}/diagram", line, "", plain_only: plain_only)
+        when "schema" then diagram_checks(block["schema"], "#{path}/schema", line, "", plain_only: plain_only)
         when "cases"
-          block["cases"].each_with_index { |c, k| diagram_checks(c["diagram"], "#{path}/cases/#{k}/diagram", line, "/cases/#{k}/diagram") if c["diagram"] }
-        when "example" then diagram_checks(block["diagram"], "#{path}/diagram", line, "/diagram") if block["diagram"]
+          block["cases"].each_with_index { |c, k| diagram_checks(c["diagram"], "#{path}/cases/#{k}/diagram", line, "/cases/#{k}/diagram", plain_only: plain_only) if c["diagram"] }
+        when "example" then diagram_checks(block["diagram"], "#{path}/diagram", line, "/diagram", plain_only: plain_only) if block["diagram"]
         when "try"
           block["exercises"].each_with_index do |e, k|
             next unless e["diagram"]
 
-            static_figure(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram")
-            diagram_checks(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram")
+            static_figure(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram") unless plain_only
+            diagram_checks(e["diagram"], "#{path}/exercises/#{k}/diagram", line, "/exercises/#{k}/diagram", plain_only: plain_only)
           end
         end
       end
@@ -527,8 +532,8 @@ module Validation
       end
 
       # +line+: the line of the block (or of the front matter key) and +yaml+ where the diagram sits in the block's YAML.
-      def diagram_checks(diagram, path, line, yaml = nil)
-        Lessons::Diagrams.check(diagram, subject: @subject).each do |f|
+      def diagram_checks(diagram, path, line, yaml = nil, plain_only: false)
+        (plain_only ? Lessons::Diagrams.plain_text_findings(diagram) : Lessons::Diagrams.check(diagram, subject: @subject)).each do |f|
           at = yaml.nil? ? line : field_line(line, "#{yaml}#{f.path}")
           add(f.code, "#{path}#{f.path}", f.message, line: at, rule: f.rule + path)
         end

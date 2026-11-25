@@ -1,10 +1,10 @@
 ---
 name: diagnosis-item
-version: 2
+version: 3
 formats: banco.item/1
 ---
 
-# Brief: diagnosis items (version 2)
+# Brief: diagnosis items (version 3)
 
 You write items for the entry diagnosis of one student: closed questions that
 show, skill by skill, what the student already does well, what to revisit and
@@ -204,7 +204,7 @@ short answers and testlets too (a testlet's sub items inherit the flag). What ch
 - **Rule 6, readability.** The Italian lint runs on **every** `_it` text of a bilingual item, `passage_it` and `model_answer_it` included (they are the Italian
   translations there: the passage is `passage_en|_es` + `passage_it`, the model answer `model_answer_en|_es` + `model_answer_it`). The target text is
   linted as the target language: sentences of at most 12 words, the instruction at most 60, words of the first 3 000 of the language (`teaches_en|_es` for
-  the others), common given names only (Tom, Amy, Emma, Jack, Sophie; Lucía, Carlos, Marta, Pablo), never the student's or his household's.
+  the others, at most 40 words; the lemma is enough, no inflected forms), common given names only (Tom, Amy, Emma, Jack, Sophie; Lucía, Carlos, Marta, Pablo), never the student's or his household's.
 - **Rule 5, no key in the text.** The scans run twice, on the target text and on the Italian one (the student can always open it): `E-SOLUTION-IN-DISPLAY`
   (the Italian of the key option is looked for as well), `E-SUPPORT-LEAK`, `W-TESTLET-LEAK`, `W-ANSWER-IN-STEM`, `W-MESSAGE-GIVES-KEY`. No exercise
   whose Italian text is the answer.

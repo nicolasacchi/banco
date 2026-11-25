@@ -1,5 +1,5 @@
 # The render check of a stored lesson/2 revision (A12.2, D-249): the cards drawn in the server's Chrome, the layout
-# findings as errors, the screenshots stored by content. Runs on the `chrome` queue (one thread, one Chrome at a time,
+# findings as errors, the screenshots stored by content. Runs on the `chrome` queue (two threads, two Chrome runs at a time,
 # inside ChromeRunner's lock) at a priority below item validation: items gate topics, a render is for the reviewer.
 # A verdict (passed, failed) is appended to lesson_renders; Chrome that cannot be reached is not a verdict: each
 # attempt appends an `error` row and the job retries. A render that passed hands the revision to SpeakLessonRevisionJob (D-359).

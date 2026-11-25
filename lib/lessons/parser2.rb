@@ -215,13 +215,30 @@ module Lessons
         end
       end
 
-      # The block against its schema (the shape of A4): a refusal is E-LESSON-BLOCK at the block's opening line.
+      # The block against its schema (the shape of A4): a refusal is E-LESSON-BLOCK at the line of the first bad key (the block's opening line when the YAML
+      # has no line for it, a block of `more` for one).
       def valid(block, line)
-        errors = Parser2.block_errors(block, @subject, @lang)
+        errors = Parser2.block_error_list(block, @subject, @lang)
         return block if errors.empty?
 
-        block_error(line, "#{block['type']}: #{errors.first(3).join('; ')}")
+        block_error(key_line(line, errors.first.first), "#{block['type']}: #{errors.first(3).map(&:last).join('; ')}")
         nil
+      end
+
+      # The line of the key a data pointer names inside the block that opens at +line+: the nearest key above it that the YAML parser gave a line to.
+      def key_line(line, pointer)
+        index = @field_lines[line]
+        return line if index.nil? || index.empty?
+
+        parts = pointer.split("/").reject(&:empty?)
+        until parts.empty?
+          at = "/#{parts.join('/')}"
+          hit = (@lang && index[at.gsub(/_it(?=\/|\z)/, "_#{@lang}")]) || index[at]
+          return hit if hit
+
+          parts.pop
+        end
+        line
       end
 
       def opening(match, n)
@@ -415,10 +432,13 @@ module Lessons
     # The schema errors of one block (numbered as it will be), as short sentences. Counts that have a code of their
     # own (the points of a summary: E-LESSON-SUMMARY) are left to the checks. A missing Italian next to its target text is E-LANG-PAIR-MISSING's
     # (Validation::Bilingual), not the schema's. +subject+ picks the derived schema of english and spanish (D-402).
-    def block_errors(block, subject = nil, lang = nil)
+    def block_errors(block, subject = nil, lang = nil) = block_error_list(block, subject, lang).map(&:last)
+
+    # The same errors as [data pointer, sentence]: the pointer says which key of the block is wrong (the parser reads its line from it).
+    def block_error_list(block, subject = nil, lang = nil)
       numbered = for_schema(number([ pad_pairs(block, lang) ]).first)
       schema = Banco::Schemas.for_subject("lesson", subject).ref("#/$defs/block")
-      schema.validate(numbered).map { |e| "#{e['data_pointer'].to_s.sub(/\A\//, '')} #{short(e)}".strip }
+      schema.validate(numbered).map { |e| [ e["data_pointer"].to_s, "#{e['data_pointer'].to_s.sub(/\A\//, '')} #{short(e)}".strip ] }
     end
 
     # The body against the lesson schema (derived for english and spanish), as raw errors; the Italian that is missing next to its target text is not one.

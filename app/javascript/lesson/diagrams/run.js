@@ -18,10 +18,32 @@ function withoutServed(data) {
     delete copy.rows_it
     delete copy.translate_material
   }
+  if (data.type === "concept_map") delete copy.translate_material // form material (D-402): the schema Ruby uses for every subject does not know it
   if (data.x_value !== undefined && !data.show_value) return copy
   delete copy.tilt
   if (Array.isArray(copy.states)) copy.states = copy.states.map((s) => (s && typeof s === "object" ? (({ tilt, ...rest }) => rest)(s) : s))
   return copy
+}
+
+// The fields drawn or read as plain text (the alt, the notes and the questions of a figure, in any language): a quoted word is written in «…», never in [[lang:..]]
+// markup, which would show as it is. The first breach {path, message, code}, or null (the twin of Lessons::Diagrams.plain_text).
+const PLAIN_TEXT_KEY = /^(?:alt|note|question)_(?:it|en|es)$/
+export function plainTextBreach(node, path = "") {
+  if (Array.isArray(node)) {
+    for (const [i, item] of node.entries()) {
+      const found = plainTextBreach(item, `${path}/${i}`)
+      if (found) return found
+    }
+  } else if (node && typeof node === "object") {
+    for (const [key, value] of Object.entries(node)) {
+      if (typeof value === "string" && PLAIN_TEXT_KEY.test(key) && value.includes("[[")) {
+        return { path: `${path}/${key}`, message: `${key} is plain text: use «…» for a quoted word, not [[..]] markup`, code: key.startsWith("alt") ? "E-LESSON-ALT" : "E-LESSON-DIAGRAM" }
+      }
+      const found = plainTextBreach(value, `${path}/${key}`)
+      if (found) return found
+    }
+  }
+  return null
 }
 
 export function run(data, opts, mod) {
@@ -31,7 +53,8 @@ export function run(data, opts, mod) {
     if (bad) return fail(bad.path, bad.message, "E-LESSON-DIAGRAM")
     const altWords = words(data.alt_it)
     if (altWords < 5 || altWords > 50) return fail("/alt_it", "alt_it has 5 to 50 words", "E-LESSON-ALT")
-    if (String(data.alt_it ?? "").includes("[[")) return fail("/alt_it", "alt_it is plain text: use «…» for a quoted word, not [[..]] markup", "E-LESSON-ALT")
+    const plain = plainTextBreach(data)
+    if (plain) return fail(plain.path, plain.message, plain.code)
     const subject = opts?.subject ?? "math"
     const known = roleNames(palette, subject)
     for (const { path, role } of walkRoles(data)) {

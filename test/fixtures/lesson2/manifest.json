@@ -705,7 +705,7 @@
    "file": "bad/block-later-release.md",
    "base": "base.md",
    "code": "E-LESSON-BLOCK",
-   "line": 45,
+   "line": 46,
    "construct": "directive",
    "note": "dialogue (a W2-1 block of track T3, reserved until its look gate): not available yet"
   },
@@ -737,9 +737,9 @@
    "file": "bad/page-revision-shape.md",
    "base": "base.md",
    "code": "E-LESSON-BLOCK",
-   "line": 199,
+   "line": 201,
    "construct": "block",
-   "note": "revision is an integer or latest"
+   "note": "revision is an integer or latest (the line of the bad key, round 6)"
   },
   {
    "file": "bad/source-quote-not-in-reference.md",

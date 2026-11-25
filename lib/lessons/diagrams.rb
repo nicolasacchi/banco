@@ -105,6 +105,29 @@ module Lessons
       nil
     end
 
+    # The fields of a figure that are drawn or read as plain text (the alt, the notes and the questions of a legend, a mirror's notes; in any language): a quoted
+    # word is written in «…», never in [[lang:..]] markup, which would show as it is. Run on the target layer of a bilingual lesson and on its Italian layer (D-402).
+    PLAIN_TEXT_KEY = /\A(?:alt|note|question)_(?:it|en|es)\z/
+    PLAIN_TEXT_MESSAGE = "is plain text: use «…» for a quoted word, not [[..]] markup"
+
+    def plain_text(node, c, path = "", rule_suffix: "")
+      case node
+      when Hash
+        node.each do |key, value|
+          if value.is_a?(String) && PLAIN_TEXT_KEY.match?(key) && value.include?("[[")
+            c.add(key.start_with?("alt") ? "E-LESSON-ALT" : "E-LESSON-DIAGRAM", "#{path}/#{key}", "#{key} #{PLAIN_TEXT_MESSAGE}", rule: "plain-text#{path}/#{key}#{rule_suffix}")
+          else
+            plain_text(value, c, "#{path}/#{key}", rule_suffix: rule_suffix)
+          end
+        end
+      when Array then node.each_with_index { |item, i| plain_text(item, c, "#{path}/#{i}", rule_suffix: rule_suffix) }
+      end
+      c
+    end
+
+    # The findings of plain_text alone (the Italian layer of a bilingual lesson has no other figure check).
+    def plain_text_findings(data) = plain_text(data, Collector.new(nil), rule_suffix: "-it").findings
+
     def label_words(text) = text.to_s.gsub(/\$[^$]*\$/, "M").split.size
 
     # Findings [Finding] of a diagram (type known to the schema) for a lesson of +subject+.
@@ -117,7 +140,7 @@ module Lessons
       alt = data["alt_it"].to_s.split.size
       lo, hi = Validation::Rules.get(:lesson2, :alt_words)
       c.add("E-LESSON-ALT", "/alt_it", "alt_it has #{alt} words (#{lo} to #{hi})", rule: "alt") unless (lo..hi).cover?(alt)
-      c.add("E-LESSON-ALT", "/alt_it", "alt_it is plain text: use «…» for a quoted word, not [[..]] markup", rule: "alt-markup") if data["alt_it"].to_s.include?("[[")
+      plain_text(data, c)
       mod.static(data, c) if mod.respond_to?(:static)
       states = effective_states(data)
       if states.empty?

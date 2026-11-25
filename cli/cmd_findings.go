@@ -22,7 +22,7 @@ var lessonFindingRe = regexp.MustCompile(`^L[1-9][0-9]{0,17}-[1-9][0-9]?$`)
 
 // runFindingsList lists the blocker and major findings of a subject
 // (GET /api/v1/subjects/:subject/findings): the items' first, then the lesson reviews'.
-// --open keeps those the teacher has not decided and the author has not answered;
+// --open keeps those the author has not answered yet on the current revisions, leaving out the ones the teacher closed (dismissed, or the topic approved);
 // --kind item|lesson keeps one kind; --lesson KEY the findings of one lesson; --topic KEY
 // those of the topic's lesson and of the items it pins. With --lesson or --topic the
 // subject is the key's middle part when --subject is not given.
@@ -31,7 +31,7 @@ func runFindingsList(e *env, args []string) error {
 	fs.SetOutput(io.Discard)
 	subject := fs.String("subject", "", "subject key, for example italian")
 	all := fs.Bool("all", false, "minor findings too (the third reviewer reads them)")
-	open := fs.Bool("open", false, "only findings without a decision and without an answer")
+	open := fs.Bool("open", false, "only findings with no answer yet on the current revisions (not those the teacher closed)")
 	kind := fs.String("kind", "", "item or lesson: only the findings of items, or of lesson reviews")
 	lesson := fs.String("lesson", "", "only the findings of this lesson's reviews (a lesson key)")
 	topic := fs.String("topic", "", "only the findings of this topic: its lesson and the items it pins (a topic key)")

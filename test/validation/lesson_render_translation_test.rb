@@ -74,6 +74,18 @@ class LessonRenderTranslationTest < ActiveSupport::TestCase
     assert_equal "passed", row.status, dump(row)
   end
 
+  test "a decode word_parts whose pieces and meaning have only their Italian gloss (parts_it, meaning_it) draws: the gloss is Italian text, no «en text with no Italian translation» (round 6)" do
+    row = render_figures("en", "lesson_en_decode.md")
+    assert_empty row.result["errors"].select { |e| e["message"].to_s.start_with?("translation") }, dump(row)
+    assert_equal "passed", row.status, dump(row)
+  end
+
+  test "a concept_map of verb forms (translate_material: false) draws its nodes in English with no Italian: no «translation missing» (round 6)" do
+    row = render_figures("en", "lesson_en_concept_map.md")
+    assert_empty row.result["errors"].select { |e| e["message"].to_s.start_with?("translation") }, dump(row)
+    assert_equal "passed", row.status, dump(row)
+  end
+
   test "a phone card with an example's choice step (two quoted options with a word of Italian), a typed gap ending in a lone full stop and suffixes with a leading hyphen: nothing overflows, nothing is missing" do
     row = render_figures("en", "lesson_en_example_choice.md")
     if ENV["BANCO_SHOT_DIR"]

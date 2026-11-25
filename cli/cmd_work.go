@@ -251,7 +251,7 @@ func readWorkFiles(dir, role string) (map[string]string, error) {
 
 // runWorkSubmit sends the folder as a new revision (POST /api/v1/work/submit).
 // --dry-run validates in the request and writes nothing on the server: it exits 3
-// with the codes when the item fails. Without it the server queues the validation
+// with the codes when the item fails (the JSON, with the findings, on stdout). Without it the server queues the validation
 // and the answer carries the revision to watch with `banco work status REV --wait`.
 func runWorkSubmit(e *env, args []string) error {
 	fs := flag.NewFlagSet("work submit", flag.ContinueOnError)
@@ -308,7 +308,7 @@ func runWorkSubmit(e *env, args []string) error {
 	}
 	out, err := submitWithBusyRetry(e, raw, headers, *dry)
 	if err != nil {
-		return err
+		return dryRunAnswer(err, *dry)
 	}
 	if !*dry {
 		var answer struct {

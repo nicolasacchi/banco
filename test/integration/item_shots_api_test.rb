@@ -191,6 +191,62 @@ class ItemShotsApiTest < ActionDispatch::IntegrationTest
     assert_equal "queued", json["status"]
   end
 
+  test "a request whose job still waits in Solid Queue is not stale however old it is: no twenty-first job behind twenty (D-402); a failed or finished job is" do
+    c = ApplicationRecord.connection
+    c.create_table(:solid_queue_jobs) do |t|
+      t.string :queue_name, null: false
+      t.string :class_name, null: false
+      t.text :arguments
+      t.datetime :finished_at
+      t.datetime :created_at, null: false
+    end
+    c.create_table(:solid_queue_failed_executions) do |t|
+      t.bigint :job_id, null: false
+      t.text :error
+      t.datetime :created_at, null: false
+    end
+    [ SolidQueue::Job, SolidQueue::FailedExecution ].each(&:reset_column_information)
+    row = ItemRender.create!(item_revision: @revision, status: "queued", harness_version: Validation::Harness.item_version, result_json: "{}", shots_json: "[]")
+    job = c.insert("INSERT INTO solid_queue_jobs (queue_name, class_name, arguments, created_at) VALUES ('chrome', 'RenderItemRevisionJob', " \
+                   "#{c.quote(%({"job_class":"RenderItemRevisionJob","arguments":[#{@revision.id},#{row.id}]}))}, #{c.quote(Time.current)})")
+    travel_to 3.hours.from_now do
+      ActiveJob::Base.stub(:queue_adapter_name, "solid_queue") do
+        refute Items::ShotRequest.stale?(row), "the job is still in the queue"
+        assert_no_enqueued_jobs only: RenderItemRevisionJob do
+          post_shots(@agent)
+        end
+        assert_equal false, json["enqueued"]
+        assert_equal "queued", json["status"]
+        c.execute("INSERT INTO solid_queue_failed_executions (job_id, created_at) VALUES (#{job}, #{c.quote(Time.current)})")
+        assert Items::ShotRequest.stale?(row), "a job that failed is lost: ask again"
+        assert_enqueued_jobs 1, only: RenderItemRevisionJob do
+          post_shots(@agent)
+        end
+      end
+    end
+  end
+
+  test "while a request is queued the list says how many requests wait before it: the queued rows that are the latest of their revision and not stale" do
+    queued = ->(rev, at = Time.current) { ItemRender.create!(item_revision: rev, status: "queued", harness_version: Validation::Harness.item_version, result_json: "{}", shots_json: "[]", created_at: at) }
+    other = make_revision("shots-q2", "math.number", instances: 1, component: "choice")
+    third = make_revision("shots-q3", "math.number", instances: 1, component: "choice")
+    answered = make_revision("shots-q4", "math.number", instances: 1, component: "choice")
+    lost = make_revision("shots-q5", "math.number", instances: 1, component: "choice")
+    queued.call(lost, 2.hours.ago) # a lost job: not counted
+    queued.call(answered)
+    verdict!(revision: answered) # answered: not counted
+    queued.call(other)
+    queued.call(@revision)
+    queued.call(third)
+    api_as(@agent, shots_path)
+    assert_equal "queued", json["status"]
+    assert_equal 1, json["queue_ahead"], "only `other` waits before it"
+    api_as(@agent, shots_path(third))
+    assert_equal 2, json["queue_ahead"]
+    api_as(@agent, shots_path(answered))
+    assert_not json.key?("queue_ahead"), "a revision that is not queued has no place"
+  end
+
   test "a verdict made by an older host is asked for again without force" do
     row = verdict!
     stale = ItemRender.create!(item_revision: @revision, status: "passed", harness_version: "an-older-host", result_json: "{}", shots_json: "[]")

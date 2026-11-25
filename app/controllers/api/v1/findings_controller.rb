@@ -24,8 +24,9 @@ module Api
       # GET /api/v1/subjects/:subject/findings[?open=1][&all=1][&kind=item|lesson][&lesson=KEY][&topic=KEY]
       # Blocker and major findings of the subject (all=1: minor ones too, for the third reviewer), newest revision last, with the teacher's
       # disposition, the latest response of the author and the third reviewer's opinion (the first and the second assessment). The assessments are shown only to a valid
-      # session that is not an arbiter still to assess that finding (else a count only). open=1: no disposition yet, no response yet,
-      # and on the current or a pinned revision (not a superseded one).
+      # session that is not an arbiter still to assess that finding (else a count only). open=1: no response yet, on the current or a pinned
+      # revision (not a superseded one), and not closed by the teacher: a finding she dismissed, or one on a lesson whose topic she approved. A finding she
+      # wants fixed (fix_requested), or on a lesson she sent back, is exactly what the author has still to answer (D-402).
       #
       # The rows of the items come first (kind item), then those of the lesson reviews (kind lesson, D-313: id L<review>-<n>, the lesson,
       # the revision, the card or section, the teacher's decision on the lesson, the latest response; open=1: no decision, no response, on
@@ -129,7 +130,7 @@ module Api
             severity: f.severity, source: f.source, instance: f.instance, problem_it: f.problem_it, fix_it: f.fix_it,
             disposition: dispositions[f.id], response: responses[f.id]&.to_h, opinion: visible_opinion(opinions[f.id], viewer) }.compact
         end
-        open ? rows.select { |r| r[:disposition].nil? && r[:response].nil? && (r[:current] || pinned.include?(r[:revision_id])) } : rows
+        open ? rows.select { |r| r[:disposition] != "dismissed" && r[:response].nil? && (r[:current] || pinned.include?(r[:revision_id])) } : rows
       end
 
       # The rows of the lesson findings (D-313). keys: none for every lesson, one key for that lesson, two different keys
@@ -138,7 +139,7 @@ module Api
         return [] if keys.size > 1
 
         rows = LessonFindings.rows(subject, keys: keys.presence, all: all)
-        open ? rows.select { |r| r[:decision].nil? && r[:response].nil? && (r[:current] || r[:pinned]) } : rows
+        open ? rows.select { |r| r[:decision] != "topic_approved" && r[:response].nil? && (r[:current] || r[:pinned]) } : rows
       end
 
       # The item revisions the latest revision of the topic pins (none when it has no revision yet). The topic page shows

@@ -6,8 +6,14 @@ require "resolv"
 module Validation
   # The one door to Chrome (A-02). Agent code runs only in a browser; this is the
   # browser. Every use (validation, dry run, preview, health) goes through
-  # with_lock, an flock on tmp/chrome.lock shared by every process of the host, so
-  # at most one run drives Chrome at a time.
+  # with_lock, which takes one of SLOTS flocks (tmp/chrome.lock, tmp/chrome.lock.1)
+  # shared by every process of the host, so at most SLOTS runs drive Chrome at a
+  # time (two since D-402: with twelve authors a lesson render waited twenty minutes
+  # behind the one before it). Each run has its own browser context; what two runs
+  # must not share is handled here: a local Chrome is launched for each slot, and the
+  # reaper (below) works only when no other slot is in use, so it never disposes the
+  # context of a run that is drawing. The queue's `chrome` lane (config/queue.yml)
+  # has as many threads as there are slots.
   #
   # Production: the banco-chrome sidecar (chromedp/headless-shell on the internal
   # network). BANCO_CHROME_HOST is a name; it is resolved to an IP right before
@@ -30,6 +36,8 @@ module Validation
     class Timeout < Error; end
 
     LOCK_PATH = -> { ENV["BANCO_CHROME_LOCK"].presence || Rails.root.join("tmp/chrome.lock").to_s }
+    # How many runs may drive Chrome at once, and so how many threads the `chrome` queue has (test/validation/chrome_runner_test.rb says they agree).
+    SLOTS = 2
 
     FLAGS = {
       "headless" => nil,
@@ -54,26 +62,33 @@ module Validation
     CHROME_CANDIDATES = %w[google-chrome chromium chromium-browser chrome-headless-shell].freeze
 
     class << self
-      # Runs the block holding the shared lock. wait: seconds to wait for it;
+      # The lock file of a slot: the shared one for slot 0, the same name and the slot's number for the others.
+      def slot_path(slot) = slot.zero? ? LOCK_PATH.call : "#{LOCK_PATH.call}.#{slot}"
+
+      # Runs the block holding one slot of the shared lock (yielding its number). wait: seconds to wait for a free slot;
       # try: true does not wait and raises Busy.
       def with_lock(wait: 900, try: false)
         FileUtils.mkdir_p(File.dirname(LOCK_PATH.call))
-        File.open(LOCK_PATH.call, File::RDWR | File::CREAT, 0o600) do |file|
-          raise Busy, "Chrome is busy" unless lock(file, wait: wait, try: try)
+        files = Array.new(SLOTS) { |slot| File.open(slot_path(slot), File::RDWR | File::CREAT, 0o600) }
+        slot = lock_any(files, wait: wait, try: try)
+        raise Busy, "Chrome is busy" unless slot
 
-          yield
+        begin
+          yield slot
         ensure
-          file.flock(File::LOCK_UN) unless file.closed?
+          files[slot].flock(File::LOCK_UN) unless files[slot].closed?
         end
+      ensure
+        files&.each { |file| file.close unless file.closed? }
       end
 
-      # Under the lock: connects, reaps orphan contexts, yields a Session, and
+      # Under a slot: connects, reaps orphan contexts, yields a Session, and
       # disposes whatever the session still owns. Chrome trouble is Unavailable.
       def session(wait: 900, try: false)
-        with_lock(wait: wait, try: try) do
-          session = Session.new(connect)
+        with_lock(wait: wait, try: try) do |slot|
+          session = Session.new(connect(slot))
           begin
-            session.reap
+            reap_when_alone(session, slot)
             yield session
           rescue Ferrum::TimeoutError, Ferrum::ScriptTimeoutError, Ferrum::PendingConnectionsError => e
             raise Timeout, e.message
@@ -102,21 +117,31 @@ module Validation
 
       private
 
-      def lock(file, wait:, try:)
-        return file.flock(File::LOCK_EX | File::LOCK_NB) ? true : false if try
-
+      # The number of the first slot this call can take, or nil (after the wait; at once with try).
+      def lock_any(files, wait:, try:)
         deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + wait
         loop do
-          return true if file.flock(File::LOCK_EX | File::LOCK_NB)
-          return false if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+          slot = files.index { |file| file.flock(File::LOCK_EX | File::LOCK_NB) }
+          return slot if slot
+          return nil if try || Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
 
           sleep 0.2
         end
       end
 
-      def connect
+      # The reaper disposes every context this session does not own, so it runs only when no other slot is in use (it holds them all while it works, so
+      # no other run starts in the meantime). A context a dead run left behind waits for the next quiet moment.
+      def reap_when_alone(session, slot)
+        others = (0...SLOTS).to_a - [ slot ]
+        files = others.map { |other| File.open(slot_path(other), File::RDWR | File::CREAT, 0o600) }
+        session.reap if files.all? { |file| file.flock(File::LOCK_EX | File::LOCK_NB) }
+      ensure
+        files&.each { |file| file.close unless file.closed? }
+      end
+
+      def connect(slot)
         host = ENV["BANCO_CHROME_HOST"].presence
-        host ? connect_remote(host) : local_browser
+        host ? connect_remote(host) : local_browser(slot)
       rescue Resolv::ResolvError, SocketError => e
         raise Unavailable, "cannot resolve #{ENV['BANCO_CHROME_HOST']}: #{e.message}"
       rescue Ferrum::Error, Errno::ECONNREFUSED, NoMethodError => e
@@ -128,21 +153,27 @@ module Validation
         Ferrum::Browser.new(url: "http://#{ip}:#{ENV.fetch('BANCO_CHROME_PORT', '9222')}", timeout: 30)
       end
 
-      def local_browser
-        @local = nil if @local_pid != Process.pid || !local_alive?
-        @local ||= begin
+      # A local Chrome for each slot, kept for the life of the process (a fork starts again): two runs never share a browser.
+      def local_browser(slot)
+        if @local_pid != Process.pid || @locals.nil?
+          @locals = {}
+          @local_pid = Process.pid
+        end
+        @locals[slot] = nil unless local_alive?(@locals[slot])
+        @locals[slot] ||= begin
           path = chrome_path or raise Unavailable, "no Chrome to launch: set BROWSER_PATH"
           options = FLAGS.dup
           options["no-sandbox"] = nil if ENV["BANCO_CHROME_NO_SANDBOX"] == "1"
-          @local_pid = Process.pid
-          at_exit { @local&.quit if @local_pid == Process.pid }
-          Ferrum::Browser.new(browser_path: path, headless: true, ignore_default_browser_options: true,
-                              browser_options: options, process_timeout: 90, timeout: 30)
+          pid = Process.pid
+          browser = Ferrum::Browser.new(browser_path: path, headless: true, ignore_default_browser_options: true,
+                                        browser_options: options, process_timeout: 90, timeout: 30)
+          at_exit { browser.quit if pid == Process.pid }
+          browser
         end
       end
 
-      def local_alive?
-        @local.nil? || (@local.version && true)
+      def local_alive?(browser)
+        browser.nil? || (browser.version && true)
       rescue StandardError
         false
       end

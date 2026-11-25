@@ -5,6 +5,7 @@ import assert from "node:assert/strict"
 import { test } from "node:test"
 
 const mirror = await import("lesson/diagrams/words/mirror")
+const awaitedRun = await import("lesson/diagrams/run")
 const { estimate } = await import("lesson/diagrams/common")
 const { TEXT, TARGET_TEXT, mirrorChromePairs } = await import("lesson/diagrams/words/texts")
 const measure = (text, px, maxW) => estimate(text, px, maxW)
@@ -81,4 +82,12 @@ test("markup in a mirror note or in an alt is refused: plain text, a quoted word
   const alt = layout({ ...MIEI, alt_it: "Una frase italiana sopra la stessa frase in [[es:español]], pezzo per pezzo, con le coppie." })
   assert.equal(alt.error.code, "E-LESSON-ALT")
   assert.equal(alt.error.path, "/alt_it")
+})
+
+test("the plain-text rule is the same for every language and every figure: note_es, note_en, alt_en and a nested question are refused with their pointer (round 6)", () => {
+  const { plainTextBreach } = awaitedRun
+  assert.deepEqual(plainTextBreach({ rows: [{ notes: [{ note_es: "mira [[es:el]]" }] }] }), { path: "/rows/0/notes/0/note_es", message: "note_es is plain text: use «…» for a quoted word, not [[..]] markup", code: "E-LESSON-DIAGRAM" })
+  assert.equal(plainTextBreach({ states: [{ question_en: "[[en:who]]?" }] }).path, "/states/0/question_en")
+  assert.equal(plainTextBreach({ alt_en: "a [[en:b]]" }).code, "E-LESSON-ALT")
+  assert.equal(plainTextBreach({ label_it: "a [[es:el]] label", caption_it: "[[es:x]]" }), null, "labels and captions are rich text")
 })

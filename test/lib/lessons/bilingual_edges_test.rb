@@ -36,11 +36,14 @@ class BilingualEdgesTest < ActiveSupport::TestCase
     out
   end
 
-  # The `label_it` of every hash that has a `form_*` key (a word_parts word) and is not a folded pair (the fold has put the target text in `label_it` and made a tr entry).
+  # The `label_it`, `parts_it` and `meaning_it` of every hash that has a `form_*` key (a word_parts word) and is not a folded pair (the fold has put the target text
+  # there and made a tr entry): the Italian gloss, drawn as Italian.
   def legacy_glosses(value, tr = value.is_a?(Hash) ? value["tr"].to_h : {}, out = [])
     case value
     when Hash
-      out << value["label_it"] if value["label_it"].is_a?(String) && value.keys.any? { |k| k.match?(/\Aform_(en|es|la|it)\z/) } && !tr.key?(value["label_it"])
+      if value.keys.any? { |k| k.match?(/\Aform_(en|es|la|it)\z/) }
+        %w[label_it parts_it meaning_it].each { |k| out.concat(Array(value[k]).grep(String).reject { |t| tr.key?(t) }) }
+      end
       value.each_value { |v| legacy_glosses(v, tr, out) }
     when Array then value.each { |v| legacy_glosses(v, tr, out) }
     end

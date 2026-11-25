@@ -264,13 +264,21 @@ func TestWorkSubmitDryRunFailureExitsThreeWithTheCodes(t *testing.T) {
 	if r.exit != ExitValidation {
 		t.Fatalf("exit %d", r.exit)
 	}
-	e := assertErrJSON(t, r.stderr, "E-VERIFY-REJECTS")
+	// the verdict of a dry run is its output: the JSON with the codes and findings is on stdout, the exit code is still 3, stderr is empty
+	e := assertErrJSON(t, r.stdout, "E-VERIFY-REJECTS")
 	if len(e.Codes) != 1 || len(e.Findings) != 1 || !e.DryRun {
-		t.Errorf("codes and findings must reach stderr: %+v", e)
+		t.Errorf("codes and findings must reach stdout: %+v", e)
 	}
-	if r.stdout != "" {
-		t.Errorf("stdout = %q", r.stdout)
+	if r.stderr != "" {
+		t.Errorf("stderr = %q", r.stderr)
 	}
+	// without --dry-run a refusal is an error on stderr
+	srv2, _ := sequenceServer(t, [2]string{"422", body})
+	r2 := runCLI(t, srv2.URL, envToken("bnc_x"), "work", "submit", dir)
+	if r2.exit != ExitValidation || r2.stdout != "" {
+		t.Errorf("a real submit refused: exit %d stdout %q", r2.exit, r2.stdout)
+	}
+	assertErrJSON(t, r2.stderr, "E-VERIFY-REJECTS")
 }
 
 func TestWorkSubmitConflictsAndUsage(t *testing.T) {

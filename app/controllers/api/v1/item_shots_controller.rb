@@ -20,6 +20,7 @@ module Api
         out[:requested_at] = latest.created_at.utc.iso8601 if latest
         out[:stale] = true if latest && Items::ShotRequest.stale?(latest)
         out[:message] = latest.result["message"] if latest&.status == "error"
+        out[:queue_ahead] = Items::ShotRequest.ahead(latest) if latest&.status == "queued"
         if verdict
           out.merge!(shots_from: verdict.id, viewport: verdict.result["viewport"], instances_drawn: verdict.result["instances"], instances_total: verdict.result["instances_total"],
                      elapsed_seconds: verdict.result["elapsed_seconds"], errors: findings(verdict), notes: notes(verdict), seed_note: SEED_NOTE, shots: shots(verdict))

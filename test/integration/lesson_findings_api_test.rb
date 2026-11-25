@@ -184,7 +184,7 @@ class LessonFindingsApiTest < ActionDispatch::IntegrationTest
     assert_equal 0, LessonFindingResponse.count
   end
 
-  test "open: no decision, no response, and on the current revision or the one the latest topic revision pins" do
+  test "open: no response, not closed by an approved topic, and on the current revision or the one the latest topic revision pins; a lesson sent back is still open (D-402)" do
     assert_equal [ @major, @blocker ], list("kind=lesson&open=1").map { |r| r["finding_id"] }
     make_lesson(KEY)
     assert_equal [ false, false ], list("kind=lesson").map { |r| r["current"] }
@@ -197,8 +197,11 @@ class LessonFindingsApiTest < ActionDispatch::IntegrationTest
     assert_empty list("kind=lesson&open=1")
     decide!("send_back_lesson", { lesson_revision_id: @rev1.id, lesson: KEY, seq: 1, reason_code: "error", comment_it: "Rivedi." })
     assert_equal %w[sent_back sent_back], list("kind=lesson").map { |r| r["decision"] }
+    # sent back: the author has to answer, so the findings are open until they are answered
+    assert_equal [ @major, @blocker ], list("kind=lesson&open=1").map { |r| r["finding_id"] }
     respond(@major, right)
     assert_equal "sent_back", json["decision"]
+    assert_equal [ @blocker ], list("kind=lesson&open=1").map { |r| r["finding_id"] }
   end
 
   test "a lesson finding id sent to the assess endpoint is a JSON refusal, not an HTML 404" do

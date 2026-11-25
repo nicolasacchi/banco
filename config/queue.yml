@@ -1,5 +1,6 @@
-# Two lanes: ordinary jobs on 3 threads, Chrome work on exactly 1 thread (one
-# Chrome at a time, behind the ChromeRunner lock). The first lane also takes the
+# Two lanes: ordinary jobs on 3 threads, Chrome work on 2 threads: two runs at a time, one in each of the two slots of the ChromeRunner lock
+# (Validation::ChromeRunner::SLOTS, a test keeps the two numbers equal; each slot has its own browser and the reaper waits for a quiet moment, D-402).
+# The first lane also takes the
 # search embeddings (SearchEmbedJob, D-315) and the spoken clips of the lessons (SpeakLessonRevisionJob, D-359), only when no ordinary job waits: the
 # queues are polled in the order given. One embedder runs at a time (Search::Lease).
 default: &default
@@ -12,7 +13,7 @@ default: &default
       processes: 1
       polling_interval: 1
     - queues: chrome
-      threads: 1
+      threads: 2
       processes: 1
       polling_interval: 1
 

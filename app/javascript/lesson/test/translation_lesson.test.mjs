@@ -385,6 +385,18 @@ test("a word_parts word's `label_it` beside its `form_*` is the legacy Italian g
   assert.equal(mark("última").getAttribute("lang"), "es")
 })
 
+test("a decode word's `parts_it` and `meaning_it` beside its `form_*` are the Italian gloss (drawn as Italian, like label_it); a folded pair (tr has it) is target text", () => {
+  const data = { type: "word_parts", alt_it: "Words", view: "decode", words: [{ form_en: "play|ed", parts_it: ["giocare", "passato"], meaning_it: "giocò" }] }
+  assert.deepEqual(figureStrings(data), [], "no text to translate: the gloss is Italian")
+  const ctx = scoped(contextOf(fixture("served_lesson_es.json")), data)
+  const served = new Set(figureStrings(data))
+  const node = el("div")
+  markLabel(node, { text_it: "giocare" }, ctx, { served, figureCtx: ctx })
+  assert.equal(node.getAttribute("lang"), "it", "no «en text with no Italian translation»")
+  const pair = { type: "word_parts", alt_it: "Words", view: "decode", words: [{ form_es: "des|cubrir", parts_it: ["quitar", "tapar"], meaning_it: "abrir" }], tr: { quitar: "togliere", tapar: "coprire", abrir: "scoprire" } }
+  assert.deepEqual(figureStrings(pair), ["quitar", "tapar", "abrir"], "a folded pair holds the target text and has its Italian in tr")
+})
+
 const { glossaryList } = await import("lesson/cards")
 
 test("the card's glossary lists an entry once, however the card names it: [[g:sílaba]] in the target and [[g:sillaba]] in its translation", () => {
@@ -485,4 +497,23 @@ test("more_box.json: a text and a callout inside a `more` draw their Italian, an
   const target = inside.querySelectorAll("[lang]").filter((n) => n.getAttribute("lang") === "en")
   assert.ok(target.length >= 3)
   assert.ok(target.every((n) => n.hasAttribute("data-translated") || n.hasAttribute("data-tr-exempt")), "no target text without its translation or an exemption")
+})
+
+test("a concept_map with translate_material: false draws its nodes in the language of the lesson and leaves them out of the translation check; without the marker they are served texts (round 6)", () => {
+  const nodes = [{ id: "r", text_it: "hablar" }, { id: "a", text_it: "hablo" }, { id: "b", text_it: "hablas" }]
+  const figure = { type: "concept_map", alt_it: "Un mapa del verbo hablar con tres formas.", root: "r", nodes, edges: [{ from: "r", to: "a", label_it: "yo" }, { from: "r", to: "b", label_it: "tú" }] }
+  const draw = (data, lang) => layoutFigure(data, { width: 320, fontPx: 16, subject: "spanish", measure: (text) => ({ w: String(text).length * 8, h: 20 }), state: 0, lang })
+  const material = draw({ ...figure, translate_material: false }, "es")
+  assert.ok(!material.error, material.error?.message)
+  assert.deepEqual(material.labels.filter((l) => nodes.some((n) => n.text_it === l.text_it)).map((l) => l.lang), ["es", "es", "es"])
+  const served = new Set(figureStrings({ ...figure, translate_material: false }))
+  const ctx = scoped(contextOf(fixture("served_lesson_es.json")), { type: "concept_map" })
+  const node = el("div")
+  markLabel(node, material.labels.find((l) => l.text_it === "hablo"), ctx, { served, figureCtx: ctx })
+  assert.equal(node.getAttribute("lang"), "es")
+  assert.equal(node.hasAttribute("data-tr-exempt"), true, "no «es text with no Italian translation»")
+  const plain = draw(figure, "es")
+  assert.deepEqual(plain.labels.filter((l) => nodes.some((n) => n.text_it === l.text_it)).map((l) => l.lang), [undefined, undefined, undefined], "a map that is not material keeps its nodes as served texts")
+  const legacy = draw({ ...figure, translate_material: false }, null)
+  assert.ok(!legacy.error && legacy.labels.every((l) => l.lang === undefined), "a legacy lesson is drawn as it was")
 })

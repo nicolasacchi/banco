@@ -61,10 +61,12 @@ function drawBox(ctx, nd, box, x, y) {
   const role = nd.role ?? "muted"
   shape(ctx, "rect", { x, y, w: box.w, h: box.h, r: 12, cls: `dg-node st-${role}` })
   if (box.iconName) shape(ctx, "icon", { name: box.iconName, x: x + ctx.pad + 2, y: y + (box.h - Math.round(ctx.fontPx * 1.1)) / 2, size: Math.round(ctx.fontPx * 1.1), cls: `role-${role}` })
-  label(ctx, nd.text_it, x + ctx.pad + 2 + box.iconW, y + (box.h - box.textH) / 2, { anchor: "start", maxW: box.textH > ctx.lineH ? box.textW : undefined, cls: `dg-nodetext role-${role}`, role: nd.role })
+  // `translate_material: false` (D-402): the nodes are verb forms with no Italian, drawn in the language of the lesson and left out of the translation check
+  label(ctx, nd.text_it, x + ctx.pad + 2 + box.iconW, y + (box.h - box.textH) / 2, { anchor: "start", maxW: box.textH > ctx.lineH ? box.textW : undefined, cls: `dg-nodetext role-${role}`, role: nd.role, lang: ctx.material ? ctx.lang : undefined })
 }
 
 function build(data, ctx) {
+  ctx.material = data.translate_material === false
   const { byId, kids } = tree(data)
   const W = ctx.width
   const m = 8

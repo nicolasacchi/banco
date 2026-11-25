@@ -63,6 +63,25 @@ class FindingsApiTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "open=1 means no response yet on the current revisions: a finding the teacher wants fixed stays open, a dismissed one is closed (D-402)" do
+    api("/api/v1/subjects/math/findings?open=1")
+    assert_equal [ @review_finding.id, @blind_finding.id ], json["rows"].map { |r| r["finding_id"] }
+    dispose = ->(finding, disposition) do
+      Decision.create!(kind: "dispose_finding", subject: @subject, payload_json: { finding_id: finding.id, disposition: disposition, reason_it: "Sì." }.to_json,
+                       request_id: SecureRandom.uuid, teacher_login: "nik", groups: "banco-teacher", remote_addr: "127.0.0.1")
+    end
+    dispose.call(@review_finding, "fix_requested")
+    api("/api/v1/subjects/math/findings?open=1")
+    assert_equal [ @review_finding.id, @blind_finding.id ], json["rows"].map { |r| r["finding_id"] }, "fix_requested: the author still has to answer"
+    assert_equal "fix_requested", json["rows"].first["disposition"]
+    dispose.call(@blind_finding, "dismissed")
+    api("/api/v1/subjects/math/findings?open=1")
+    assert_equal [ @review_finding.id ], json["rows"].map { |r| r["finding_id"] }, "dismissed: closed"
+    respond(@review_finding, { stance: "item_right", note_it: "La chiave è giusta." })
+    api("/api/v1/subjects/math/findings?open=1")
+    assert_empty json["rows"]
+  end
+
   test "open=1 leaves out findings on superseded revisions; the full list keeps them as current: false" do
     later_revision
     api("/api/v1/subjects/math/findings")

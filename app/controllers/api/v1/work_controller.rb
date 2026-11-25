@@ -126,7 +126,7 @@ module Api
           chrome_version: v.chrome_version, attempt: v.attempt, validated_at: v.created_at }
       end
 
-      # Older revisions still waiting for a verdict: the Chrome lane has one thread and takes them in
+      # Older revisions still waiting for a verdict: the Chrome lane has two threads and takes them in
       # order, so this is how many validations run before this one (D-160).
       def queue_ahead(revision)
         ItemRevision.unsettled.where("item_revisions.id < ?", revision.id).count

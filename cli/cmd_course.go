@@ -172,7 +172,7 @@ func runLessonSubmit(e *env, args []string) error {
 	}
 	out, err := e.client().doWith("lesson submit", "POST", "/api/v1/lessons/submit", payload, headers)
 	if err != nil {
-		return err
+		return dryRunAnswer(err, *dry)
 	}
 	if !*dry {
 		var answer struct {

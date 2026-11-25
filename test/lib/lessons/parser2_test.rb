@@ -73,6 +73,19 @@ class LessonsParser2Test < ActiveSupport::TestCase
     assert_equal [ 19 ], lines_of(findings, "E-LESSON-BLOCK")
   end
 
+  test "a block the schema refuses is reported at the line of its bad key, not at the opening fence (round 6)" do
+    body = "## A {idea}\n\n::: check choice\nprompt_it: \"Quale?\"\noptions:\n  - {id: a, text_it: \"uno\"}\n  - {id: b, text_it: \"due\"}\nanswer: b\nerrors:\n  - {answer: a, message_it: 12}\nexplain_it: \"Perché sì.\"\n:::\n"
+    _, findings = parse(body)
+    found = findings.select { |f| f.code == "E-LESSON-BLOCK" }
+    assert_equal 1, found.size, found.map(&:message).inspect
+    fence = 19 # the front matter is 15 lines, a blank line, the heading, a blank line, the fence
+    assert_equal fence + 7, found.first.detail[:line], found.first.message
+    assert_match(/errors\/0\/message_it/, found.first.message)
+    # a key the YAML has no line for (a missing one) falls back to the nearest key above it, and at worst to the fence
+    _, findings = parse("## A {idea}\n\n::: check choice\nprompt_it: \"Quale?\"\n:::\n")
+    assert_equal [ fence ], lines_of(findings, "E-LESSON-BLOCK")
+  end
+
   test "a blank line is required before and after a fence" do
     _, findings = parse("## A {idea}\n\nTesto.\n::: callout tip\nBreve.\n:::\nAltro testo.\n")
     assert_equal [ 20, 23 ], lines_of(findings, "E-LESSON-BLOCK")

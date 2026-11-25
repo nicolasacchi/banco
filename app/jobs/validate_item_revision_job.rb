@@ -1,6 +1,6 @@
 # Validates one item revision (A-06): the Ruby phase, the Chrome phase on the
 # banco-chrome sidecar, the grading round trip and verify. Runs on the `chrome`
-# queue, which has one thread, and inside ChromeRunner's shared lock.
+# queue, which has two threads, and inside ChromeRunner's shared lock.
 #
 # A verdict (passed, failed) is appended to item_validations. Chrome that cannot be
 # reached, a harness that does not answer and a grader worker that is down are not

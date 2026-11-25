@@ -22,23 +22,94 @@ class ChromeRunnerTest < ActiveSupport::TestCase
     FileUtils.rm_rf(dir) if dir
   end
 
-  test "the lock is shared: a second taker waits, a try-lock is Busy, and the lock is released after" do
+  test "the lock has SLOTS places and is shared: a taker beyond them waits, a try-lock is Busy, and a place is free again after" do
     with_private_lock { lock_is_shared }
   end
 
-  def lock_is_shared
+  # Holds every slot but one with threads, then the last one: the next taker waits.
+  def hold_slots(count)
     held = Queue.new
     release = Queue.new
-    holder = Thread.new { Runner.with_lock { held << true; release.pop } }
-    held.pop
+    holders = Array.new(count) { Thread.new { Runner.with_lock { held << true; release.pop } } }
+    count.times { held.pop }
+    [ release, holders ]
+  end
+
+  def lock_is_shared
+    release, holders = hold_slots(Runner::SLOTS - 1)
+    assert_equal :ran, Runner.with_lock(try: true) { :ran }, "a place is left: a try-lock takes it"
+    last_release, last = hold_slots(1)
     begin
       assert_raises(Runner::Busy) { Runner.with_lock(try: true) { flunk "must not run" } }
       assert_raises(Runner::Busy) { Runner.with_lock(wait: 0.5) { flunk "must not run" } }
     ensure
-      release << true
-      holder.join
+      last_release << true
+      last.each(&:join)
     end
     assert_equal :ran, Runner.with_lock(try: true) { :ran }
+  ensure
+    holders&.each { release << true }
+    holders&.each(&:join)
+  end
+
+  test "two takers hold different slots at once" do
+    with_private_lock do
+      slots = Queue.new
+      release = Queue.new
+      holders = Array.new(Runner::SLOTS) { Thread.new { Runner.with_lock { |slot| slots << slot; release.pop } } }
+      taken = Array.new(Runner::SLOTS) { slots.pop }
+      assert_equal (0...Runner::SLOTS).to_a, taken.sort
+      Runner::SLOTS.times { release << true }
+      holders.each(&:join)
+    end
+  end
+
+  test "the `chrome` queue has as many threads as Chrome has slots, and no more (a thread past the slots would only wait on the lock)" do
+    workers = YAML.safe_load(ERB.new(Rails.root.join("config/queue.yml").read).result, aliases: true).dig("production", "workers")
+    chrome = workers.find { |w| Array(w["queues"]).include?("chrome") }
+    assert_equal Runner::SLOTS, chrome["threads"]
+    assert_equal 1, chrome["processes"], "the slots are shared by every process, but the browsers of a slot live in one"
+  end
+
+  test "the reaper runs only when no other slot is in use: it never disposes the context of a run that is drawing" do
+    with_private_lock do
+      reaped = []
+      fake = Object.new
+      fake.define_singleton_method(:reap) { reaped << :reap }
+      Runner.with_lock do |slot|
+        Runner.send(:reap_when_alone, fake, slot)
+        assert_equal [ :reap ], reaped, "alone: reaps"
+        release, holders = hold_slots(Runner::SLOTS - 1)
+        begin
+          Runner.send(:reap_when_alone, fake, slot)
+          assert_equal [ :reap ], reaped, "another run in use: no second reap"
+        ensure
+          (Runner::SLOTS - 1).times { release << true }
+          holders.each(&:join)
+        end
+      end
+    end
+  end
+
+  test "two sessions run at once, each in a Chrome and a context of its own, and neither clobbers the other's page" do
+    require_chrome!
+    with_private_lock do
+      both_in = Concurrent::CyclicBarrier.new(2)
+      run = lambda do |name|
+        Runner.session(wait: 60) do |session|
+          session.context do |ctx|
+            page = ctx.create_page
+            page.go_to("about:blank")
+            page.evaluate("document.title = #{name.to_json}")
+            both_in.wait(60) || raise("the other session never came in: the two runs were serialized")
+            [ name, page.evaluate("document.title"), session.browser.object_id ]
+          end
+        end
+      end
+      results = [ "first", "second" ].map { |n| Thread.new { run.call(n) } }.map(&:value)
+      assert_equal [ %w[first first], %w[second second] ], results.map { |r| r.first(2) }
+      assert_equal 2, results.map(&:last).uniq.size, "a Chrome for each slot"
+    end
   end
 
   test "the lock is released when the block raises" do
@@ -54,7 +125,7 @@ class ChromeRunnerTest < ActiveSupport::TestCase
     with_env("BANCO_CHROME_HOST" => "banco-chrome", "BANCO_CHROME_PORT" => "9333") do
       Resolv.stub(:getaddress, ->(name) { name == "banco-chrome" ? "172.28.0.9" : raise("unexpected #{name}") }) do
         Ferrum::Browser.stub(:new, ->(**opts) { seen = opts; fake }) do
-          assert_same fake, Runner.send(:connect)
+          assert_same fake, Runner.send(:connect, 0)
         end
       end
     end
@@ -71,8 +142,9 @@ class ChromeRunnerTest < ActiveSupport::TestCase
   end
 
   test "without BROWSER_PATH there is nothing to launch: Unavailable with a clear message" do
-    kept = Runner.instance_variable_get(:@local)
-    Runner.instance_variable_set(:@local, nil)
+    kept = [ Runner.instance_variable_get(:@locals), Runner.instance_variable_get(:@local_pid) ]
+    Runner.instance_variable_set(:@locals, {})
+    Runner.instance_variable_set(:@local_pid, Process.pid)
     with_env("BANCO_CHROME_HOST" => nil, "BROWSER_PATH" => "/no/such/chrome") do
       Runner.stub(:chrome_path, nil) do
         error = assert_raises(Runner::Unavailable) { Runner.session { flunk } }
@@ -80,7 +152,8 @@ class ChromeRunnerTest < ActiveSupport::TestCase
       end
     end
   ensure
-    Runner.instance_variable_set(:@local, kept)
+    Runner.instance_variable_set(:@locals, kept[0])
+    Runner.instance_variable_set(:@local_pid, kept[1])
   end
 
   test "the reaper disposes contexts that are not ours and keeps the ones we own; a context is disposed in ensure" do
