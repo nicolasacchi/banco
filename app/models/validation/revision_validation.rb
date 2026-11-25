@@ -24,10 +24,13 @@ module Validation
       append(status: "error", codes: [], findings: [ { code: nil, message: "#{error.class}: #{error.message}".first(300) } ])
     end
 
-    # The last attempt timed out inside the page: the generator is what is slow.
+    # The last attempt timed out inside the page. The harness' own limit, not a verdict about the files (the same revision passes when Chrome is less busy):
+    # the row says so (detail.server_limit, ItemValidation#timeout_only?), the job draws it again with a wait and the author may ask for it.
     def record_timeout(error)
       Findings # Zeitwerk loads lib/validation/findings.rb through this name; it also defines Validation::Finding
-      finding = Finding.new(code: "E-GEN-TIMEOUT", field: "/generator.mjs", message: "the harness timed out: #{error.message}".first(300), detail: {})
+      message = "the server's Chrome timed out (#{error.message.first(100)}): the server's time limit, not a problem of the files; do not change the generator for it. " \
+                "Ask again with banco work retry #{@revision.id}"
+      finding = Finding.new(code: "E-GEN-TIMEOUT", field: "/generator.mjs", message: message, detail: { server_limit: true })
       append(status: "failed", codes: [ "E-GEN-TIMEOUT" ], findings: [ finding.to_h ])
     end
 

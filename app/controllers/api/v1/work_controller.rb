@@ -50,18 +50,37 @@ module Api
         refuse(e.code, e.field, e.message, e.next_step, e.http)
       end
 
+      # POST /api/v1/work/revisions/:revision/retry (D-402): validate the revision again without a new revision. Only for a validation that failed on the
+      # server's time limit alone (ItemValidation#timeout_only?) or one that has no verdict and lost its job (ValidateItemRevisionJob.stuck?, a restart).
+      def retry_validation
+        revision = ItemRevision.find_by(id: params[:revision])
+        return refuse("E-NOT-FOUND", "revision", "no revision #{params[:revision].to_s.first(20).inspect}", "banco work open ITEM", 404) unless revision
+
+        latest = revision.latest_validation
+        unless latest&.timeout_only? || ValidateItemRevisionJob.stuck?(revision)
+          return refuse("E-RETRY-REFUSED", "revision", "revision #{revision.id} (#{latest ? latest.display_status : 'validating'}) has neither failed on the server's time limit alone nor lost its job: " \
+                        "only those are validated again without a new revision", "banco work status #{revision.id} --wait", 409)
+        end
+        return render json: { dry_run: true, would_enqueue: true, status: revision.status } if dry_run?
+
+        ValidateItemRevisionJob.perform_later(revision.id, latest&.seq.to_i)
+        render json: { revision_id: revision.id, item: revision.item.key, enqueued: true, status: revision.status, next: "banco work status #{revision.id} --wait" }, status: :accepted
+      end
+
       # GET /api/v1/work/revisions/:revision
       def status
         revision = ItemRevision.find_by(id: params[:revision])
         return refuse("E-NOT-FOUND", "revision", "no revision #{params[:revision].to_s.first(20).inspect}", "banco work open ITEM", 404) unless revision
 
         settled = settled?(revision) ? true : false
+        latest = revision.latest_validation
+        timeout_only = latest&.timeout_only? ? true : false
         # An unsettled `error` is one failed attempt (Chrome busy or slow); the job tries again by itself.
         render json: { revision_id: revision.id, item: revision.item.key, seq: revision.seq, status: revision.latest_validation&.display_status || "validating",
-                       settled: settled, retrying: revision.status == "error" && !settled, instances: revision.instances.count,
+                       settled: settled, retrying: (revision.status == "error" || timeout_only) && !settled, instances: revision.instances.count,
                        current_rules_version: Validation::Rules.version, queue_ahead: settled ? 0 : queue_ahead(revision),
                        teacher_comments: Teacher::SendBacks.for_item(revision.item),
-                       review_findings: review_findings(revision) }.merge(validation_row(revision) || {})
+                       review_findings: review_findings(revision) }.merge(retry_hint(revision, latest, timeout_only)).merge(validation_row(revision) || {})
       end
 
       private
@@ -126,6 +145,18 @@ module Api
           chrome_version: v.chrome_version, attempt: v.attempt, validated_at: v.created_at }
       end
 
+      # A validation that failed on the server's time limit alone, or lost its job, says so and how to ask again: not a defect of the files.
+      def retry_hint(revision, latest, timeout_only)
+        if timeout_only
+          { timeout_only: true, next: "the server's time limit, not your files: do not change them for it. " \
+            "#{ItemValidation.timeout_streak(revision) < ValidateItemRevisionJob::TIMEOUT_DRAWS ? 'The server validates it again by itself in a few minutes; to ask at once: ' : 'Ask again: '}banco work retry #{revision.id}" }
+        elsif latest.nil? || latest.status == "error"
+          ValidateItemRevisionJob.stuck?(revision) ? { stuck: true, next: "the validation job was lost (a restart): banco work retry #{revision.id}" } : {}
+        else
+          {}
+        end
+      end
+
       # Older revisions still waiting for a verdict: the Chrome lane has two threads and takes them in
       # order, so this is how many validations run before this one (D-160).
       def queue_ahead(revision)
@@ -135,7 +166,10 @@ module Api
       # passed and failed are final; an error is final only after the last retry.
       def settled?(revision)
         v = revision.latest_validation
-        v && (%w[passed failed].include?(v.status) || v.attempt.to_i >= ValidateItemRevisionJob::ATTEMPTS)
+        return false unless v
+        return ItemValidation.timeout_streak(revision) >= ValidateItemRevisionJob::TIMEOUT_DRAWS if v.timeout_only?
+
+        %w[passed failed].include?(v.status) || v.attempt.to_i >= ValidateItemRevisionJob::ATTEMPTS
       end
 
       def brief_row(name = "diagnosis-item")

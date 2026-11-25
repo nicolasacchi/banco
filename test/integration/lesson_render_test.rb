@@ -361,6 +361,102 @@ class LessonRenderTest < ActionDispatch::IntegrationTest
     assert_equal 1, render_with_results(@revision, render_result("passed"))
   end
 
+  # ---- a failure on the server's time limits is not final (D-402 round 7) ----
+
+  TIMEOUT_ERROR = { "code" => "E-LESSON-RENDER", "card" => 4, "viewport" => "390x844-cream", "message" => "timeout: the render of the revision passed 90 s" }.freeze
+
+  def timeout_row!(revision = @revision, errors: [ TIMEOUT_ERROR ])
+    render_row!(status: "failed", errors: errors, cards: {}, revision: revision)
+  end
+
+  def timeout_check = ->(revision, attempt: 1) { Struct.new(:revision) { define_method(:call) { LessonRender.create!(lesson_revision: revision, status: "failed", harness_version: Validation::Harness.lesson_version, result_json: JSON.generate("errors" => [ TIMEOUT_ERROR ]), shots_json: "[]") } }.new(revision) }
+
+  test "a render that failed on its time limits only is queued again with a wait, until three in a row; a failure on content is final" do
+    Validation::LessonRenderCheck.stub(:new, timeout_check) do
+      clear_enqueued_jobs
+      RenderLessonRevisionJob.perform_now(@revision.id)
+      first = LessonRender.where(lesson_revision_id: @revision.id).order(:id).last
+      assert first.timeout_only?
+      assert_equal 1, enqueued_jobs.size
+      assert_equal [ @revision.id, first.id ], enqueued_jobs.last[:args]
+      assert_operator enqueued_jobs.last[:at], :>, 4.minutes.from_now.to_f, "queued again with a wait"
+      # the latest verdict is a time-out, so the revision is not settled: the next draw happens, and is queued again
+      clear_enqueued_jobs
+      RenderLessonRevisionJob.perform_now(@revision.id, first.id)
+      assert_equal 1, enqueued_jobs.size
+      assert_operator enqueued_jobs.last[:at], :>, 9.minutes.from_now.to_f, "the wait grows"
+      clear_enqueued_jobs
+      RenderLessonRevisionJob.perform_now(@revision.id)
+      assert_equal 3, LessonRender.timeout_streak(@revision)
+      assert_empty enqueued_jobs, "after three time-outs in a row the failure stands"
+    end
+    other = lesson_revision_with_body!("ripasso.math.other", "math.number")
+    content = ->(revision, attempt: 1) { Struct.new(:revision) { define_method(:call) { LessonRender.create!(lesson_revision: revision, status: "failed", harness_version: Validation::Harness.lesson_version, result_json: JSON.generate("errors" => [ TIMEOUT_ERROR, CONTENT ]), shots_json: "[]") } }.new(revision) }
+    Validation::LessonRenderCheck.stub(:new, content) do
+      assert_no_enqueued_jobs(only: RenderLessonRevisionJob) { RenderLessonRevisionJob.perform_now(other.id) }
+    end
+    assert_no_enqueued_jobs(only: RenderLessonRevisionJob) { RenderLessonRevisionJob.perform_now(other.id) } # settled: a content failure is final
+  end
+
+  test "a draw asked for after a verdict that has come since does nothing" do
+    row = timeout_row!
+    render_row!(status: "passed")
+    assert_no_changes -> { LessonRender.count } do
+      RenderLessonRevisionJob.perform_now(@revision.id, row.id)
+    end
+  end
+
+  test "the status of a timeout-only render says it is the server's limit and gives the retry command; a content failure does not" do
+    timeout_row!
+    api("/api/v1/lesson-revisions/#{@revision.id}")
+    render = response.parsed_body["render"]
+    assert_equal "failed", render["status"]
+    assert_equal true, render["timeout_only"]
+    assert_includes render["next"], "server's time limit"
+    assert_includes render["next"], "not a problem of the cards' data"
+    assert_includes render["next"], "banco lesson render #{@revision.id} --retry"
+    render_row!(status: "failed", errors: [ CONTENT ], cards: {})
+    api("/api/v1/lesson-revisions/#{@revision.id}")
+    assert_nil response.parsed_body.dig("render", "timeout_only")
+    assert_includes response.parsed_body.dig("render", "next"), "fix the data"
+  end
+
+  test "POST render asks for another draw of a timeout-only render without a new revision; any other latest render is refused" do
+    on(:api, "/api/v1/lesson-revisions/#{@revision.id}/render", method: :post, headers: { "Authorization" => "Bearer #{@token}" })
+    assert_response :conflict
+    assert_equal "E-RETRY-REFUSED", response.parsed_body["code"], "no render yet"
+    render_row!
+    on(:api, "/api/v1/lesson-revisions/#{@revision.id}/render", method: :post, headers: { "Authorization" => "Bearer #{@token}" })
+    assert_response :conflict, "a pass is not drawn again"
+    row = timeout_row!
+    assert_no_enqueued_jobs(only: RenderLessonRevisionJob) do
+      on(:api, "/api/v1/lesson-revisions/#{@revision.id}/render", method: :post, headers: { "Authorization" => "Bearer #{@token}", "X-Banco-Dry-Run" => "1" })
+    end
+    assert_response :ok
+    assert_equal true, response.parsed_body["would_enqueue"]
+    assert_enqueued_with(job: RenderLessonRevisionJob, args: [ @revision.id, row.id ]) do
+      on(:api, "/api/v1/lesson-revisions/#{@revision.id}/render", method: :post, headers: { "Authorization" => "Bearer #{@token}" })
+    end
+    assert_response :accepted
+    assert_equal true, response.parsed_body["enqueued"]
+    # the job draws it again although the verdict says failed, and a pass settles it
+    passing = ->(revision, attempt: 1) { Struct.new(:revision) { define_method(:call) { LessonRender.create!(lesson_revision: revision, status: "passed", harness_version: Validation::Harness.lesson_version, result_json: "{}", shots_json: "[]") } }.new(revision) }
+    Validation::LessonRenderCheck.stub(:new, passing) { RenderLessonRevisionJob.perform_now(@revision.id, row.id) }
+    assert_equal "passed", LessonRender.latest_for(@revision).status
+    other = lesson_revision_with_body!("ripasso.math.other", "math.number")
+    token = ApiToken.issue!(role: "bot_read", label: "reader", expires_at: 1.day.from_now)
+    on(:api, "/api/v1/lesson-revisions/#{other.id}/render", method: :post, headers: { "Authorization" => "Bearer #{token}" })
+    assert_response :forbidden
+  end
+
+  test "a lesson/1 revision has no render to draw again" do
+    lesson = Lesson.create!(subject: @subject, key: "ripasso.math.old", kind: "ripasso")
+    md = "---\nkey: ripasso.math.old\n---\n"
+    old = LessonRevision.create!(lesson: lesson, seq: 1, source_md: md, source_sha256: Digest::SHA256.hexdigest(md), body_json: JSON.generate(TopicWorld::LESSON_BODY), rules_version: "7", warnings_json: "[]")
+    on(:api, "/api/v1/lesson-revisions/#{old.id}/render", method: :post, headers: { "Authorization" => "Bearer #{@token}" })
+    assert_response :not_found
+  end
+
   test "an unknown revision and a lesson/1 revision are ignored" do
     assert_nothing_raised { RenderLessonRevisionJob.perform_now(0) }
   end

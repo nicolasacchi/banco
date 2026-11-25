@@ -240,6 +240,7 @@ Rails.application.routes.draw do
     get "api/v1/work/items/:item" => "api/v1/work#open", constraints: { item: /[a-z0-9][a-z0-9_-]*/ }, format: false
     post "api/v1/work/submit" => "api/v1/work#submit", format: false
     get "api/v1/work/revisions/:revision" => "api/v1/work#status", constraints: { revision: /\d+/ }, format: false
+    post "api/v1/work/revisions/:revision/retry" => "api/v1/work#retry_validation", constraints: { revision: /\d+/ }, format: false
 
     # Independence and the evening loop (A-04, A-05, B-06): sessions, the expert review and
     # the blind solve of a revision, grade proposals. No route decides anything.
@@ -281,6 +282,7 @@ Rails.application.routes.draw do
     post "api/v1/lessons/submit" => "api/v1/lessons#submit", format: false
     get "api/v1/lessons/:lesson" => "api/v1/lessons#open", constraints: lesson, format: false
     get "api/v1/lesson-revisions/:revision" => "api/v1/lessons#status", constraints: revision, format: false
+    post "api/v1/lesson-revisions/:revision/render" => "api/v1/lesson_renders#create", constraints: revision, format: false
     get "api/v1/lesson-revisions/:revision/shots" => "api/v1/lesson_shots#index", constraints: revision, format: false
     get "api/v1/lesson-revisions/:revision/shots/:sha" => "api/v1/lesson_shots#show", constraints: revision.merge(sha: /[0-9a-f]{64}/), format: false
     get "api/v1/lesson-revisions/:revision/review" => "api/v1/lesson_reviews#open", constraints: revision, format: false

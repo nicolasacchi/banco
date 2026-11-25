@@ -67,12 +67,58 @@ class ValidateItemRevisionJobTest < ActiveJob::TestCase
     assert_equal %w[error error error], statuses
   end
 
-  test "a timeout inside the page on the last attempt fails the revision with E-GEN-TIMEOUT" do
+  test "a timeout inside the page on the last attempt fails the revision with E-GEN-TIMEOUT, marked as the server's limit" do
+    with_runner(-> { raise Validation::ChromeRunner::Timeout, "timed out promise" }) do
+      perform_enqueued_jobs(only: ValidateItemRevisionJob) { ValidateItemRevisionJob.perform_now(@revision.id) }
+    end
+    assert_equal %w[error error failed], statuses.first(3)
+    row = @revision.reload.validations.order(:seq).find_by(status: "failed")
+    assert_equal [ "E-GEN-TIMEOUT" ], JSON.parse(row.codes_json)
+    assert row.timeout_only?
+    finding = JSON.parse(row.findings_json).first
+    assert_equal true, finding["detail"]["server_limit"]
+    assert_includes finding["message"], "the server's time limit, not a problem of the files"
+    assert_includes finding["message"], "banco work retry #{@revision.id}"
+  end
+
+  test "a timeout-only failure is not final: it is queued again with a wait, three failures in a row at most, and then it stands" do
     with_runner(-> { raise Validation::ChromeRunner::Timeout, "timed out promise" }) do
       perform_enqueued_jobs { ValidateItemRevisionJob.perform_later(@revision.id) }
     end
-    assert_equal %w[error error failed], statuses
-    assert_equal [ "E-GEN-TIMEOUT" ], JSON.parse(@revision.latest_validation.codes_json)
+    assert_equal 3, ItemValidation.timeout_streak(@revision), "the first go and two more, then nothing is queued again"
+    assert_equal %w[error error failed] * 3, statuses
+    assert_empty enqueued_jobs
+    # each go after the first is a new job that names the revision and the latest row of the go before it
+    again = performed_jobs.select { |j| j[:job] == ValidateItemRevisionJob && j[:args].size == 2 }
+    assert_equal 2, again.map { |j| j[:args] }.uniq.size, "two more goes, each after the latest row of the go before"
+    assert_equal [ @revision.id ], again.map { |j| j[:args].first }.uniq
+  end
+
+  test "a failure on the server's time limit is drawn again by the job although it says failed, and a content failure is final" do
+    Validation::RevisionValidation.new(@revision, attempt: 3).record_timeout(Validation::ChromeRunner::Timeout.new("timed out promise"))
+    assert_equal %w[failed], statuses
+    ValidateItemRevisionJob.perform_now(@revision.id)
+    assert_equal %w[failed passed], statuses
+    bad = Validation::Submission.new(key: "eq-2", base: nil, files: F.files_for(F.static_item("prompt" => { "stem_it" => "Scrivi la risposta che cercano." })), session: @author).prepare!.store!.first
+    ValidateItemRevisionJob.perform_now(bad.id)
+    ValidateItemRevisionJob.perform_now(bad.id)
+    assert_equal %w[failed], bad.reload.validations.order(:seq).pluck(:status), "a content failure is final"
+  end
+
+  test "a draw asked for after a verdict that has come since does nothing" do
+    Validation::RevisionValidation.new(@revision, attempt: 3).record_timeout(Validation::ChromeRunner::Timeout.new("x"))
+    ValidateItemRevisionJob.perform_now(@revision.id)
+    assert_equal %w[failed passed], statuses
+    assert_no_changes -> { ItemValidation.count } do
+      ValidateItemRevisionJob.perform_now(@revision.id, 0)
+    end
+  end
+
+  test "a revision with no verdict that lost its job is stuck after the stale minutes, and a fresh one is not" do
+    assert_not ValidateItemRevisionJob.stuck?(@revision), "a revision just submitted is waiting its turn"
+    assert ValidateItemRevisionJob.stuck?(@revision, now: 11.minutes.from_now)
+    ItemValidation.create!(item_revision: @revision, seq: 1, status: "passed", codes_json: "[]", rules_version: Validation::Rules.version.to_s)
+    assert_not ValidateItemRevisionJob.stuck?(@revision, now: 1.day.from_now), "a verdict is not a lost job"
   end
 
   test "an attempt that succeeds after an error ends as the verdict" do

@@ -13,19 +13,48 @@ class ValidateItemRevisionJob < ApplicationJob
   RETRYABLE = [ Validation::ChromeRunner::Busy, Validation::ChromeRunner::Unavailable, Validation::ChromeRunner::Timeout,
                 Validation::Roundtrip::Unavailable ].freeze
   ATTEMPTS = 3
+  # A validation that timed out inside the page on every attempt is not a verdict about the files (E-GEN-TIMEOUT with detail.server_limit): it is queued again
+  # with a growing wait until the revision has TIMEOUT_DRAWS such failures in a row; then it stands, and the author may ask for another go (`banco work retry REV`).
+  TIMEOUT_DRAWS = 3
+  TIMEOUT_WAIT = ->(draws) { (draws * 5).minutes }
 
   retry_on(*RETRYABLE, wait: ->(executions) { (executions * 30).seconds }, attempts: ATTEMPTS) do |job, error|
     revision = ItemRevision.find_by(id: job.arguments.first)
     next unless revision
 
     validation = Validation::RevisionValidation.new(revision, attempt: ATTEMPTS)
-    error.is_a?(Validation::ChromeRunner::Timeout) ? validation.record_timeout(error) : validation.record_error(error)
+    if error.is_a?(Validation::ChromeRunner::Timeout)
+      validation.record_timeout(error)
+      draws = ItemValidation.timeout_streak(revision)
+      job.class.set(wait: TIMEOUT_WAIT.call(draws)).perform_later(revision.id, revision.validations.maximum(:seq).to_i) if draws < TIMEOUT_DRAWS
+    else
+      validation.record_error(error)
+    end
   end
 
-  def perform(revision_id)
+  # Whether the revision's job is waiting or running in Solid Queue (arguments start with the revision id). Without Solid Queue (test, development)
+  # nothing is known, and the age alone says.
+  def self.pending?(revision)
+    return false unless ActiveJob::Base.queue_adapter_name == "solid_queue"
+
+    SolidQueue::Job.where(class_name: name, finished_at: nil).where.missing(:failed_execution)
+                   .where("arguments LIKE ? OR arguments LIKE ?", "%\"arguments\":[#{revision.id.to_i}]%", "%\"arguments\":[#{revision.id.to_i},%").exists?
+  end
+
+  # A revision with no verdict (the job was lost, a restart) for stale_minutes and no job in the queue: `banco work retry` may enqueue it again.
+  def self.stuck?(revision, now: Time.current)
+    return false if revision.validations.where(status: %w[passed failed]).exists?
+
+    since = revision.latest_validation&.created_at || revision.created_at
+    since < now - Validation::Rules.get(:generator, :stale_minutes).minutes && !pending?(revision)
+  end
+
+  # after_seq: the revision's latest validation row when this go was asked for (a retry): a verdict appended since is its answer, and the job does nothing.
+  def perform(revision_id, after_seq = nil)
     revision = ItemRevision.find_by(id: revision_id)
     return unless revision
     return if settled_under_current_rules?(revision)
+    return if after_seq && revision.validations.where(status: %w[passed failed]).where("seq > ?", after_seq).exists?
 
     validation = Validation::RevisionValidation.new(revision, attempt: executions)
     begin
@@ -39,9 +68,9 @@ class ValidateItemRevisionJob < ApplicationJob
   private
 
   # A passed or failed verdict is final, unless it was reached under older rules and the
-  # revision passed then: an identical resubmission asks for a new verdict (D-154).
+  # revision passed then: an identical resubmission asks for a new verdict (D-154). A failure on the server's time limit alone is no verdict.
   def settled_under_current_rules?(revision)
     current = Validation::Rules.version.to_s
-    revision.validations.where(status: %w[passed failed]).any? { |v| v.status == "failed" || v.rules_version.blank? || v.rules_version.to_s == current }
+    revision.validations.where(status: %w[passed failed]).any? { |v| (v.status == "failed" && !v.timeout_only?) || (v.status == "passed" && (v.rules_version.blank? || v.rules_version.to_s == current)) }
   end
 end

@@ -35,7 +35,7 @@ module LessonRenders
 
     row = LessonRender.latest_for(revision)
     return "the lesson revision has no render without errors yet: the render check has not run" if row.nil?
-    return "the lesson revision has no render without errors: the render check could not run, it runs again" if row.status == "error"
+    return "the lesson revision has no render without errors: the render check could not run, it runs again" if row.status == "error" || row.timeout_only?
     return nil if row.passed?
 
     errors = row.errors_list
@@ -54,10 +54,19 @@ module LessonRenders
     out[:message] = row.result["message"] if row.status == "error"
     out[:next] = case row.status
     when "passed" then "look at every card: banco lesson shots #{revision.id} --dir DIR"
-    when "failed" then "fix the data of the cards named in errors, banco lesson submit DIR --dry-run, then submit (a new revision is drawn again)"
+    when "failed" then row.timeout_only? ? timeout_next(revision) : "fix the data of the cards named in errors, banco lesson submit DIR --dry-run, then submit (a new revision is drawn again)"
     else "Chrome could not be reached; the job tries again, ask again with banco lesson status #{revision.id}"
     end
+    out[:timeout_only] = true if row.timeout_only?
     out
+  end
+
+  # What an author reads when the render ran out of time only (never his data): the server's limit, who draws it again and how to ask.
+  def timeout_next(revision)
+    again = LessonRender.timeout_streak(revision) < RenderLessonRevisionJob::TIMEOUT_DRAWS
+    "the render ran out of the server's time limit: it is not a problem of the cards' data, do not change the lesson for it. " \
+      "#{again ? 'The server draws it again by itself in a few minutes (ask again with banco lesson status ' + revision.id.to_s + '); if it keeps failing, or to ask at once: ' : 'It stopped asking again; draw it once more: '}" \
+      "banco lesson render #{revision.id} --retry"
   end
 
   # What the teacher's topic page says (one line, errors by card): { state:, count:, cards: [{ n:, title_it:, errors: [..] }] }.

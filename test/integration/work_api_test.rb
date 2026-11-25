@@ -316,6 +316,69 @@ class WorkApiTest < ActionDispatch::IntegrationTest
     assert_equal "error", json["status"]
   end
 
+  test "a validation that timed out says it is the server's limit and how to ask again; retry queues it without a new revision (D-402, round 7)" do
+    submit("eq-1", F.files_for(F.static_item))
+    revision = ItemRevision.find(json["revision_id"])
+    Validation::RevisionValidation.new(revision, attempt: ValidateItemRevisionJob::ATTEMPTS).record_timeout(Validation::ChromeRunner::Timeout.new("timed out promise"))
+    api("/api/v1/work/revisions/#{revision.id}")
+    assert_equal "failed", json["status"]
+    assert_equal true, json["timeout_only"]
+    assert_equal false, json["settled"], "the server draws it again by itself: not final yet"
+    assert_equal true, json["retrying"]
+    assert_includes json["next"], "the server's time limit, not your files"
+    assert_includes json["next"], "banco work retry #{revision.id}"
+    assert_includes json["findings"].first["message"], "banco work retry #{revision.id}"
+    2.times { Validation::RevisionValidation.new(revision, attempt: ValidateItemRevisionJob::ATTEMPTS).record_timeout(Validation::ChromeRunner::Timeout.new("again")) }
+    api("/api/v1/work/revisions/#{revision.id}")
+    assert_equal true, json["settled"], "three time-outs in a row stand"
+    assert_equal false, json["retrying"]
+    assert_includes json["next"], "Ask again: banco work retry #{revision.id}"
+    clear_enqueued_jobs
+    assert_no_enqueued_jobs do
+      api("/api/v1/work/revisions/#{revision.id}/retry", method: :post, headers: { "X-Banco-Dry-Run" => "1" })
+    end
+    assert_response :ok
+    assert_equal true, json["would_enqueue"]
+    seq = revision.latest_validation.seq
+    assert_enqueued_with(job: ValidateItemRevisionJob, args: [ revision.id, seq ]) { api("/api/v1/work/revisions/#{revision.id}/retry", method: :post) }
+    assert_response :accepted
+    assert_equal true, json["enqueued"]
+    perform_enqueued_jobs
+    api("/api/v1/work/revisions/#{revision.id}")
+    assert_equal "passed", json["status"], "the same revision, validated again"
+    assert_nil json["timeout_only"]
+    api("/api/v1/work/revisions/#{revision.id}/retry", method: :post)
+    assert_response :conflict
+    assert_equal "E-RETRY-REFUSED", json["code"], "a pass is not validated again"
+  end
+
+  test "retry is refused for a failure on the files, allowed for a revision whose job was lost, and unknown revisions and read-only tokens are refused" do
+    submit("bad-1", F.files_for(F.static_item("prompt" => { "stem_it" => "Scrivi la risposta che cercano." })))
+    bad = json["revision_id"]
+    perform_enqueued_jobs
+    api("/api/v1/work/revisions/#{bad}/retry", method: :post)
+    assert_response :conflict
+    assert_equal "E-RETRY-REFUSED", json["code"]
+    submit("eq-1", F.files_for(F.static_item))
+    waiting = json["revision_id"]
+    api("/api/v1/work/revisions/#{waiting}/retry", method: :post)
+    assert_response :conflict, "a revision still waiting its turn is not lost"
+    api("/api/v1/work/revisions/#{waiting}")
+    assert_nil json["stuck"]
+    travel 11.minutes do
+      api("/api/v1/work/revisions/#{waiting}")
+      assert_equal true, json["stuck"]
+      assert_includes json["next"], "banco work retry #{waiting}"
+      assert_enqueued_with(job: ValidateItemRevisionJob, args: [ waiting, 0 ]) { api("/api/v1/work/revisions/#{waiting}/retry", method: :post) }
+      assert_response :accepted
+    end
+    api("/api/v1/work/revisions/0/retry", method: :post)
+    assert_response :not_found
+    reader = ApiToken.issue!(role: "bot_read", label: "reader", expires_at: 1.day.from_now)
+    on(:api, "/api/v1/work/revisions/#{waiting}/retry", method: :post, headers: { "Authorization" => "Bearer #{reader}" })
+    assert_response :forbidden
+  end
+
   # ---- with Chrome -------------------------------------------------------------------------
 
   test "a generated item: the job materializes 24 instances; verify is missing until a verifier adds it" do
