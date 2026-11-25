@@ -132,12 +132,11 @@ module Lessons
           else
             parts.each_with_index { |p, k| c.label("#{at}/parts_it/#{k}", p) }
           end
-          if w["meaning_it"].nil?
-            c.diagram("#{at}/meaning_it", "the decode view says what the whole word means (meaning_it)", rule: "meaning-missing#{at}")
-          else
-            n = Diagrams.label_words(w["meaning_it"])
-            c.diagram("#{at}/meaning_it", "the meaning has #{n} words (at most #{caps['meaning_words']})", rule: "meaning-words#{at}") if n > caps["meaning_words"]
-          end
+          # `meaning_it` is optional (the brief says `parts_it?, meaning_it?`): the piece-by-piece gloss alone is a decode; a meaning, when written, is short
+          return if w["meaning_it"].nil?
+
+          n = Diagrams.label_words(w["meaning_it"])
+          c.diagram("#{at}/meaning_it", "the meaning has #{n} words (at most #{caps['meaning_words']})", rule: "meaning-words#{at}") if n > caps["meaning_words"]
         end
 
         def syllable_checks(w, info, view, c, at)

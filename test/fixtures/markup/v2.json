@@ -1405,6 +1405,58 @@
     "line": 1
   },
   {
+    "input": "Vedi [[g:-ing form]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "D-402 round 7: a glossary term may start with a hyphen (an ending)",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Vedi "
+          },
+          {
+            "t": "gloss",
+            "term": "-ing form"
+          },
+          {
+            "t": "text",
+            "v": " ora."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "input": "Vedi [[g:imperativo (modo del verbo)]] ora.",
+    "options": {
+      "roles": true
+    },
+    "note": "D-402 round 7: a glossary term may hold parentheses",
+    "blocks": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "t": "text",
+            "v": "Vedi "
+          },
+          {
+            "t": "gloss",
+            "term": "imperativo (modo del verbo)"
+          },
+          {
+            "t": "text",
+            "v": " ora."
+          }
+        ]
+      }
+    ]
+  },
+  {
     "input": "Vedi [[g:]] ora.",
     "options": {
       "roles": true
@@ -1419,7 +1471,7 @@
       "roles": true
     },
     "note": "",
-    "error": "a glossary term that is not letters, spaces, hyphens and apostrophes",
+    "error": "a glossary term that is not letters, spaces, hyphens, apostrophes and parentheses",
     "line": 1
   },
   {

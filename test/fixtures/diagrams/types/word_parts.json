@@ -757,12 +757,11 @@
       }
     },
     {
-      "name": "word_parts-decode-without-meaning",
+      "name": "word_parts-decode-parts-only",
       "subject": "biology",
       "schema": "valid",
-      "semantic": "E-LESSON-DIAGRAM",
-      "path": "/words/0/meaning_it",
-      "layout": "error",
+      "semantic": "ok",
+      "layout": "ok",
       "data": {
         "type": "word_parts",
         "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
@@ -776,6 +775,25 @@
             ]
           }
         ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "eucariote",
+            "eu",
+            "cariote",
+            "vero",
+            "nucleo",
+            "La parola eucariote è fatta di 2 pezzi: eu vuol dire vero; cariote vuol dire nucleo."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2"
+          ],
+          "syllables": []
+        }
       }
     },
     {

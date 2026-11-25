@@ -33,9 +33,9 @@ class LessonRenderTranslationTest < ActiveSupport::TestCase
   end
 
   # A bilingual lesson written as the author does (test/fixtures/lang/lesson_<lang>_figures.md, the figures of the pilot lessons), parsed and rendered.
-  def render_figures(lang, file = "lesson_#{lang}_figures.md")
+  def render_figures(lang, file = "lesson_#{lang}_figures.md", md: nil)
     key = { "en" => "english", "es" => "spanish" }.fetch(lang)
-    md = Rails.root.join("test/fixtures/lang/#{file}").read
+    md ||= Rails.root.join("test/fixtures/lang/#{file}").read
     body = Lessons::Parser2.call(md, Validation::Findings.new).body
     subject = Subject.find_by(key: key) || Subject.create!(key: key, name_it: key.capitalize, position: 2)
     lesson = Lesson.create!(subject: subject, key: body["key"], kind: "lezione")
@@ -82,6 +82,21 @@ class LessonRenderTranslationTest < ActiveSupport::TestCase
 
   test "a concept_map of verb forms (translate_material: false) draws its nodes in English with no Italian: no «translation missing» (round 6)" do
     row = render_figures("en", "lesson_en_concept_map.md")
+    assert_empty row.result["errors"].select { |e| e["message"].to_s.start_with?("translation") }, dump(row)
+    assert_equal "passed", row.status, dump(row)
+  end
+
+  test "a decode word_parts with parts_it and no meaning_it (the brief allows it) draws in Spanish with its Italian gloss alone: the layout and the translation scan agree with the dry run (round 7)" do
+    row = render_figures("es", "lesson_es_decode.md")
+    assert_empty row.result["errors"].select { |e| e["message"].to_s.start_with?("translation") }, dump(row)
+    assert_equal "passed", row.status, dump(row)
+  end
+
+  test "a table with an empty cell and a blank corner header is drawn blank: no «translation missing», no «translation empty» (round 7)" do
+    md = Rails.root.join("test/fixtures/lang/lesson_en_figures.md").read
+    md = md.sub('  - ["he, she", "Has she got a dog?"]', '  - ["he, she", ""]').sub('  - ["lui, lei", "Ha un cane?"]', '  - ["lui, lei", ""]')
+    md = md.sub('header: ["Subject", "Question"]', 'header: ["", "Question"]').sub('header_it: ["Soggetto", "Domanda"]', 'header_it: ["", "Domanda"]')
+    row = render_figures("en", md: md)
     assert_empty row.result["errors"].select { |e| e["message"].to_s.start_with?("translation") }, dump(row)
     assert_equal "passed", row.status, dump(row)
   end

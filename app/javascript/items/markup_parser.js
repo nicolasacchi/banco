@@ -90,7 +90,7 @@ const LANG_SPANS = ["en", "es", "la", "it"] // D-402: [[it:..]] is Italian quote
 const RESERVED_SPANS = [...LANG_SPANS, "code", "g"]
 const CODE_MAX = 40
 const ITEM_SPAN = /^\[\[(?:code|it):/
-const TERM = /^\p{L}[\p{L} '’-]*$/u
+const TERM = /^-?\p{L}[\p{L} '’()-]*$/u
 const LINK = /^\[([^\]\[]+)\]\((scheda|argomento):([a-z0-9._-]*)\)/
 
 export function checkTex(tex) {

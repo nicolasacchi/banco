@@ -35,7 +35,8 @@ module Lessons
     LANG_SPANS = %w[en es la].freeze
     RESERVED_SPANS = (LANG_SPANS + %w[it code g]).freeze
     CODE_MAX = 40
-    TERM = /\A[\p{L}][\p{L} '’-]*\z/
+    # a glossary term: letters, spaces, hyphens, apostrophes and parentheses, with a leading hyphen for an ending («-ing form», «imperativo (modo del verbo)»)
+    TERM = /\A-?\p{L}[\p{L} '’()-]*\z/
     # A card slug or a topic key; the underscore is in subject keys such as computer_science (D-324).
     LINK_TARGET = /\A[a-z0-9._-]+\z/
     LINK_KINDS = %w[scheda argomento].freeze
@@ -288,7 +289,7 @@ module Lessons
 
       term = text[from...stop].strip
       raise Refused.new(line, "an empty [[g: glossary span") if term.empty?
-      raise Refused.new(line, "a glossary term that is not letters, spaces, hyphens and apostrophes") unless term.match?(TERM)
+      raise Refused.new(line, "a glossary term that is not letters, spaces, hyphens, apostrophes and parentheses") unless term.match?(TERM)
 
       [ { "t" => "gloss", "term" => term }, stop + 2 ]
     end

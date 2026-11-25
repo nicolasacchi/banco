@@ -118,7 +118,7 @@ function checkDecode(w, info, at, dia) {
   if (parts == null) return dia(`${at}/parts_it`, "the decode view gives what each piece means (parts_it)")
   if (parts.length !== info.groups.length) return dia(`${at}/parts_it`, `the word has ${info.groups.length} pieces and parts_it has ${parts.length} meanings: one for each piece`)
   for (const [k, p] of parts.entries()) if (labelTooLong(p)) return dia(`${at}/parts_it/${k}`, "a label has more than 6 words")
-  if (w.meaning_it == null) return dia(`${at}/meaning_it`, "the decode view says what the whole word means (meaning_it)")
+  if (w.meaning_it == null) return null // optional (the brief says `parts_it?, meaning_it?`): the gloss of the pieces alone is a decode
   const n = wordCount(String(w.meaning_it).replace(/\$[^$]*\$/g, "M"))
   if (n > caps.meaning_words) return dia(`${at}/meaning_it`, `the meaning has ${n} words (at most ${caps.meaning_words})`)
   return null
