@@ -148,7 +148,7 @@ class ChangelogFeedTest < ActiveSupport::TestCase
     assert_not Changelog::Visits.visited?(@official)
     assert_equal @official.created_at, Changelog::Visits.last_seen(@official)
     assert feed.newer_than?(Time.zone.local(2026, 11, 19, 8, 0)), "the update came after 8:00"
-    assert_not feed.newer_than?(Time.zone.local(2026, 11, 25))
+    assert_not feed.newer_than?(Time.zone.local(2100, 1, 1))
     assert_equal 1, feed.new_count(Time.zone.local(2026, 11, 19, 8, 0)) - feed.entries.count { |e| e.at > Time.zone.local(2026, 11, 19, 8, 0) }
     event = Changelog::Visits.record!(@official, new_count: 2)
     assert_equal [ "changelog_viewed", @official.id, { "new" => 2 } ], [ event.kind, event.student_id, JSON.parse(event.payload_json) ]

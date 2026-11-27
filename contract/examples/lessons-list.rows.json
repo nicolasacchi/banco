@@ -14,7 +14,7 @@
           "kind": "ripasso",
           "latest_revision_id": 1,
           "seq": 1,
-          "rules_version": "13",
+          "rules_version": "14",
           "older_rules": false,
           "reviews": 0,
           "review_blockers": 0,

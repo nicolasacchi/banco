@@ -185,7 +185,15 @@ class BilingualItemsTest < ActiveSupport::TestCase
       inst["solution"]["steps"].each { |s| s.delete("text_en") }
       inst.delete("hints_en")
     end
-    assert_empty codes(run_item(legacy)) & %w[E-LANG-BILINGUAL-REQUIRED], "nothing is required while lang.bilingual_required is empty"
+    # D-404: the live rules list spanish (the cut-over of D-402) and not english.
+    assert_equal %w[spanish], Validation::Rules.get(:lang, :bilingual_required)
+    assert_not_includes codes(run_item(legacy)), "E-LANG-BILINGUAL-REQUIRED", "english is not cut over"
+    legacy_es = legacy.merge("subject" => "spanish", "skill" => "spanish.ser-estar")
+    assert_includes codes(run_item(legacy_es)), "E-LANG-BILINGUAL-REQUIRED"
+    assert_not_includes codes(run_item(legacy_es, grandfathered: true)), "E-LANG-BILINGUAL-REQUIRED"
+    Validation::Rules.with(lang: { bilingual_required: [] }) do
+      assert_not_includes codes(run_item(legacy_es)), "E-LANG-BILINGUAL-REQUIRED", "nothing is required while lang.bilingual_required is empty"
+    end
     Validation::Rules.with(lang: { bilingual_required: %w[english] }) do
       assert_includes codes(run_item(legacy)), "E-LANG-BILINGUAL-REQUIRED"
       assert_not_includes codes(run_item(legacy, grandfathered: true)), "E-LANG-BILINGUAL-REQUIRED"

@@ -21,9 +21,10 @@
 # (budget_seconds_per_shot, up to budget_seconds_max): a 13-card lesson with 8 «Prova tu» takes some 66 shots in some 85 s on a quiet server, so a flat 90 s passed
 # or failed with the load; E-MATCHING-SIZE lets a classification have as many chips as rows when a chip is never a right answer (so it needs no fifth row and W-MATCHING-ROWS stays quiet), and
 # W-MATCHING-ROWS warns a two-label matching (a judge) only above 5 rows (practice.matching_two_labels_warn: 3 + 2 can vary, 2 + 2 never can).
-# D-402 added the `lang:` block (bilingual_required) with no number changed and the list empty: no bump. The cut-over, after the last topic of english and
-# spanish is rewritten, fills the list (and bumps the version, so that only NEW revisions need the flag).
-version: 13
+# D-402 added the `lang:` block (bilingual_required) with no number changed and the list empty: no bump.
+# v14 (D-404): lang.bilingual_required lists spanish (the cut-over of D-402: all 26 approved topics of spanish are bilingual, course revision 111). A NEW revision of a
+# spanish lesson or item needs `bilingual: true`; a revision that passed under v13 keeps its pass. english stays out until its two culture topics are rewritten.
+version: 14
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -163,11 +164,11 @@ coverage:
     computer_science: [153, 161]
     spanish: [163, 186]
 
-# The bilingual courses (D-402). A new submission of an item or a lesson of a subject listed here must carry `bilingual: true` (E-LANG-BILINGUAL-REQUIRED);
-# a revision that passed under older rules keeps its pass. Empty until the cut-over: the subjects that teach a language are english and spanish
-# (lesson2.target_languages), and a revision of theirs may already opt in by writing the flag.
+# The bilingual courses (D-402, D-404). A new submission of an item or a lesson of a subject listed here must carry `bilingual: true` (E-LANG-BILINGUAL-REQUIRED);
+# a revision that passed under older rules keeps its pass. The subjects that teach a language are english and spanish (lesson2.target_languages): spanish is listed
+# (D-404); english joins it when its two culture topics are bilingual. A revision of english may already opt in by writing the flag.
 lang:
-  bilingual_required: []
+  bilingual_required: [spanish]
 
 # Phase 1b, course content (A2.1, A3.2). Lessons, course maps and topics are synchronous (no Chrome).
 course:

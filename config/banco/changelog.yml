@@ -13,6 +13,16 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: spanish-in-spanish
+    date: 2026-11-27
+    audience: [student, teacher]
+    kind: content
+    decisions: [D-402, D-404]
+    title_it: "Spagnolo: lezioni ed esercizi in spagnolo"
+    body_it: "Le lezioni e gli esercizi di spagnolo sono scritti in spagnolo. Sotto ogni testo c'è la traduzione italiana: la apri con un tocco quando ti serve."
+    title_en: "Spanish: lessons and exercises in Spanish"
+    body_en: "The Spanish lessons and exercises are written in Spanish. Under each text there is the Italian translation: open it with one tap when you need it."
+    link: /subjects
   - id: contest-no-comment
     date: 2026-11-24
     audience: [student, teacher]
