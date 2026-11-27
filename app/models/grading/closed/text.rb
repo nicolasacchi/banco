@@ -12,7 +12,7 @@ module Grading
     #
     # Findings, in order: exact match of an accepted answer, or one that differs only in
     # the direction of an accent (correct); a declared
-    # error value (typical_error with its code); an accent or apostrophe slip whose
+    # error value (typical_error with its code); a bit or letter code typed in groups (invalid, spaces_in_code, D-114/D-403); an accent or apostrophe slip whose
     # unaccented form is not itself a paradigm form (typical_error with es_accents,
     # it_accents or it_apostrophe_accent; whether it earns credit is the evidence
     # table's business, X-03); on items with spelling_policy near, an answer of 5+
@@ -28,6 +28,8 @@ module Grading
       FOLDED_MARKS = /[\u0300\u0301]/
       LEADING_RUN_OF_TRAILING = /\A[[:space:].,;:!?\u2026]+/ # applied to the reversed text
       LEADING_PUNCTUATION = /\A[\u00BF\u00A1]+[[:space:]]*/
+      # The subject whose letter codes (GHCC) typed in groups are not an attempt (D-403).
+      CODE_SUBJECT = "computer_science"
       WORD_FINAL_APOSTROPHE = /(?<=[aeiou])'(?=[[:space:]]|\z)/
 
       module_function
@@ -56,13 +58,13 @@ module Grading
           i = accepted.index { |t| Contractions.accepts?(t, answer, case_sensitive: spec.case_sensitive, except: errors) }
           return right.(i) if i
         end
-        return Closed.invalid("spaces_in_code") if spaced_code?(answer, accepted)
-
+        # A declared error value that the answer equals is looked at first (D-403): «por que» for «porque» is its declared error, not a code typed in groups.
         declared = declared_entries(spec, answer)
         if declared.any?
           code, written = declared.first
           return Closed.result("typical_error", error_codes: declared.map(&:first).uniq, normalized: answer, matched: { kind: "error", value: written, code: code })
         end
+        return Closed.invalid("spaces_in_code") if spaced_code?(spec, answer, accepted)
 
         if (slip = accent_slip(spec, answer, accepted))
           return Closed.result("typical_error", error_codes: [ slip ], normalized: answer, matched: slip_of(spec, answer, accepted, entries, slip))
@@ -96,13 +98,19 @@ module Grading
         i ? { kind: "slip", value: entries[i] } : nil
       end
 
-      # A code made only of bits or of letters (001110, GHCC) typed in groups: the content is
-      # right, the form is not an attempt, so the student retypes (D-114).
-      def spaced_code?(answer, accepted)
+      # A code made only of bits (001110) typed in groups, or of letters (GHCC) in a code-like item: the content is right, the form is not an
+      # attempt, so the student retypes (D-114). The letters count only where a code is meant (D-403): the subject computer_science, or a key in
+      # capitals of a case sensitive item; in every other item a one-word key typed with spaces («every day» for «everyday») is graded as any answer.
+      def spaced_code?(spec, answer, accepted)
         return false unless answer.match?(/[[:space:]]/)
 
         joined = answer.gsub(/[[:space:]]+/, "")
-        accepted.any? { |c| c == joined && c.length > 1 && c.match?(/\A(?:[01]+|\p{L}+)\z/) }
+        letters = spec.subject == CODE_SUBJECT
+        accepted.any? do |c|
+          next false unless c == joined && c.length > 1
+
+          c.match?(/\A[01]+\z/) || (c.match?(/\A\p{L}+\z/) && (letters || (spec.case_sensitive && c.match?(/\A\p{Lu}+\z/))))
+        end
       end
 
       def normalize(text, case_sensitive: false)

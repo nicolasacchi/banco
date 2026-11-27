@@ -40,16 +40,43 @@ module Api
         locator = locator_of(given["check"])
         located = answerer.located(locator)
         check = located.check
-        response = given["answer"]
         id_map = Lessons::Checks.id_map(check, located.seed)
+        response = sequence_ids(check, given["answer"], id_map)
         graded = Lessons::Checks.grade(check, response, id_map, subject: @revision.body["subject"])
         reply = Lessons::CheckAnswer.new(@revision, student_key: "preview", trial_try: 1).call(locator, response)
-        out = { check: given["check"], component: check["component"], answer: response, verdict: graded.verdict, matched: matched(check, graded, response, id_map),
+        out = { check: given["check"], component: check["component"], answer: given["answer"], verdict: graded.verdict, matched: matched(check, graded, response, id_map),
                 error_code: (graded.code unless graded.invalid?), error_index: graded.error_index, normalized: graded.normalized,
                 message: reply.body.select { |k, _| k.to_s.start_with?("message") || k.to_s == "tr" }.presence,
                 shown_order: Lessons::Checks.rekey(check, located.seed).shown_order.presence }
         out[:invalid_code] = graded.code if graded.invalid?
         out.compact
+      end
+
+      # The answer to a tiles or an ordering check, as the student's page sends it: a list of the SHOWN ids (e1..eN, `shown_order`) in the order built. The
+      # reader also takes the check's own tile ids (the `id` of each tile, as the lesson file names them), as a JSON list, a JSON text of one or a list written
+      # «a,b,c» or «a b c»: they are turned into the shown ids of the preview's shuffle. The shown ids win where both could be meant (a tile that is
+      # itself called e1); a list that is neither stays as sent and the grader says it cannot be read.
+      def sequence_ids(check, answer, id_map)
+        return answer unless %w[tiles ordering].include?(check["component"])
+
+        ids = id_list(answer) or return answer
+        return ids if ids.all? { |id| id_map.key?(id) }
+
+        shown = id_map.invert
+        ids.all? { |id| shown.key?(id) } ? ids.map { |id| shown[id] } : ids
+      end
+
+      def id_list(answer)
+        list = answer.is_a?(String) ? text_ids(answer) : answer
+        list if list.is_a?(Array) && list.any? && list.all?(String)
+      end
+
+      def text_ids(text)
+        return text.split(/[\s,]+/).reject(&:empty?) unless text.lstrip.start_with?("[")
+
+        JSON.parse(text)
+      rescue JSON::ParserError
+        nil
       end
 
       # What the grader matched: a right answer the key, or the accept entry that is right alone; a wrong one the declared error answer

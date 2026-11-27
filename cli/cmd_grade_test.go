@@ -169,6 +169,33 @@ func TestLessonGradePostsTheCheckIdWithEveryAnswer(t *testing.T) {
 	}
 }
 
+// A tiles or ordering answer is a list of ids: the CLI sends it untouched (the server reads the shown ids and the tile ids, D-403), so a comma list stays one
+// string on --answer and a JSON array of --answers-file stays an array.
+func TestLessonGradeSendsATileListAsWritten(t *testing.T) {
+	srv, g := newGradeServer(t, 200, `{"results":[]}`)
+	res := runItemShotsCLI(t, srv.URL, "lesson", "grade", "40", "--check", "1.1", "--answer", "t1,t2,t3", "--answer", `["e2","e1","e3"]`)
+	if res.exit != 0 {
+		t.Fatalf("exit %d, stderr %s", res.exit, res.stderr)
+	}
+	want := map[string]any{"answers": []any{
+		map[string]any{"check": "1.1", "answer": "t1,t2,t3"},
+		map[string]any{"check": "1.1", "answer": `["e2","e1","e3"]`},
+	}}
+	if !reflect.DeepEqual(g.body, want) {
+		t.Errorf("body %v, want %v", g.body, want)
+	}
+	file := filepath.Join(t.TempDir(), "answers.json")
+	if err := os.WriteFile(file, []byte(`[{"check":"1.1","answer":["t1","t2","t3"]}]`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if res = runItemShotsCLI(t, srv.URL, "lesson", "grade", "40", "--answers-file", file); res.exit != 0 {
+		t.Fatalf("exit %d, stderr %s", res.exit, res.stderr)
+	}
+	if list, _ := g.body["answers"].([]any); len(list) != 1 || !reflect.DeepEqual(list[0], map[string]any{"check": "1.1", "answer": []any{"t1", "t2", "t3"}}) {
+		t.Errorf("a JSON array goes as an array: %v", g.body)
+	}
+}
+
 func TestLessonGradeReportsAnUnknownCheckWithItsCode(t *testing.T) {
 	srv, _ := newGradeServer(t, 404, `{"code":"E-NOT-FOUND","field":"answers/0/check","message":"revision 40 has no check \"9.9\"","next":"a check id is CARD.BLOCK"}`)
 	res := runItemShotsCLI(t, srv.URL, "lesson", "grade", "40", "--check", "9.9", "--answer", "x")

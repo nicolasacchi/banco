@@ -199,4 +199,38 @@ class GradeApiTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_equal "E-FILES", json["code"]
   end
+
+  test "lesson grade: a tiles check is graded from the shown ids, the tile ids as a list, as JSON text, as «a,b,c» or «a b c»; a wrong order, a coded error and an unknown id" do
+    tiles = [ "If", "it", "rains", "I", "will", "stay", "rained" ].each_with_index.map { |t, i| { "id" => "t#{i + 1}", "text_en" => t } }
+    check = { "n" => 1, "type" => "check", "component" => "tiles", "prompt_it" => "Build the sentence.", "tiles" => tiles, "answer" => %w[t1 t2 t3 t4 t5 t6],
+              "errors" => [ { "answer" => %w[t1 t2 t7 t4 t5 t6], "code" => "en_past_in_if", "message_it" => "After if, the present." } ] }
+    lesson = lesson_revision(@english, "ripasso.english.tiles", "english", [ check ])
+    before = ledger_counts
+    grade_lesson(lesson, [ { check: "1.1", answer: %w[t1 t2 t3 t4 t5 t6] } ])
+    assert_response :ok, json.inspect
+    order = json["results"].first["shown_order"]["elements"]
+    assert_equal tiles.map { |t| t["id"] }.sort, order.sort, "the preview shows every tile once, shuffled"
+    shown = ->(stored) { stored.map { |id| "e#{order.index(id) + 1}" } }
+
+    right = %w[t1 t2 t3 t4 t5 t6]
+    answers = [ shown.(right), right, right.join(","), right.join(" "), right.join(", "), JSON.generate(right), JSON.generate(shown.(right)), shown.(right).join(",") ]
+    grade_lesson(lesson, answers.map { |a| { check: "1.1", answer: a } })
+    assert_response :ok, json.inspect
+    json["results"].each_with_index do |r, i|
+      assert_equal [ "right", "key", JSON.generate(right) ], [ r["verdict"], r["matched"]["kind"], r["normalized"] ], "answer #{i}: #{answers[i].inspect}"
+    end
+    assert_equal answers.first, json["results"].first["answer"], "the answer is echoed as it was sent"
+
+    grade_lesson(lesson, [ { check: "1.1", answer: "t1,t3,t2,t4,t5,t6" }, { check: "1.1", answer: %w[t1 t2 t7 t4 t5 t6] }, { check: "1.1", answer: "t1,t2,t3" },
+                           { check: "1.1", answer: "t1,zz" }, { check: "1.1", answer: "If it rains I will stay" } ])
+    assert_response :ok, json.inspect
+    plain, err, partial, unknown, sentence = json["results"]
+    assert_equal [ "wrong", nil ], [ plain["verdict"], plain["error_code"] ]
+    assert_equal [ "wrong", "en_past_in_if", "error" ], [ err["verdict"], err["error_code"], err["matched"]["kind"] ]
+    assert_equal "After if, the present.", err["message"]["message_it"]
+    assert_equal "wrong", partial["verdict"], "a sentence that is not finished is wrong, not unreadable"
+    assert_equal [ "invalid", "unparseable" ], [ unknown["verdict"], unknown["invalid_code"] ]
+    assert_equal "invalid", sentence["verdict"]
+    assert_equal before, ledger_counts
+  end
 end

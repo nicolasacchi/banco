@@ -47,8 +47,8 @@ func runGrade(e *env, g gradeCommand, args []string) error {
 	fs.SetOutput(io.Discard)
 	target := fs.String(g.flagName, "", g.flagHelp)
 	var answers stringsFlag
-	fs.Var(&answers, "answer", "an answer to grade, exactly as the student would type it (repeat it for several); structured answers are JSON text")
-	file := fs.String("answers-file", "", "a file with one JSON array "+g.file+" instead of --"+g.flagName+" and --answer")
+	fs.Var(&answers, "answer", "an answer to grade, exactly as the student would type it (repeat it for several); structured answers are JSON text; a tiles or ordering check takes ids: the tile ids as a comma list (t1,t2,t3) or the shown ids (e1,e2,e3)")
+	file := fs.String("answers-file", "", "a file with one JSON array "+g.file+" instead of --"+g.flagName+" and --answer; the answer may be any JSON value (a list of ids for tiles or an ordering)")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
 	if err != nil {
