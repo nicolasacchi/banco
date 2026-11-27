@@ -136,7 +136,8 @@ class LessonPolishSystemTest < ApplicationSystemTestCase
       open_gallery("polish-spanish", size, build: size.first == 390)
       go 2
       titles = assert_titles_flow(2, ".case-head", ".case-title")
-      assert_equal [ 3, 2, 2 ], titles.map { |t| t["pieces"] }, titles.inspect # the long title is words, a Spanish word, words
+      # the long title is words, a Spanish word, words; «-er: comer» is the ending (one unbreakable span since D-402's leading-hyphen pieces), «: » and the word
+      assert_equal [ 3, 3, 3 ], titles.map { |t| t["pieces"] }, titles.inspect
       shot("spanish-cases-#{size.first}")
 
       go 6
