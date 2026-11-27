@@ -460,9 +460,12 @@ module Validation
       return if texts.empty?
 
       needles = distinct_needles(support_needles(display, answer, inst))
+      # An error value is a wrong answer shown to nobody until it is typed: a word of the first SUPPORT_ERROR_FREQUENT of its language («goes» of «Write what goes
+      # in place of ___») is read as an everyday word. The key itself stays at KeyWords::FREQUENT.
+      errors_only = needles - distinct_needles(support_needles(display, answer, inst, errors: false))
       frame = key_frame(display)
       texts.each do |field, text|
-        needle = needles.find { |n| key_leak?(text, n, frame) }
+        needle = needles.find { |n| key_leak?(text, n, frame, frequent: errors_only.include?(n) ? Validation::KeyWords::SUPPORT_ERROR_FREQUENT : Validation::KeyWords::FREQUENT) }
         next unless needle
 
         f.add("E-SUPPORT-LEAK", field, "the answer format or the steps state the key or a declared error value (#{needle.to_s[0, 30].inspect})", seed: seed)
@@ -482,8 +485,8 @@ module Validation
 
     # Does +text+ state the key +needle+? An everyday word of the language taught (KeyWords.everyday?) only when it is quoted, named as the answer or stands with
     # the frame words; any other key wherever it stands in the text but as the first word of a line (Answers.contains_after_lead?).
-    def key_leak?(text, needle, frame)
-      return Validation::KeyWords.leak?(text, needle, frame: frame) if Validation::KeyWords.everyday?(needle, @lang)
+    def key_leak?(text, needle, frame, frequent: Validation::KeyWords::FREQUENT)
+      return Validation::KeyWords.leak?(text, needle, frame: frame) if Validation::KeyWords.everyday?(needle, @lang, frequent: frequent)
 
       Answers.plain(needle).length >= support_min && Answers.contains_after_lead?(text, needle, min: support_min)
     end
@@ -509,8 +512,8 @@ module Validation
     end
 
     # The key and every error value of the instance, as the leak scan reads them.
-    def support_needles(display, answer, inst)
-      values = [ [ answer, true ] ] + Array(inst["errors"]).map { |e| [ e["value"], false ] }
+    def support_needles(display, answer, inst, errors: true)
+      values = [ [ answer, true ] ] + (errors ? Array(inst["errors"]).map { |e| [ e["value"], false ] } : [])
       values.flat_map do |value, key|
         if @unit.component == "choice"
           option = Array(display["options"]).find { |o| o["id"] == value.to_s }

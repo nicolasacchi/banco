@@ -170,7 +170,7 @@ class BilingualTooling7aTest < ActiveSupport::TestCase
     assert_not_equal es, shared
     assert_empty found(check(shared, "spanish"), "E-LANG-TRANSLATION-COPY")
     copied = es.sub(/^title_es: .*$/, 'title_es: "El gato cambia con la persona"').sub(/^title_it: .*$/, 'title_it: "El gato cambia con la persona"')
-    assert_equal [ "/title_it" ], found(check(copied, "spanish"), "E-LANG-TRANSLATION-COPY").map(&:field)
+    assert_equal [ "/front_matter/title_it" ], found(check(copied, "spanish"), "E-LANG-TRANSLATION-COPY").map(&:field)
   end
 
   # ---- 6. the key scans ---------------------------------------------------------------------------------------------------------------

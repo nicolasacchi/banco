@@ -189,6 +189,7 @@ module Lessons
         if built.size >= 6 && squash.call(check["prompt_it"]).include?(squash.call(built))
           ctx.add("W-CHECK-ANSWER-IN-PROMPT", ctx.slot("prompt_it"), "the sentence to build appears in its own prompt")
         end
+        TileOrder.check(check, ctx)
       end
 
       # ordering: put the items in order; the answer is the right order of all of them.

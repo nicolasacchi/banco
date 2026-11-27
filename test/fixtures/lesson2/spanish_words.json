@@ -1596,6 +1596,54 @@
             "cántalé"
           ],
           "refused": true
+        },
+        {
+          "args": [
+            "compradlo"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "idos"
+          ],
+          "result": 1
+        },
+        {
+          "args": [
+            "sentaos"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "poneos"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "decídmelo"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "decidmelo"
+          ],
+          "result": 3
+        },
+        {
+          "args": [
+            "hablarme"
+          ],
+          "result": 2
+        },
+        {
+          "args": [
+            "cómpralo"
+          ],
+          "result": 1
         }
       ]
     },
@@ -1951,6 +1999,24 @@
             "lúnes"
           ],
           "result": false
+        },
+        {
+          "args": [
+            "decídmelo"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "cómpralo"
+          ],
+          "result": true
+        },
+        {
+          "args": [
+            "compradlo"
+          ],
+          "result": true
         }
       ]
     },

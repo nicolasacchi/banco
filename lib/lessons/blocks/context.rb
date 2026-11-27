@@ -41,10 +41,10 @@ module Lessons
         @path, @line, @base = saved
       end
 
-      def add(code, sub, message, rule: nil, line: nil)
+      def add(code, sub, message, rule: nil, line: nil, **extra)
         sub = sub.to_s
         field = "#{@path}#{sub.empty? || sub.start_with?('/') ? sub : "/#{sub}"}"
-        detail = { rule: rule || "#{code}#{field}" }
+        detail = { rule: rule || "#{code}#{field}" }.merge(extra)
         line ||= @resolver && @line ? @resolver.call(@line, [ @base, sub ].reject(&:empty?).join("/")) : @line
         detail[:line] = line if line
         @findings.add(code, field, message, **detail)

@@ -25,6 +25,19 @@ const keyOf = (word) => FORM_KEYS.find((k) => word[k] != null)
 // The target-language keys (not Italian) the words use: a figure holds at most one.
 const targetKeys = (words) => [...new Set(words.map(keyOf).filter((k) => k && k !== "form_it"))]
 
+// The syllable the voice falls on: the written tilde, else the rule; a form with attached pieces keeps the voice where the verb form before them has it
+// (dar+se+lo, compra|d+lo: «comprad» is stressed on «prad», habl|ar+me on «blar»). The verb form of a vosotros imperative that lost its d before «os»
+// (senta+os, pon|e+os) keeps the voice on its last vowel. The twin of WordParts.es_stress.
+function esStress(split) {
+  const attached = split.pieces.findIndex((p) => p.mark === "attached")
+  if (attached < 0) return Words.stressEs(split.word)
+  const form = split.pieces.slice(0, attached).map((p) => p.text).join("")
+  if (form === "") return Words.stressEs(split.word)
+  const droppedD = split.pieces[attached].text.toLowerCase() === "os" && /[aei]$/i.test(form)
+  if (droppedD && !/[áéíóú]/i.test(form)) return Words.syllablesEs(form).length
+  return Words.stressEs(form)
+}
+
 // {key, lang, pieces, text, groups, plain, syllables, stress, error}, the same as WordParts.analyse in Ruby.
 export function analyse(word) {
   const key = keyOf(word)
@@ -43,7 +56,7 @@ export function analyse(word) {
   if (lang === "es") {
     try {
       out.syllables = Words.syllablesEs(split.word)
-      out.stress = split.pieces.some((p) => p.mark === "attached") ? Words.stressEs(groups[0]) : Words.stressEs(split.word)
+      out.stress = esStress(split)
     } catch (error) {
       if (!(error instanceof Words.Refused)) throw error
       out.error = error.message

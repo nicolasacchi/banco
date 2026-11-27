@@ -34,7 +34,10 @@ module Lessons
 
       list = words(lang)
       extra = extras(lang)
-      found = forms(lang, word.downcase.tr("’", "'"))
+      lower = word.downcase.tr("’", "'")
+      found = forms(lang, lower)
+      return true if inflections(lang, lower).any? { |f| list.include?(f) || extra.include?(f) }
+
       found.any? { |f| list.include?(f) || extra.include?(f) } || found.first(2).any? { |f| (s = stem(lang, f)) && stems(lang).include?(s) } ||
         verbs(lang, found.first).any? { |v| list.include?(v) || extra.include?(v) || ((s = stem(lang, v)) && stems(lang).include?(s)) }
     end
@@ -64,6 +67,8 @@ module Lessons
       w = word.downcase.tr("’", "'")
       return true if known.include?(w)
 
+      return true if inflections(lang, w).any? { |f| known.include?(f) }
+
       stems = (memo[:stems] ||= known.filter_map { |k| stem(lang, k.to_s.downcase.tr("’", "'")) }.to_set)
       irregular = verbs(lang, w)
       return true if irregular.any? { |v| known.include?(v) }
@@ -89,6 +94,19 @@ module Lessons
         path = File.join(DIR, "#{lang}_#{kind}.txt")
         File.exist?(path) ? File.readlines(path, chomp: true).reject { |l| l.strip.empty? || l.start_with?("#") }.flat_map { |l| l.downcase.tr("’", "'").split } : []
       end.to_set.freeze
+    end
+
+    # The regular gender and number forms of +w+ read back to the word a lesson may teach: Spanish -o/-a/-os/-as, -e/-es, a consonant + -es (-ces for -z, and the tilde
+    # that a plural drops: jóvenes, joven), English -s/-es/-ies. The word itself comes first.
+    def inflections(lang, w)
+      return [ w ] unless LANGS.include?(lang)
+
+      if lang == "en"
+        [ w, w.sub(/s\z/, ""), w.sub(/es\z/, ""), w.sub(/ies\z/, "y") ].uniq
+      else
+        plural = w.end_with?("es") ? w.delete_suffix("es").tr("áéíóú", "aeiou") : w
+        [ w, w.sub(/s\z/, ""), w.sub(/es\z/, ""), w.sub(/ces\z/, "z"), w.sub(/[ao]s?\z/, "o"), w.sub(/[ao]s?\z/, "a"), plural ].uniq
+      end
     end
 
     def forms(lang, w)

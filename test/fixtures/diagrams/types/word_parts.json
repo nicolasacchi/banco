@@ -280,6 +280,102 @@
       }
     },
     {
+      "name": "word_parts-syllables-vosotros-imperative",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "ok",
+      "layout": "ok",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Compra con d e lo fa compradlo: la voce batte su prad, niente tilde. Decid con me e lo fa decídmelo: la voce batte su cíd, serve la tilde. Senta con os fa sentaos.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "compra|d+lo",
+            "label_it": "vosotros"
+          },
+          {
+            "form_es": "decíd+me+lo"
+          },
+          {
+            "form_es": "senta+os"
+          }
+        ]
+      },
+      "expect": {
+        "printed": [
+          [
+            "compradlo",
+            "compra",
+            "d",
+            "lo",
+            "vosotros",
+            "com",
+            "prad",
+            "com-prad-lo",
+            "radice",
+            "desinenza",
+            "pezzo attaccato",
+            "decídmelo",
+            "decíd",
+            "me",
+            "de",
+            "cíd",
+            "de-cíd-me-lo",
+            "sentaos",
+            "senta",
+            "os",
+            "sen",
+            "ta",
+            "sen-ta-os",
+            "Parola 1: La parola compradlo ha 3 sillabe: com, prad, lo. La voce batte sulla sillaba numero 2: prad. Pezzi: compra (radice), d (desinenza), lo (pezzo attaccato). vosotros. Parola 2: La parola decídmelo ha 4 sillabe: de, cíd, me, lo. La voce batte sulla sillaba numero 2: cíd. Pezzi: decíd (radice), me (pezzo attaccato), lo (pezzo attaccato). Parola 3: La parola sentaos ha 3 sillabe: sen, ta, os. La voce batte sulla sillaba numero 2: ta. Pezzi: senta (radice), os (pezzo attaccato)."
+          ]
+        ],
+        "targets": {
+          "pieces": [
+            "w1p1",
+            "w1p2",
+            "w1p3",
+            "w2p1",
+            "w2p2",
+            "w2p3",
+            "w3p1",
+            "w3p2"
+          ],
+          "syllables": [
+            "w1s1",
+            "w1s2",
+            "w1s3",
+            "w2s1",
+            "w2s2",
+            "w2s3",
+            "w2s4",
+            "w3s1",
+            "w3s2",
+            "w3s3"
+          ]
+        }
+      }
+    },
+    {
+      "name": "word_parts-vosotros-imperative-esdrujula-without-tilde",
+      "subject": "spanish",
+      "schema": "valid",
+      "semantic": "E-LESSON-DIAGRAM",
+      "path": "/words/0/form_es",
+      "layout": "error",
+      "data": {
+        "type": "word_parts",
+        "alt_it": "Parole divise in pezzi e in sillabe, con la sillaba forte segnata.",
+        "view": "syllables",
+        "words": [
+          {
+            "form_es": "decid+me+lo"
+          }
+        ]
+      }
+    },
+    {
       "name": "word_parts-syllables-stem-change",
       "subject": "spanish",
       "schema": "valid",

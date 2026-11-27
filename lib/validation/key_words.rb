@@ -18,6 +18,8 @@ module Validation
     SHORT = 3
     # The first words of the frequency list of a language (config/banco/lexicon/<lang>.txt) that are everyday whatever their length.
     FREQUENT = 200
+    # The same for an error value in the answer format and the steps (round 8): «goes», the 590th word of English, is in «Write what goes in place of ___».
+    SUPPORT_ERROR_FREQUENT = 1000
     PHRASE_WORDS = 3
     FUNCTION = {
       "en" => %w[a an the is are am was were be been in on at of to for by with from and or but do does did have has had can will would not it he she we you they
@@ -39,14 +41,14 @@ module Validation
 
     # Is +needle+ a key to be read as an everyday word of +lang+ (en or es; nil for any other subject)? A word of letters is, or a phrase of up to PHRASE_WORDS
     # words that are all everyday.
-    def everyday?(needle, lang)
+    def everyday?(needle, lang, frequent: FREQUENT)
       phrase = Answers.plain(needle)
       return false unless FUNCTION.key?(lang.to_s) && phrase.match?(/\A\p{L}+(?: \p{L}+){0,#{PHRASE_WORDS - 1}}\z/)
 
-      phrase.split.all? { |word| everyday_word?(word, lang.to_s) }
+      phrase.split.all? { |word| everyday_word?(word, lang.to_s, frequent) }
     end
 
-    def everyday_word?(word, lang) = word.length <= SHORT || FUNCTION.fetch(lang).include?(word) || Lessons::Lexicon.words(lang, FREQUENT).include?(word)
+    def everyday_word?(word, lang, frequent = FREQUENT) = word.length <= SHORT || FUNCTION.fetch(lang).include?(word) || Lessons::Lexicon.words(lang, frequent).include?(word)
 
     # Does +text+ leak the everyday key +needle+? +frame+: the frame words of the instance (see +frame+).
     def leak?(text, needle, frame: [])
@@ -72,7 +74,7 @@ module Validation
     # «Write at», «the answer is está», «at is the answer», or a line with nothing but the key.
     def named?(text, plain, key)
       word = Regexp.escape(key)
-      plain.match?(/(?<![[:alnum:]])(?:#{CUE})\s+(?:(?:the|el|la|il|lo)\s+(?:#{NOUN})\s+)?[«“"‘']?#{word}(?![[:alnum:]])/) ||
+      plain.match?(/(?<![[:alnum:]])(?:#{CUE})\s+(?:(?:the|el|la|il|lo)\s+(?:#{NOUN})\s+)?[«“"‘']?#{word}(?![[:alnum:]])(?!\s+(?:#{NOUN})(?![[:alnum:]]))/) ||
         plain.match?(/(?<![[:alnum:]])#{word}[»”"’']?\s+(?:#{AFTER})(?![[:alnum:]])/) ||
         text.lines.any? { |line| line.gsub(/[[:punct:][:space:]«»“”‘’¿¡]/, "").downcase == key }
     end

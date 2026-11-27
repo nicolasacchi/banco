@@ -36,7 +36,8 @@ module Validation
     # to the caller; +conflicts+ is off for an item (its instances are not one translation table); +material+: the marker `translate_material: false` is in force
     # above +doc+ (an instance is checked on its own, the item's root says it): form material has no pair, and an Italian text beside it is E-LANG-PAIR-ORPHAN.
     # Returns +findings+.
-    def check(findings, doc, lang:, prefix: "", line: nil, skip: nil, conflicts: true, r2: true, material: false, known: [])
+    # +example_forms+ (a course map's topics): the `title_it` that lists example forms after a colon («La forma passiva: fue escrito por, está escrito») is read before the colon.
+    def check(findings, doc, lang:, prefix: "", line: nil, skip: nil, conflicts: true, r2: true, material: false, known: [], example_forms: false)
       table = {}
       Lessons::Bilingual.pairs(doc, lang, "", false, material) do |pointer, base, target, italian|
         next if skip&.call(pointer, base)
@@ -59,10 +60,10 @@ module Validation
           add.call(pointer.match?(%r{/\d+\z}) ? "E-LANG-PAIR-MISSING" : "E-LANG-PAIR-ORPHAN",
                    pointer.match?(%r{/\d+\z}) ? "#{names[1]} has more entries than #{names[0]} (a list and its translation have the same length)" : "#{names[1]} has no #{names[0]} text to translate")
         else
-          it_field = italian_pointer(pointer, base)
+          it_field = "#{prefix}#{italian_pointer(pointer, base)}"
           shape_problems(target, italian).each { |problem| add.call("E-LANG-PAIR-SHAPE", "#{base}: the translation differs in shape: #{problem}") }
           add.call("E-LESSON-LANG", "#{names[0]} holds Italian words (a key ending in _#{pair_lang} holds that language only)") if %w[en es].include?(pair_lang) && Lessons::Lang.italian?(target)
-          add.call("E-LANG-TRANSLATION-LANG", "#{names[1]} is not Italian: it holds words of #{pair_lang == 'es' ? 'Spanish' : 'English'}", it_field) if translation_lang?(italian, pair_lang)
+          add.call("E-LANG-TRANSLATION-LANG", "#{names[1]} is not Italian: it holds words of #{pair_lang == 'es' ? 'Spanish' : 'English'}", it_field) if translation_lang?(italian, pair_lang, example_forms: example_forms && base == "title")
           add.call("E-LANG-TRANSLATION-COPY", "#{names[1]} is the same text as #{names[0]}: write the translation", it_field) if base != "term" && copy?(target, italian, pair_lang, known: known)
           conflict(findings, table, field, target, italian, at) if conflicts
         end
@@ -178,12 +179,24 @@ module Validation
     ROLE_SPAN = /\[\[(?!g:)[a-z]+(?:[_-][a-z]+)*:.*?\]\](?!\])/m
 
     # True when an Italian text holds two distinct function words of the target language outside spans and quotations (a translation that was
-    # not translated). +lang+ nil reads both lists.
-    def translation_lang?(italian, lang)
-      outside = italian.to_s.gsub(QUOTED_SPAN, " ").gsub(ROLE_SPAN, " ").gsub(QUOTED, " ").gsub(Readability::MATH, " ")
+    # not translated). +lang+ nil reads both lists. +example_forms+: a title of the shape «Name: form, form» is read up to its colon when what follows is a list of short
+    # forms (at most EXAMPLE_FORM_WORDS words each): the forms are target text on purpose. A title that is a sentence is read whole.
+    def translation_lang?(italian, lang, example_forms: false)
+      text = italian.to_s
+      text = text.split(":", 2).first if example_forms && example_forms?(text)
+      outside = text.gsub(QUOTED_SPAN, " ").gsub(ROLE_SPAN, " ").gsub(QUOTED, " ").gsub(Readability::MATH, " ")
       words = outside.downcase.scan(/\p{L}+/)
       lists = lang ? [ Lessons::Lang::TARGET_WORDS.fetch(lang, []) ] : Lessons::Lang::TARGET_WORDS.values
       lists.any? { |list| (words & list).size >= 2 }
+    end
+
+    EXAMPLE_FORM_WORDS = 4
+
+    def example_forms?(text)
+      before, after = text.split(":", 2)
+      return false if after.to_s.strip.empty? || before.to_s.strip.empty?
+
+      after.split(/[,;]/).all? { |form| form.scan(/\p{L}+/).size.between?(1, EXAMPLE_FORM_WORDS) }
     end
 
     # True when the Italian is the target text itself (after spans and markup) and BOTH hold a word of four or more letters that is not quoted: a text that is all

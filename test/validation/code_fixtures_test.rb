@@ -419,6 +419,14 @@ class CodeFixturesTest < ActiveSupport::TestCase
       row = { "pieces_it" => %w[Ieri mangio pesce], "pieces_es" => %w[pescado comí ayer], "links" => [ [ 0, 2, "same" ], [ 1, 1, "same" ], [ 2, 0, "same" ] ] }
       Lessons::Diagrams.check({ "type" => "mirror", "alt_it" => "Una frase italiana sopra la stessa frase nell'altra lingua, pezzo per pezzo, con le coppie.", "rows" => [ row ] }, subject: "spanish").map(&:code).uniq
     },
+    # a tiles check whose time phrase could stand elsewhere, the order neither accepted nor declared (D-402, round 8)
+    "W-TILE-ORDER" => lambda {
+      found = Validation::Findings.new
+      ctx = Lessons::Blocks::Context.new(subject: "spanish", findings: found)
+      tiles = %w[Mi hermana se ducha por la mañana duchan].each_with_index.map { |t, i| { "id" => (97 + i).chr, "text_es" => t } }
+      Lessons::Blocks::TileOrder.check({ "component" => "tiles", "tiles" => tiles, "answer" => %w[a b c d e f g] }, ctx)
+      found.map(&:code).uniq
+    },
     "W-TOPIC-LANG-MIXED" => lambda {
       found = Validation::Findings.new
       subject = Struct.new(:key).new("english")

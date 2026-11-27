@@ -37,7 +37,7 @@ module Validation
         Bilingual.flag(findings, t, subject: subject, prefix: "/topics/#{i}")
         next unless lang && Bilingual.bilingual?(t)
 
-        Bilingual.check(findings, t, lang: lang, prefix: "/topics/#{i}", conflicts: false)
+        Bilingual.check(findings, t, lang: lang, prefix: "/topics/#{i}", conflicts: false, example_forms: true)
         Bilingual.lint_target(findings, t, lang, prefix: "/topics/#{i}")
       end
       return unless lang

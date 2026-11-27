@@ -128,7 +128,7 @@ module Validation
                          code: code)
           elsif known[code] != Array(entry["implicates"]).sort
             findings.add("W-ERROR-NOT-IN-GRAPH", "#{field}/implicates",
-                         "the graph says #{code} implicates #{known[code].inspect}, the item says #{Array(entry['implicates']).sort.inspect}: the engine reads the graph, the item's list is ignored",
+                         "the graph says #{code} implicates #{known[code].inspect}, the item says #{Array(entry['implicates']).sort.inspect}: the engine reads the graph, the item's list is ignored; write #{known[code].inspect} (the graph's own list, a skill it links is no E-COMPOSITE even when it is a composite) to clear this",
                          code: code)
           end
         end
@@ -187,7 +187,7 @@ module Validation
         next if missing.empty?
 
         findings.add("E-COMPOSITE", item["kind"] == "testlet" ? "/sub_items/#{i}/skill" : "/skill",
-                     "the errors implicate #{implicated.join(', ')} but #{body['skill']} is not a composite of #{missing.join(', ')}", missing: missing)
+                     "the errors implicate #{implicated.join(', ')} but #{body['skill']} is not a composite of #{missing.join(', ')}: the engine reads the graph's own implicates, so an entry that repeats the graph's list for its code is not counted; write that list, or ask for the graph to change", missing: missing)
       end
     end
 

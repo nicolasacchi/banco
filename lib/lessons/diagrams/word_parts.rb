@@ -62,11 +62,20 @@ module Lessons
           out
         end
 
-        # The syllable the voice falls on: the written tilde, else the rule; a form with attached pieces keeps the voice on its first piece (dar+se+lo).
+        # The syllable the voice falls on: the written tilde, else the rule; a form with attached pieces keeps the voice where the verb form before them has it
+        # (dar+se+lo, compra|d+lo: «comprad» is stressed on «prad», habl|ar+me on «blar»). The verb form of a vosotros imperative that lost its d before «os»
+        # (senta+os, pon|e+os) keeps the voice on its last vowel: «sentad» is stressed on «tad».
         def es_stress(info)
-          return Words.stress_es(info[:text]) if info[:groups].size == 1 || info[:pieces].none? { |p| p["mark"] == "attached" }
+          attached = info[:pieces].index { |p| p["mark"] == "attached" }
+          return Words.stress_es(info[:text]) unless attached
 
-          Words.stress_es(info[:groups].first)
+          form = info[:pieces][0...attached].sum("") { |p| p["text"] }
+          return Words.stress_es(info[:text]) if form.empty?
+
+          dropped_d = info[:pieces][attached]["text"].downcase == "os" && form.downcase.match?(/[aei]\z/)
+          return Words.syllables_es(form).size if dropped_d && form.match?(/\A[^áéíóú]*\z/i)
+
+          Words.stress_es(form)
         end
 
         # ---- checks -----------------------------------------------------------------------------------------------------------------
