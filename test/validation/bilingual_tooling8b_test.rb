@@ -251,6 +251,21 @@ class BilingualTooling8bTest < ActiveSupport::TestCase
     assert_equal 20, lesson.dig("$defs", "check_normalized_text", "properties", "accept", "maxItems")
   end
 
+  # ---- 9. clock times and «o'clock» -------------------------------------------------------------------------------------------------------------
+
+  test "E-LANG-PAIR-SHAPE: a clock time is one number: 9:30 beside 9:30 or 9.30 is no difference; another time or a missing one still is" do
+    assert_empty VB.shape_problems("The bus leaves at 9:30 and arrives at 10:15.", "L'autobus parte alle 9:30 e arriva alle 10:15.")
+    assert_empty VB.shape_problems("The bus leaves at 9:30.", "L'autobus parte alle 9.30.")
+    assert_empty VB.shape_problems("At 9:30 Ana is at school. At 9:30 Tom is at home.", "Alle 9:30 Ana è a scuola, e alle 9:30 Tom è a casa.")
+    assert_equal [ "the numbers differ (930 / 945)" ], VB.shape_problems("The bus leaves at 9:30.", "L'autobus parte alle 9:45.")
+    assert_equal [ "the numbers differ (930 / )" ], VB.shape_problems("At 9:30 Ana is at school. At 9:30 Tom is at home.", "Alle 9:30 Ana e Tom sono a scuola.")
+  end
+
+  test "W-LANG-LEVEL: «o'clock» is a known word, with the straight or the curly apostrophe; «don't», «it's», «let's» stay known; a rare word still warns" do
+    assert_empty LX.unknown("en", "It is eight o'clock. Don't go, it's late, let's wait. Five o’clock too.")
+    assert_equal %w[perambulate], LX.unknown("en", "Don't perambulate at nine o'clock.")
+  end
+
   # ---- 7. the source note cap ------------------------------------------------------------------------------------------------------------------
 
   test "the fragment of an item's source note is capped at 2000 characters, not 500" do

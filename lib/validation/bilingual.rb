@@ -152,7 +152,7 @@ module Validation
       maths = [ math_of(target), math_of(italian) ]
       out << "the math differs (#{(maths[0] - maths[1]).first(2).join(', ')} / #{(maths[1] - maths[0]).first(2).join(', ')})" if maths[0].sort != maths[1].sort
       digits = [ digits_of(target), digits_of(italian) ]
-      out << "the numbers differ (#{(digits[0] - digits[1]).first(3).join(', ')} / #{(digits[1] - digits[0]).first(3).join(', ')})" if digits[0].sort != digits[1].sort
+      out << "the numbers differ (#{surplus(digits[0], digits[1]).first(3).join(', ')} / #{surplus(digits[1], digits[0]).first(3).join(', ')})" if digits[0].sort != digits[1].sort
       out
     end
 
@@ -161,7 +161,16 @@ module Validation
     def math_of(text) = text.scan(Readability::MATH).map { |m| m.gsub(/\s+/, "") }
 
     # Digit runs outside math, without the thousands and decimal marks (3.5 and 3,5, 1,000 and 1.000 read the same).
-    def digits_of(text) = text.gsub(Readability::MATH, " ").scan(DIGITS).map { |d| d.delete(".,") }.reject(&:empty?)
+    # A clock time is one number: «9:30» in English and «9.30» or «9:30» in Italian read «930»; the hours and the minutes are not two numbers.
+    CLOCK = /(?<![\d:.,])(\d{1,2})[:.](\d{2})(?![\d,]|[:.]\d)/
+
+    def digits_of(text) = text.gsub(Readability::MATH, " ").gsub(CLOCK, ' \1\2 ').scan(DIGITS).map { |d| d.delete(".,") }.reject(&:empty?)
+
+    # The elements of +a+ that +b+ does not have as many times (a number said twice in one text and once in the other differs).
+    def surplus(a, b)
+      left = b.tally
+      a.reject { |d| left[d].to_i.positive? && left[d] -= 1 }
+    end
 
     # ---- the language of the two texts ------------------------------------------------------------------------------------------
 
