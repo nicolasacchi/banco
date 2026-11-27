@@ -82,6 +82,32 @@ class BilingualTooling8bTest < ActiveSupport::TestCase
     end
   end
 
+  def ordering_item(words = %w[Picasso died in 1973], steps: nil)
+    item = golden("item_choice.json").merge("component" => "ordering")
+    item["prompt"] = { "stem_en" => "Put the words in order to build the sentence.", "stem_it" => "Metti le parole in ordine per costruire la frase." }
+    item["instances"].each_with_index do |inst, i|
+      ids = words.each_index.map { |k| "e#{k + 1}" }
+      inst["display"] = { "stem_en" => "Build the sentence #{i + 1}.", "elements" => words.each_with_index.map { |w, k| { "id" => ids[k], "text" => w } } }
+      inst["answer"] = ids
+      inst["errors"] = [ { "code" => "en_make_do_swap", "value" => ids.reverse } ]
+      inst["solution"] = { "steps" => [ { "text_en" => "The subject comes first.", "text_it" => "Il soggetto viene prima." } ], "final" => words.join(" ") }
+    end
+    item
+  end
+
+  test "W-TILE-ORDER: an ordering instance of word tiles lists the orders that move the time phrase; a declared error value or an ordering of whole sentences gives none" do
+    orders = ->(item) { run_item(item).findings.select { |f| f.code == "W-TILE-ORDER" } }
+    found = orders.call(ordering_item)
+    assert_equal %w[/instances/0/answer /instances/1/answer], found.map(&:field)
+    assert_includes found.first.detail[:orders], "in 1973 picasso died"
+    assert_not_includes found.first.detail[:orders], "picasso died in 1973", "the key is no warning"
+    declared = ordering_item
+    declared["instances"].each { |inst| inst["errors"] << { "code" => "en_make_do_swap", "value" => %w[e3 e4 e1 e2] } }
+    assert_not_includes orders.call(declared).first.detail[:orders], "in 1973 picasso died"
+    sentences = ordering_item([ "Picasso died in 1973 when he was ninety-one", "He was born in Malaga in 1881 and lived in France", "He painted pictures all of his long life" ])
+    assert_empty orders.call(sentences)
+  end
+
   # ---- 2. E-SUPPORT-LEAK in answer formats ---------------------------------------------------------------------------------------------
 
   def goes_item
@@ -196,6 +222,18 @@ class BilingualTooling8bTest < ActiveSupport::TestCase
     assert_equal %w[enferma], LX.unknown("es", "Ella está enferma.", known: %w[ocupado])
     assert_empty LX.unknown("en", "Two perambulators and three gallivants.", known: %w[perambulator gallivant])
     assert_equal %w[perambulators], LX.unknown("en", "Two perambulators.", known: %w[city])
+  end
+
+  # ---- 8. the accept cap -----------------------------------------------------------------------------------------------------------------------
+
+  test "an instance's accept list holds up to 20 entries; 21 is refused by the schema" do
+    item = golden("item_blank.json")
+    item["instances"][0]["accept"] = Array.new(20) { |i| "variant #{i}" }
+    assert_empty Banco::Schemas.validate("item", item).map(&:to_h)
+    item["instances"][0]["accept"] << "variant 20"
+    assert_not_empty Banco::Schemas.validate("item", item)
+    lesson = JSON.parse(Rails.root.join("config/banco/schemas/lesson.json").read)
+    assert_equal 20, lesson.dig("$defs", "check_normalized_text", "properties", "accept", "maxItems")
   end
 
   # ---- 7. the source note cap ------------------------------------------------------------------------------------------------------------------

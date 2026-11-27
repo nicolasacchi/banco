@@ -695,7 +695,7 @@
             "maxLength": 200
           },
           "minItems": 0,
-          "maxItems": 10
+          "maxItems": 20
         },
         "verify": {
           "$ref": "#/$defs/verify"

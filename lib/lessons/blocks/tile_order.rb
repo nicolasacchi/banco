@@ -29,21 +29,29 @@ module Lessons
 
       # Adds the warning to +ctx+ for the tiles +check+ when there is an order to list.
       def check(check, ctx)
+        orders = orders(check)
+        return if orders.empty?
+
+        ctx.add("W-TILE-ORDER", "answer", message(orders), rule: "tile-order", orders: orders)
+      end
+
+      # The orders to list for +check+ ({"tiles" => [{"id", "text_en"|"text_es"}], "answer" => ids, "accept" => [ids], "errors" => [{"answer" => ids}]}): lower-case
+      # sentences, [] when the tiles are not English or Spanish words or the answer is shorter than three tiles.
+      def orders(check)
         tiles = check["tiles"].to_a.to_h { |t| [ t["id"], t ] }
         lang = language(tiles.values)
         answer = Array(check["answer"])
-        return unless lang && answer.size >= 3 && answer.all? { |id| tiles.key?(id) }
+        return [] unless lang && answer.size >= 3 && answer.all? { |id| tiles.key?(id) }
 
         text = ->(ids) { squash(ids.map { |id| tiles[id]["text_#{lang}"] }.join(" ")) }
         declared = ([ answer ] + check["accept"].to_a + check["errors"].to_a.map { |e| e["answer"] }).select { |s| s.is_a?(Array) && s.all? { |id| tiles.key?(id) } }.map { |s| text.call(s) }
-        orders = moved(answer, tiles, lang).map { |ids| text.call(ids) }.uniq - declared
-        return if orders.empty?
+        moved(answer, tiles, lang).map { |ids| text.call(ids) }.uniq - declared
+      end
 
-        shown = orders.first(SHOWN).map { |o| o.inspect }.join(", ")
-        ctx.add("W-TILE-ORDER", "answer",
-                "the sentence is built from tiles and the time or place phrase may stand elsewhere: #{shown}#{orders.size > SHOWN ? " (and #{orders.size - SHOWN} more)" : ''} " \
-                "is neither the answer, nor accepted, nor a declared error: accept it in `accept` if it is right, or declare the error",
-                rule: "tile-order", orders: orders)
+      def message(orders)
+        shown = orders.first(SHOWN).map(&:inspect).join(", ")
+        "the sentence is built from tiles and the time or place phrase may stand elsewhere: #{shown}#{orders.size > SHOWN ? " (and #{orders.size - SHOWN} more)" : ''} " \
+          "is neither the answer, nor accepted, nor a declared error: accept it in `accept` if it is right, or declare the error"
       end
 
       # The language of the tiles (en or es), nil for Italian tiles or a mix.

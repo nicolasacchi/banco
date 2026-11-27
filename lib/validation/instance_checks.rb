@@ -109,6 +109,7 @@ module Validation
       component_fit(answer, inst, label, seed, f)
       steps(inst, label, seed, f) if problems.empty?
       stored_order(display, inst, label, seed, f) if problems.empty? && STORED_ORDER_COMPONENTS.include?(@unit.component)
+      tile_order(display, answer, inst, label, seed, f) if problems.empty? && @unit.component == "ordering" && @lang
       formula_space(display, inst, label, seed, f)
       sentence_commas(inst, label, seed, f) if problems.empty? && @unit.component == "normalized_text"
       hint_rules(display, answer, inst, label, seed, f) if problems.empty?
@@ -119,6 +120,21 @@ module Validation
       f
     end
     private :run
+
+    # W-TILE-ORDER (D-402, round 8): an ordering whose elements are words or short phrases (one to four words each) builds one sentence, like a tiles check of a
+    # lesson: Lessons::Blocks::TileOrder lists the orders that only move a time or place phrase and that neither the key nor a declared error value covers.
+    # An ordering of whole sentences or of steps is no sentence-builder.
+    def tile_order(display, answer, inst, label, seed, f)
+      elements = Array(display["elements"])
+      return unless elements.all? { |e| e["text"].to_s.scan(/\p{L}+|\p{N}+/).size.between?(1, TILE_MAX_WORDS) }
+
+      tiles = elements.map { |e| { "id" => e["id"], "text_#{@lang}" => e["text"] } }
+      errors = Array(inst["errors"]).map { |e| { "answer" => e["value"] } }
+      orders = Lessons::Blocks::TileOrder.orders({ "tiles" => tiles, "answer" => answer, "errors" => errors })
+      f.add("W-TILE-ORDER", "#{label}/answer", Lessons::Blocks::TileOrder.message(orders), rule: "tile-order", seed: seed, orders: orders) unless orders.empty?
+    end
+
+    TILE_MAX_WORDS = 4
 
     # True when the correct option is the longest of its options (W-LONGEST-CORRECT).
     def longest_correct?(inst)
