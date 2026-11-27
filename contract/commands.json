@@ -338,6 +338,24 @@
       "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-ITEM-NOT-PASSED", "E-CHROME-UNAVAILABLE"]
     },
     {
+      "name": "item grade",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/item-revisions/:revision/grade",
+      "args": ["revision"],
+      "flags": ["--instance", "--answer", "--answers-file"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-CHROME-UNAVAILABLE"]
+    },
+    {
+      "name": "lesson grade",
+      "local": false,
+      "method": "POST",
+      "path": "/api/v1/lesson-revisions/:revision/grade",
+      "args": ["revision"],
+      "flags": ["--check", "--answer", "--answers-file"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND"]
+    },
+    {
       "name": "lesson-review open",
       "local": false,
       "method": "GET",

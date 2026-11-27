@@ -1,0 +1,99 @@
+{
+  "command": "item grade",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/item-revisions/1/grade",
+    "body": {
+      "answers": [
+        {
+          "instance": 1,
+          "answer": "'s scared"
+        },
+        {
+          "instance": 1,
+          "answer": "is scared"
+        },
+        {
+          "instance": 1,
+          "answer": "was scared"
+        },
+        {
+          "instance": 1,
+          "answer": "is afraid"
+        }
+      ]
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "item": "grade-en-1",
+      "read_only": true,
+      "results": [
+        {
+          "instance": 1,
+          "answer": "'s scared",
+          "verdict": "correct",
+          "matched": {
+            "kind": "key",
+            "value": "is scared"
+          },
+          "error_code": null,
+          "error_codes": [],
+          "form_violations": [],
+          "normalized": "'s scared",
+          "outcome": "correct",
+          "message_it": "Corretto."
+        },
+        {
+          "instance": 1,
+          "answer": "is scared",
+          "verdict": "correct",
+          "matched": {
+            "kind": "key",
+            "value": "is scared"
+          },
+          "error_code": null,
+          "error_codes": [],
+          "form_violations": [],
+          "normalized": "is scared",
+          "outcome": "correct",
+          "message_it": "Corretto."
+        },
+        {
+          "instance": 1,
+          "answer": "was scared",
+          "verdict": "typical_error",
+          "matched": {
+            "kind": "error",
+            "value": "was scared",
+            "code": "wrong_tense"
+          },
+          "error_code": "wrong_tense",
+          "error_codes": [
+            "wrong_tense"
+          ],
+          "form_violations": [],
+          "normalized": "was scared",
+          "outcome": "typical_error",
+          "message_en": "Use the present: it is now.",
+          "message_it": "Usa il presente: è adesso."
+        },
+        {
+          "instance": 1,
+          "answer": "is afraid",
+          "verdict": "wrong",
+          "matched": null,
+          "error_code": null,
+          "error_codes": [],
+          "form_violations": [],
+          "normalized": "is afraid",
+          "outcome": "unrecognised",
+          "message_it": "Non è ancora giusta. Leggi l'aiuto e riprova."
+        }
+      ],
+      "next": "nothing was stored: no attempt, no event; to file a finding quote the verdict and the matched value"
+    }
+  }
+}

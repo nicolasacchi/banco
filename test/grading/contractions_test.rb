@@ -70,8 +70,8 @@ class GradingContractionsTest < ActiveSupport::TestCase
     assert_equal [ "anita'd gone" ], Contractions.readings("Anita'd gone")
     assert_equal "wrong", verdict("Anna's book", "Anna is book")
     assert_equal "wrong", verdict("Anna's book", "Anna has book")
-    assert_equal "wrong", verdict("Anna is here", "Anna's here"), "a noun with 's is left as typed: the author lists it in accept"
-    assert_equal "correct", verdict("Anna is here", "Anna's here", accept: [ "Anna's here" ])
+    assert_equal "correct", verdict("Anna is here", "Anna's here"), "round 8: the typed 's after a noun is read as the verb the key needs"
+    assert_equal "wrong", verdict("Anna was here", "Anna's here")
     assert_equal "correct", verdict("Anna's book", "Anna’s book")
   end
 
@@ -138,16 +138,42 @@ class GradingContractionsTest < ActiveSupport::TestCase
     assert_equal "wrong", verdict("Anna is gone", "Anna 's gone")
   end
 
-  test "a fragment never turns a declared error value into a right answer: the error keeps precedence, as for a whole form" do
-    errors = [ { "code" => "wrong_aux", "value" => "has scared" } ]
-    gap = spec("is scared", display: { "stem_it" => "My friend ___ of deep water." }, errors: errors)
-    hit = Grading::Closed.grade(gap, "'s scared")
-    assert_equal [ "typical_error", [ "wrong_aux" ] ], [ hit.verdict, hit.error_codes ], "'s scared reads as has scared, a declared error"
-    assert_equal "correct", Grading::Closed.grade(gap, "is scared").verdict
-    assert_equal "typical_error", Grading::Closed.grade(gap, "has scared").verdict
-    other = spec("is scared", display: { "stem_it" => "My friend ___ of deep water." }, errors: [ { "code" => "wrong_tense", "value" => "was scared" } ])
-    assert_equal "correct", Grading::Closed.grade(other, "'s scared").verdict, "the error is not one of the readings"
-    assert_equal "typical_error", Grading::Closed.grade(other, "was scared").verdict
+  # Round 8: «'s» is «is» and «has»; the key decides, and the other reading being a declared error value does not make the answer an error.
+  test "'s is the reading the key needs: a declared error value that is the OTHER reading does not turn it into an error" do
+    gap = ->(answer, error, **opts) { spec(answer, display: { "stem_it" => "She ___ a cold." }, errors: [ { "code" => "wrong_aux", "value" => error } ], **opts) }
+    grade = ->(s, typed) { Grading::Closed.grade(s, typed) }
+    has = gap.("has got", "is got")
+    assert_equal "correct", grade.(has, "'s got").verdict, "the fragment, key has got, error is got"
+    assert_equal "correct", grade.(has, "She's got a cold.").verdict, "the sentence written in full"
+    assert_equal "correct", grade.(has, "She has got a cold.").verdict
+    assert_equal [ "typical_error", [ "wrong_aux" ] ], grade.(has, "is got").then { |r| [ r.verdict, r.error_codes ] }, "the error written out stays an error"
+    assert_equal [ "typical_error", [ "wrong_aux" ] ], grade.(has, "She is got a cold.").then { |r| [ r.verdict, r.error_codes ] }
+    is = spec("is tired", display: { "stem_it" => "She ___ today." }, errors: [ { "code" => "wrong_aux", "value" => "has tired" } ])
+    assert_equal "correct", grade.(is, "'s tired").verdict, "key is tired, error has tired"
+    assert_equal "correct", grade.(is, "She's tired today").verdict
+    assert_equal "typical_error", grade.(is, "has tired").verdict
+    assert_equal "wrong", grade.(spec("was tired", display: { "stem_it" => "She ___ today." }), "'s tired").verdict, "neither reading is the key"
+  end
+
+  test "'s after a noun, typed in full, is read as the verb the key needs («My sister's got a cold»); the key and the accept entries never are" do
+    gap = spec("has got", display: { "stem_it" => "My sister ___ a cold." }, errors: [ { "code" => "wrong_aux", "value" => "is got" } ])
+    assert_equal "correct", Grading::Closed.grade(gap, "My sister's got a cold.").verdict
+    assert_equal "correct", Grading::Closed.grade(gap, "my sister’s got a cold").verdict
+    assert_equal "typical_error", Grading::Closed.grade(gap, "My sister is got a cold.").verdict
+    assert_not_equal "correct", Grading::Closed.grade(spec("had", display: { "stem_it" => "My sister ___ a cold." }), "My sister's got a cold.").verdict, "neither reading is the key"
+    assert_equal "correct", verdict("My sister has got a cold", "My sister's got a cold")
+    assert_equal "wrong", verdict("Anna's book", "Anna is book"), "a possessive key is never read as a verb"
+  end
+
+  test "a declared error value that is the same reading as the key's reading is still an error, and a reading that is an error never makes an answer right" do
+    errors = [ { "code" => "wrong_aux", "value" => "is scared" } ]
+    accept = spec("has scared", errors: errors, accept: [ "'s scared" ])
+    assert_equal "typical_error", Grading::Closed.grade(accept, "is scared").verdict, "the accept entry 's scared does not accept «is scared»"
+    assert_equal "correct", Grading::Closed.grade(accept, "'s scared").verdict
+    assert_equal "correct", Grading::Closed.grade(accept, "has scared").verdict
+    other = spec("was scared", display: { "stem_it" => "My friend ___ of deep water." }, errors: [ { "code" => "wrong_tense", "value" => "has scared" } ])
+    hit = Grading::Closed.grade(other, "'s scared")
+    assert_equal [ "typical_error", [ "wrong_tense" ] ], [ hit.verdict, hit.error_codes ], "the key has neither reading: the error reading is an error"
   end
 
   test "its and whose have no apostrophe: they are never read as a verb" do
@@ -183,6 +209,10 @@ class GradingContractionsTest < ActiveSupport::TestCase
     assert Grading::Closed::Text.same_answer?("do not go", "don't go", contractions: on)
     assert_not Grading::Closed::Text.same_answer?("do not go", "don't go", contractions: Contractions.option("italian", nil))
     assert_not Grading::Closed::Text.same_answer?("Anna's book", "Anna is book", contractions: on)
+    assert_not Grading::Closed::Text.same_answer?("'s got", "is got", contractions: on), "round 8: the accept entry 's got does not swallow the error is got"
+    assert_not Grading::Closed::Text.same_answer?("she's tired", "she has tired", contractions: on)
+    assert Grading::Closed::Text.same_answer?("it is cold", "it's cold", contractions: on), "a true clash: the error value would be graded right"
+    assert Grading::Closed::Text.same_answer?("'s got", "'s got", contractions: on)
   end
 
   test "Italian, Spanish and the other subjects are never expanded" do

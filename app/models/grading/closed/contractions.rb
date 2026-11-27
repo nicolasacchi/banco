@@ -15,6 +15,12 @@ module Grading
     # the ambiguous forms are read too: "'s" is "is" or "has", "'d" is "would" or "had". The key decides which reading is meant:
     # "'s scared" is right for "is scared" and for "has scared", and wrong for "was scared". Only the first word is read so: an "'s"
     # after a word keeps the rule above.
+    #
+    # The typed side only (round 8): what the student TYPED is read one step further. An ambiguous "'s" or "'d" after a noun ("My sister's got a
+    # cold") is read as a possessive and as each verb reading, so the key picks the reading it needs; the key and the accept entries are never
+    # read so (a possessive key is not "is"). "'s" is both "is" and "has", and the reading that the key needs is the one that counts: a declared
+    # error value that is the OTHER reading ("is got" for the key "has got") does not make "'s got" or "she's got" an error. The reading that
+    # is itself a declared error value never makes an answer right (`accepts?`, `except:`), so an accept entry "'s got" does not accept "is got".
     module Contractions
       APOSTROPHE = /[‘’‛ʼ`´′]/
       MAX_READINGS = 16
@@ -42,21 +48,14 @@ module Grading
       # Every reading of +text+ (an already normalized string): the set of strings with its expandable contractions expanded.
       # Case is folded unless +case_sensitive+ (the item's policy): then the words keep their case, and an expanded form keeps the case of
       # the first letter of the contraction ("Doesn't" is "Does not", "I'd" is "I would"), so a case-sensitive answer stays case-sensitive.
-      def readings(text, case_sensitive: false)
+      def readings(text, case_sensitive: false, typed: false)
         words = text.to_s.gsub(APOSTROPHE, "'").split(" ")
-        options = words.each_with_index.map { |w, i| (i.zero? && fragment_readings(w)) || word_readings(w, case_sensitive: case_sensitive) }
+        options = words.each_with_index.map { |w, i| (i.zero? && fragment_readings(w)) || word_readings(w, case_sensitive: case_sensitive, ambiguous: typed) }
         out = [ [] ]
         options.each do |choices|
           out = out.flat_map { |prefix| choices.map { |c| prefix + [ c ] } }.first(MAX_READINGS)
         end
         out.map { |ws| ws.join(" ") }.uniq
-      end
-
-      # Does the text start with a bare suffix of the table ("'s scared", "'m not hungry")? Such an answer is the end of a sentence
-      # whose subject is on the screen, and a declared error value that is one of its readings is graded before the key (Text.grade).
-      def fragment?(text)
-        first = text.to_s.gsub(APOSTROPHE, "'").split(" ").first
-        !fragment_readings(first).nil?
       end
 
       # The readings of a bare suffix word ("'s" is is or has), whether or not the table marks it ambiguous; nil for any other word.
@@ -68,7 +67,15 @@ module Grading
 
       def same?(a, b, case_sensitive: false) = (readings(a, case_sensitive: case_sensitive) & readings(b, case_sensitive: case_sensitive)).any?
 
-      def word_readings(typed, case_sensitive: false)
+      # Would the +accepted+ text (the key, an accept entry) take what the student +typed+? The typed side is read with its ambiguous 's and 'd
+      # (see above); a reading in +except+ (the declared error values, as normalized) never counts, so a reading that is itself an error
+      # value does not make the answer right.
+      def accepts?(accepted, typed, case_sensitive: false, except: [])
+        ((readings(typed, case_sensitive: case_sensitive, typed: true) & readings(accepted, case_sensitive: case_sensitive)) - except).any?
+      end
+
+      # +ambiguous+: also read the ambiguous suffix of a typed word ("sister's": the word as typed, "sister is", "sister has").
+      def word_readings(typed, case_sensitive: false, ambiguous: false)
         word = typed.downcase
         keep = ->(t) { case_sensitive ? t : t.downcase }
         rows = Contractions.table
@@ -79,10 +86,23 @@ module Grading
 
         suffix = rows.select { |r| !r["ambiguous"] && r["short"].start_with?("'", "n'") && word.length > r["short"].length && word.end_with?(r["short"].downcase) }
                      .max_by { |r| r["short"].length }
-        return [ keep.(typed) ] unless suffix
+        return ambiguous_readings(typed, word, keep, rows, ambiguous) unless suffix
 
         stem = keep.(typed).slice(0, word.length - suffix["short"].length)
         suffix["long"].map { |l| "#{stem} #{l.downcase.strip}" }
+      end
+
+      # A word that ends with an ambiguous suffix: as typed, and (typed side only) with each of the suffix's readings.
+      def ambiguous_readings(typed, word, keep, rows, ambiguous)
+        as_typed = [ keep.(typed) ]
+        return as_typed unless ambiguous
+
+        row = rows.select { |r| r["ambiguous"] && r["short"].start_with?("'") && word.length > r["short"].length && word.end_with?(r["short"].downcase) }
+                  .max_by { |r| r["short"].length }
+        return as_typed unless row
+
+        stem = keep.(typed).slice(0, word.length - row["short"].length)
+        as_typed + row["long"].map { |l| "#{stem} #{l.downcase.strip}" }
       end
     end
   end

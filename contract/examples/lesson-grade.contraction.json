@@ -1,0 +1,94 @@
+{
+  "command": "lesson grade",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/lesson-revisions/1/grade",
+    "body": {
+      "answers": [
+        {
+          "check": "1.1",
+          "answer": "'s scared"
+        },
+        {
+          "check": "1.1",
+          "answer": "was scared"
+        },
+        {
+          "check": "1.2.ex1",
+          "answer": "'s got"
+        },
+        {
+          "check": "1.2.ex1",
+          "answer": "is got"
+        }
+      ]
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "lesson": "ripasso.english.grade",
+      "read_only": true,
+      "results": [
+        {
+          "check": "1.1",
+          "component": "normalized_text",
+          "answer": "'s scared",
+          "verdict": "right",
+          "matched": {
+            "kind": "key",
+            "value": "is scared"
+          },
+          "normalized": "'s scared"
+        },
+        {
+          "check": "1.1",
+          "component": "normalized_text",
+          "answer": "was scared",
+          "verdict": "wrong",
+          "matched": {
+            "kind": "error",
+            "value": "was scared",
+            "code": "wrong_tense"
+          },
+          "error_code": "wrong_tense",
+          "error_index": 0,
+          "normalized": "was scared",
+          "message": {
+            "message_it": "Usa il presente."
+          }
+        },
+        {
+          "check": "1.2.ex1",
+          "component": "normalized_text",
+          "answer": "'s got",
+          "verdict": "right",
+          "matched": {
+            "kind": "key",
+            "value": "has got"
+          },
+          "normalized": "'s got"
+        },
+        {
+          "check": "1.2.ex1",
+          "component": "normalized_text",
+          "answer": "is got",
+          "verdict": "wrong",
+          "matched": {
+            "kind": "error",
+            "value": "is got",
+            "code": "wrong_aux"
+          },
+          "error_code": "wrong_aux",
+          "error_index": 0,
+          "normalized": "is got",
+          "message": {
+            "message_it": "No."
+          }
+        }
+      ],
+      "next": "nothing was stored: no answer, no event; to file a finding quote the verdict and the matched value"
+    }
+  }
+}

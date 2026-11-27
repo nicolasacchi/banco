@@ -254,6 +254,8 @@ Rails.application.routes.draw do
     get "api/v1/item-revisions/:revision/shots" => "api/v1/item_shots#index", constraints: revision, format: false
     post "api/v1/item-revisions/:revision/shots" => "api/v1/item_shots#create", constraints: revision, format: false
     get "api/v1/item-revisions/:revision/shots/:sha" => "api/v1/item_shots#show", constraints: revision.merge(sha: /[0-9a-f]{64}/), format: false
+    # The read-only grade of answers to the instances of an item revision (D-402 round 8): every token role, nothing is stored.
+    post "api/v1/item-revisions/:revision/grade" => "api/v1/item_grades#create", constraints: revision, format: false
     get "api/v1/submissions/pending" => "api/v1/grades#pending", format: false
     post "api/v1/attempts/:attempt/grade-proposals" => "api/v1/grades#propose", constraints: { attempt: /\d+/ }, format: false
 
@@ -285,6 +287,8 @@ Rails.application.routes.draw do
     post "api/v1/lesson-revisions/:revision/render" => "api/v1/lesson_renders#create", constraints: revision, format: false
     get "api/v1/lesson-revisions/:revision/shots" => "api/v1/lesson_shots#index", constraints: revision, format: false
     get "api/v1/lesson-revisions/:revision/shots/:sha" => "api/v1/lesson_shots#show", constraints: revision.merge(sha: /[0-9a-f]{64}/), format: false
+    # The read-only grade of answers to the checks of a lesson/2 revision, graded as the teacher's preview does (D-402 round 8): every token role, nothing is stored.
+    post "api/v1/lesson-revisions/:revision/grade" => "api/v1/lesson_grades#create", constraints: revision, format: false
     get "api/v1/lesson-revisions/:revision/review" => "api/v1/lesson_reviews#open", constraints: revision, format: false
     post "api/v1/lesson-revisions/:revision/review" => "api/v1/lesson_reviews#submit", constraints: revision, format: false
     # Free pages, release 2 (D-290, SPEC B9). No route decides.

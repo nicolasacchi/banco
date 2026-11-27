@@ -1,10 +1,10 @@
 ---
 name: review
-version: 5
+version: 6
 formats: banco.review/1
 ---
 
-# Brief: expert review of an item revision (version 5)
+# Brief: expert review of an item revision (version 6)
 
 You review one item revision as a subject expert and write `banco.review/1`
 (`config/banco/schemas/review.json`). You are a session of the reviewer role,
@@ -30,12 +30,14 @@ alt text and the stored data, as the student sees it; a figure that is missing o
 result. Never ask for a decision; the teacher disposes of every finding.
 
 **Look at the pictures of the instances first.** `banco review open REV` asks the server to draw every instance as the student sees it on a 390 px
-phone and prints `item_shots.fetch`, the command that brings the pictures: `banco item shots REV --dir DIR --wait` (it waits as long as the queue in front keeps shrinking, printing your place on stderr, up to 6 hours) writes
+phone and prints `item_shots.fetch`, the command that brings the pictures: `banco item shots REV --dir DIR --wait` (it waits as long as the server says the render is queued or running, printing your place in the queue on stderr, at most 3600 s) writes
 `DIR/REV/instance-NN_390x844.webp`, one whole-page picture per instance (NN is the instance number), with the findings of the drawing (`errors`: a
 page wider than the phone, a box that clips its text, a formula that did not draw, markup printed as text, a figure that did not load). Open each file as an image before you
 read the keys: an item that overflows, cuts a formula or hides its question on a phone is a finding (point 11 if it is the reading load or the interface, else the point
 the defect belongs to), quoted from the item text that causes it. A choice, a matching and an ordering are drawn shuffled with a fixed seed: the number on an option, a row or a
 step is its position in `shown_order` (printed with each file), the ids of the item are the stored ones. The pictures never show the key. If they cannot be had, say so in your report.
+
+**Test a refused answer before you file it.** Whether an answer is refused cannot be read off the accept list (contractions such as «'s scared» for «is scared», brackets, punctuation, case and accents all count): run `banco item grade REV --instance N --answer "…"` (`--answer` may be repeated; `--answers-file FILE` takes one JSON array of `{instance, answer}`). It grades through the student's own path and prints the verdict, what matched (the key, an accept entry, an error value), the error code and the message the student would read; it stores nothing.
 
 Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`. Run `banco search --like KEY` (a key, or a ref such as `item:KEY`; a whole lesson is `lesson:KEY`, its card N `lesson_card:KEY#N`) on what you review: its nearest neighbours are the candidates for duplicates.
 

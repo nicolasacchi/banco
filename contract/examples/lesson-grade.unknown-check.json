@@ -1,0 +1,28 @@
+{
+  "command": "lesson grade",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/lesson-revisions/1/grade",
+    "body": {
+      "answers": [
+        {
+          "check": "7.7",
+          "answer": "x"
+        }
+      ]
+    }
+  },
+  "response": {
+    "status": 404,
+    "body": {
+      "code": "E-NOT-FOUND",
+      "field": "answers/0/check",
+      "message": "revision 1 has no check \"7.7\": its checks are 1.1, 1.2.ex1",
+      "next": "a check id is CARD.BLOCK, CARD.BLOCK.stepN, CARD.BLOCK.exN or CARD.BLOCK.exN.P (the n of the card and the block in the lesson)",
+      "checks": [
+        "1.1",
+        "1.2.ex1"
+      ]
+    }
+  }
+}

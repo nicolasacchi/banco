@@ -100,6 +100,17 @@ class Lesson2TextLayerTest < ActiveSupport::TestCase
     assert_empty codes(quiet, "E-ACCEPT-IS-ERROR")
   end
 
+  test "E-ACCEPT-IS-ERROR: accept 's got is quiet when the error answer is the other reading (is got); the error answer itself still fires" do
+    check = lambda do |accept|
+      { "n" => 7, "type" => "check", "line" => 50, "component" => "normalized_text", "prompt_it" => "Completa: She ___ a cold.", "answer" => "has got",
+        "accept" => accept, "errors" => [ { "code" => "en_aux", "answer" => "is got", "message_it" => "Qui serve have." } ] }
+    end
+    quiet = run_checks("english") { |b| b["cards"][1]["blocks"] << check.call([ "'s got" ]) }
+    assert_empty codes(quiet, "E-ACCEPT-IS-ERROR")
+    hit = run_checks("english") { |b| b["cards"][1]["blocks"] << check.call([ "is got" ]) }
+    assert_equal 1, codes(hit, "E-ACCEPT-IS-ERROR").size
+  end
+
   test "a glossary word must be in the glossary, a term is listed once, and the definitions shown under a card count as apparatus" do
     glossary = [ { "term_it" => "promulgazione", "def_it" => "Il capo dello Stato firma la legge e la rende valida." } ]
     ok = run_checks("math") { |b| b["glossary"] = glossary; text_card(b, "La [[g:promulgazione]] chiude l'iter.") }

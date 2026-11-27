@@ -39,40 +39,61 @@ module Grading
         answer = normalize(value, case_sensitive: spec.case_sensitive)
         return Closed.invalid("empty") if answer.empty?
 
-        accepted = ([ spec.answer ] + spec.accept).map { |t| normalize(t.to_s, case_sensitive: spec.case_sensitive) }
-        return Closed.result("correct", normalized: answer) if accepted.include?(answer)
-        return Closed.result("correct", normalized: answer) if same_direction_as_any?(answer, accepted)
-        contracted = spec.contractions == "en"
-        # A fragment that starts with 's/'d is ambiguous ("'s scared" is "is scared" or "has scared"): a declared error value that is one of its
-        # readings keeps precedence, so the contraction never turns an error value into a right answer.
-        if contracted && Contractions.fragment?(answer)
-          fragment_errors = declared_codes(spec, answer)
-          return Closed.result("typical_error", error_codes: fragment_errors, normalized: answer) if fragment_errors.any?
+        entries = ([ spec.answer ] + spec.accept).map(&:to_s)
+        accepted = entries.map { |t| normalize(t, case_sensitive: spec.case_sensitive) }
+        folded = fold_direction(answer)
+        # what an accepted text is called in the answer of the grade commands: the key (the first) or an accept entry
+        right = ->(i) { Closed.result("correct", normalized: answer, matched: { kind: i.zero? ? "key" : "accept", value: entries[i] }) }
+        if (i = accepted.index(answer) || accepted.index { |c| fold_direction(c) == folded })
+          return right.(i)
         end
-        return Closed.result("correct", normalized: answer) if contracted && accepted.any? { |t| Contractions.same?(t, answer, case_sensitive: spec.case_sensitive) }
+
+        contracted = spec.contractions == "en"
+        # The key decides which reading of an ambiguous 's/'d is meant ("'s got" is "is got" or "has got"): any reading of the answer that an
+        # accepted text has is right, unless that reading is itself a declared error value (Contractions.accepts?).
+        if contracted
+          errors = spec.error_values.map { |_code, v| normalize(v.to_s, case_sensitive: spec.case_sensitive) }
+          i = accepted.index { |t| Contractions.accepts?(t, answer, case_sensitive: spec.case_sensitive, except: errors) }
+          return right.(i) if i
+        end
         return Closed.invalid("spaces_in_code") if spaced_code?(answer, accepted)
 
-        declared = declared_codes(spec, answer)
-        return Closed.result("typical_error", error_codes: declared, normalized: answer) if declared.any?
+        declared = declared_entries(spec, answer)
+        if declared.any?
+          code, written = declared.first
+          return Closed.result("typical_error", error_codes: declared.map(&:first).uniq, normalized: answer, matched: { kind: "error", value: written, code: code })
+        end
 
         if (slip = accent_slip(spec, answer, accepted))
-          return Closed.result("typical_error", error_codes: [ slip ], normalized: answer)
+          return Closed.result("typical_error", error_codes: [ slip ], normalized: answer, matched: slip_of(spec, answer, accepted, entries, slip))
         end
 
-        if (folded = folded_declared(spec, answer, accepted)).any?
-          return Closed.result("typical_error", error_codes: folded, normalized: answer)
+        if (folded_hits = folded_declared(spec, answer, accepted)).any?
+          return Closed.result("typical_error", error_codes: folded_hits, normalized: answer)
         end
-        return Closed.result("near_miss", normalized: answer) if near_miss?(spec, answer, accepted)
+        return Closed.result("near_miss", normalized: answer, matched: near_of(spec, answer, accepted, entries)) if near_miss?(spec, answer, accepted)
 
         Closed.result("wrong", normalized: answer)
       end
 
-      # The codes of the declared error values that the answer equals (or, with contractions on, reads as).
-      def declared_codes(spec, answer)
-        Closed.error_hit(spec, answer) do |v, a|
+      # [[code, value as written]] of the declared error values that the answer equals (or, with contractions on, reads as), in the order of the catalogue.
+      def declared_entries(spec, answer)
+        spec.error_values.select do |_code, v|
           written = normalize(v.to_s, case_sensitive: spec.case_sensitive)
-          written == a || (spec.contractions == "en" && Contractions.same?(written, a, case_sensitive: spec.case_sensitive))
+          written == answer || (spec.contractions == "en" && Contractions.accepts?(written, answer, case_sensitive: spec.case_sensitive))
         end
+      end
+
+      # The accepted entry an accent slip is of (the one that is the answer without its accents).
+      def slip_of(spec, answer, accepted, entries, code)
+        unaccented = fold_accents(answer.gsub(WORD_FINAL_APOSTROPHE, ""))
+        i = accepted.index { |c| fold_accents(c) == unaccented }
+        { kind: "slip", value: i && entries[i], code: code }.compact
+      end
+
+      def near_of(spec, answer, accepted, entries)
+        i = accepted.index { |c| damerau(answer, c) == Diagnosis::Rules::V1::NEAR_MISS_EDIT_DISTANCE }
+        i ? { kind: "slip", value: entries[i] } : nil
       end
 
       # A code made only of bits or of letters (001110, GHCC) typed in groups: the content is
@@ -104,13 +125,14 @@ module Grading
         text.unicode_normalize(:nfd).tr("\u0300", "\u0301").unicode_normalize(:nfc)
       end
 
-      # Would the grader read two written texts as one answer? Its own comparison, whichever the order of the tests: the normalisation,
-      # then the direction of an accent, then (contractions "en") the same contraction. Used to see that an accepted text and a declared
-      # error value are the same answer (the accept list is tried first, so the error could never fire).
+      # Would the grader take +b+ typed for the accepted text +a+? Its own comparison, whichever the order of the tests: the normalisation,
+      # then the direction of an accent, then (contractions "en") a reading of what was typed that the accepted text has, except the one
+      # that is +b+ itself as a declared error value. Used to see that an accepted text and a declared error value are the same answer (the
+      # accept list is tried first, so the error could never fire): an accept entry "'s got" does not swallow the error value "is got".
       def same_answer?(a, b, case_sensitive: false, contractions: nil)
         x = normalize(a.to_s, case_sensitive: case_sensitive)
         y = normalize(b.to_s, case_sensitive: case_sensitive)
-        x == y || fold_direction(x) == fold_direction(y) || (contractions == "en" && Contractions.same?(x, y, case_sensitive: case_sensitive))
+        x == y || fold_direction(x) == fold_direction(y) || (contractions == "en" && Contractions.accepts?(x, y, case_sensitive: case_sensitive, except: [ y ]))
       end
 
       def same_direction_as_any?(answer, accepted)

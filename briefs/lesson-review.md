@@ -1,10 +1,10 @@
 ---
 name: lesson-review
-version: 3
+version: 4
 formats: banco.lesson_review/1
 ---
 
-# Brief: review of a lesson revision (version 3)
+# Brief: review of a lesson revision (version 4)
 
 You review one lesson revision as a subject expert and write `banco.lesson_review/1`
 (`config/banco/schemas/lesson_review.json`). You are a session of the reviewer role, independent from
@@ -28,6 +28,7 @@ parallel sessions share `$TMPDIR`. `banco lesson-review submit REV --file review
 `--dry-run` first). You report; you never decide and never ask for a decision: the teacher reads your review and
 approves or sends back in the browser. The answer names each finding `L<review>-<n>`: the author answers the
 blocker and major ones by that id (`banco findings respond`), and the teacher reads both sides (D-313).
+**Test a refused answer before you file it.** A refusal cannot be read off the `accept` list (contractions, brackets, punctuation, case, accents): `banco lesson grade REV --check ID --answer "…"` grades an inline check or a «Prova tu»/«Try it» exercise as the teacher's preview does (`ID` is CARD.BLOCK, CARD.BLOCK.exN, CARD.BLOCK.exN.P or CARD.BLOCK.stepN, the `n` of the card and the block in the body; `--answer` may be repeated, `--answers-file FILE` takes one JSON array of `{check, answer}`) and prints the verdict, what matched, the error code and the message. It stores nothing.
 
 Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`. Run `banco search --like lesson:KEY` on the lesson you review (each neighbour says which of its cards it is near) and `banco search --like lesson_card:KEY#N` on a card that looks familiar: the nearest neighbours are the candidates for duplicates.
 

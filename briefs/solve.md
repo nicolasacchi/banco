@@ -1,10 +1,10 @@
 ---
 name: solve
-version: 4
+version: 5
 formats: banco.solve/1
 ---
 
-# Brief: blind solve (version 4)
+# Brief: blind solve (version 5)
 
 You solve the instances of one item revision exactly as the student sees them,
 and write `banco.solve/1` (`config/banco/schemas/solve.json`). The server grades
@@ -36,9 +36,11 @@ instance (NN is the instance number of your `instances`). **Look at the picture 
 it shows what the student sees, the shape of the answer box and the way a table, a formula or an option is laid out, which the text of
 `solve open` does not. A choice, a matching and an ordering are drawn shuffled with a fixed seed, as the student's page shuffles them: the number
 on an option, a row or a step is its position in `shown_order` (printed with each file: `shown_order.options[n-1]` is the stored id of option n),
-and the stored ids are what your `answers.json` uses. If the pictures are not ready, `--wait` waits for them: a minute or two on a quiet server, and as long as the queue in front of you keeps shrinking when it is long (it prints your place on stderr; `--timeout` is the stretch without progress, 6 hours the cap); if they
+and the stored ids are what your `answers.json` uses. If the pictures are not ready, `--wait` waits for them: a minute or two on a quiet server, and as long as the server says the render is queued or running when the queue is long (it prints your place on stderr; 3600 s is the cap, `--timeout` shortens the stretch without progress); if they
 cannot be had, answer from the text and say so in your report. Something broken in a picture (text cut at the edge, a formula that did not draw,
 an option you cannot tell from another) is for the lead: report it, do not guess.
+
+**Test the form of an answer before you file it.** Whether a contraction («'s scared» for «is scared»), brackets, punctuation, case or accents are accepted cannot be read off anything you see: `banco item grade REV --instance N --answer "…"` grades it through the student's own path and prints the verdict, what matched and the message the student would read (`--answer` may be repeated; `--answers-file FILE` takes one JSON array of `{instance, answer}`). It stores nothing.
 
 ## Figures
 

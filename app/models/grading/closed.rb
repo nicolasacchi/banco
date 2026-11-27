@@ -54,7 +54,10 @@ module Grading
         return graded.full_sentence(part) if graded&.verdict == "correct"
 
         filler = whole_sentence_filler(spec, frame, value)
-        return result("correct", normalized: Text.normalize(filler, case_sensitive: spec.case_sensitive)).full_sentence(part || filler) if filler
+        if filler
+          matched = { kind: filler == spec.answer.to_s ? "key" : "accept", value: filler }
+          return result("correct", normalized: Text.normalize(filler, case_sensitive: spec.case_sensitive), matched: matched).full_sentence(part || filler)
+        end
 
         return graded.invalid? ? graded : graded.full_sentence(part) if graded
         return invalid("not_in_frame") if longer_than_a_blank_answer?(spec, frame, value)
@@ -66,10 +69,14 @@ module Grading
       # normalisation, the case, the punctuation .,!?;: … and the quotes ignored, the spaces collapsed, the direction of an accent ignored.
       def whole_sentence_filler(spec, frame, value)
         given = sentence_key(value, spec)
-        ([ spec.answer ] + spec.accept).map(&:to_s).find do |filler|
-          filled = sentence_key(frame.fill(filler), spec)
-          filled == given || (spec.contractions == "en" && Contractions.same?(filled, given, case_sensitive: spec.case_sensitive))
-        end
+        fillers = ([ spec.answer ] + spec.accept).map(&:to_s)
+        filled = ->(filler) { sentence_key(frame.fill(filler), spec) }
+        # the filler that is written exactly first, then (contractions en) the one the answer reads as
+        exact = fillers.find { |filler| filled.(filler) == given }
+        return exact if exact || spec.contractions != "en"
+
+        errors = spec.error_values.map { |_code, v| sentence_key(frame.fill(v.to_s), spec) }
+        fillers.find { |filler| Contractions.accepts?(filled.(filler), given, case_sensitive: spec.case_sensitive, except: errors) }
       end
 
       def sentence_key(text, spec)

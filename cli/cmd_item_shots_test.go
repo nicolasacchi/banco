@@ -287,7 +287,7 @@ func TestItemShotsWaitHasAnOverallCap(t *testing.T) {
 	itemShotsWaitCap = 300 * time.Millisecond
 	t.Cleanup(func() { itemShotsWaitCap = old })
 	srv, _ := movingQueue(t, 500, 20*time.Millisecond)
-	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait", "--timeout", "1")
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
 	if res.exit != ExitServer || !strings.Contains(res.stderr, "E-TIMEOUT") || !strings.Contains(res.stderr, "the cap of --wait") {
 		t.Fatalf("the cap: exit %d stderr %s", res.exit, res.stderr)
 	}
@@ -304,12 +304,42 @@ func TestItemShotsErrorAndTimeoutAreFailures(t *testing.T) {
 	if res.exit != ExitServer || !strings.Contains(res.stderr, "E-TIMEOUT") {
 		t.Fatalf("timeout: exit %d stderr %s", res.exit, res.stderr)
 	}
-	// the error says how to wait longer, and the default wait covers a busy Chrome lane (20 minutes)
-	if !strings.Contains(res.stderr, "--timeout 2") || !strings.Contains(res.stderr, "default 1200") {
+	// the error says how to wait longer, and that without --timeout the wait follows the queue
+	if !strings.Contains(res.stderr, "--timeout 2") || !strings.Contains(res.stderr, "follows the queue") || !strings.Contains(res.stderr, "at most 3600 s") {
 		t.Errorf("the timeout error does not say how to wait longer: %s", res.stderr)
 	}
-	if defaultItemShotsTimeout != 1200 {
-		t.Errorf("default wait %d s, want 1200", defaultItemShotsTimeout)
+}
+
+// Round 8: without --timeout the wait follows the queue: as long as the server says queued (or running) it goes on, up to the cap of 3600 s. The same server
+// that makes `--timeout 1` give up (the queue does not move for 1 s) is waited out by the default wait.
+func TestItemShotsDefaultWaitFollowsTheQueueWhileItStandsStill(t *testing.T) {
+	old := itemShotsIdleWait
+	itemShotsIdleWait = 100 * time.Millisecond // the default stretch is only for an answer that is neither queued nor running
+	t.Cleanup(func() { itemShotsIdleWait = old })
+	statuses := make([]string, 0, 82)
+	ahead := make([]int, 0, 81)
+	for i := 0; i < 80; i++ {
+		statuses = append(statuses, "queued")
+		ahead = append(ahead, 7)
+	}
+	srv, s := newItemShotsServer(t, 202, append(statuses, "running", "passed")...)
+	s.ahead, s.delay = append(ahead, 7), 25*time.Millisecond
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
+	if res.exit != 0 {
+		t.Fatalf("the render was queued all along but the default wait gave up: exit %d stderr %s", res.exit, res.stderr)
+	}
+	if strings.Count(res.stderr, "7 render requests ahead") != 1 {
+		t.Errorf("the place in the queue is said once on stderr: %s", res.stderr)
+	}
+	if itemShotsWaitCap != 3600*time.Second {
+		t.Errorf("the hard ceiling of --wait is %s, want 1h", itemShotsWaitCap)
+	}
+	// an answer that is neither queued nor running does not keep it alive: the idle stretch ends the wait
+	srv2, s2 := newItemShotsServer(t, 202, "none")
+	s2.delay = 25 * time.Millisecond
+	res = runItemShotsCLI(t, srv2.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
+	if res.exit != ExitServer || !strings.Contains(res.stderr, "E-TIMEOUT") || !strings.Contains(res.stderr, "queued or running") {
+		t.Fatalf("an idle answer times out: exit %d stderr %s", res.exit, res.stderr)
 	}
 }
 

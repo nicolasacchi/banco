@@ -896,11 +896,33 @@ the server's Chrome, for the reviewer and the blind solver. An aid: it decides n
 ### `banco item shots REV [--dir DIR] [--wait] [--force] [--timeout SECONDS]`
 
 Reads the status and always asks for the render: the server enqueues one only when none is pending and the verdict is missing or outdated (a `bot_read` or `teacher` token cannot ask; it reads the verdict there is or waits for one a content agent has queued) and,
-with `--wait`, polls until it is done (it says on stderr how many requests are queued ahead, each time that changes, and it keeps waiting while that number goes down: `--timeout`, default 1200 s, is the stretch without progress, renewed at each step forward, and 6 hours is the cap in all (D-402 round 7): `E-TIMEOUT`, which says to run it again with a longer `--timeout`; an `error` row is `E-CHROME-UNAVAILABLE`). It writes
+with `--wait`, polls until it is done (it says on stderr how many requests are queued ahead, each time that changes; by default it keeps waiting as long as the server says the render is `queued` or `running`, and 3600 s is the hard ceiling (D-402 round 8): `E-TIMEOUT` says to run it again; a status that is neither for 300 s ends the wait too. `--timeout SECONDS` is the older rule, a stretch of that many seconds without the queue getting shorter, renewed at each step forward, still under the ceiling; an `error` row is `E-CHROME-UNAVAILABLE`). It writes
 `DIR/REV/instance-NN_390x844.webp` (NN is the instance number of `review open` and `solve open`; `DIR` defaults to `banco-figures`) and prints, per file,
 the `instance`, the `seed` and the `shown_order`: a choice, a matching and an ordering are shuffled with that fixed seed as the student's page shuffles
 them, and the number on an option (1, 2, …) is `shown_order.options[n-1]`, the stored id an answer uses (a matching's right column is a closed menu; its order is
 `shown_order.right`). A bilingual item (D-402) is pictured a second time for its first instance (`item_render.translation_instances`) with the Italian translation open: that shot says `state: "tr"` in the list (the pictures as drawn have no `state`) and is written as `instance-NN-tr_390x844.webp` beside the first, with `state` in its entry of `files`; two pictures that would be one file are `E-HTTP` (never a silent overwrite). `review open` and `solve open` request the render themselves (best effort, never waiting) and print `item_shots.fetch`, this command.
+
+## Grade commands (read-only)
+
+`banco item grade` and `banco lesson grade` (D-402 round 8) are for the reviewer and the blind solver: they say whether an answer is accepted or refused, so a
+finding never rests on a guess from the accept list (contractions, brackets, punctuation, case and accents all count). Each answer goes through the
+student's own path and nothing is stored: no attempt, no event, no ledger row. They are POSTs only because they carry the answers; every token role
+(content roles, `bot_read`, `teacher`) may call them (`Api::BaseController.reader_grants`).
+
+| Endpoint | Who | What |
+|---|---|---|
+| `POST /api/v1/item-revisions/:revision/grade` `{answers: [{instance, answer}]}` | every token role | 1 to 100 answers; `instance` is the number of `review open` (1 is the first). Graded by `Grading::Spec.from_instance` and `Grading.grade` (`Grading::Closed`, `Grading::Expression` for an expression). `{revision_id, item, read_only: true, results[]}`; a result is `{instance, answer, verdict, matched, error_code, error_codes, form_violations, normalized, outcome, message_it (message_en or message_es beside it for a bilingual error message), note_it, observation, answer_part, invalid_code}`. `verdict` is the grader's (`correct`, `typical_error`, `wrong`, `near_miss`, `nearly_correct`, `wrong_form`, `invalid`, …); `matched` is `{kind, value, code}` with `kind` `key`, `accept` (an accept entry), `error` (a declared error value, with its `code`) or `slip` (the key or accept entry that an accent, apostrophe or typo slip is of), `null` for a wrong answer; `outcome` and the message are what the student reads on a first, unaided try (`invalid` is not a try: `invalid_code` and its message). An unknown instance is `404 E-NOT-FOUND` (field `answers/I/instance`), a body that is not `{answers: [...]}` is `422 E-FILES`; an expression grader that does not answer is `503 E-CHROME-UNAVAILABLE` |
+| `POST /api/v1/lesson-revisions/:revision/grade` `{answers: [{check, answer}]}` | every token role | a banco.lesson/2 revision; `check` is CARD.BLOCK (a `check` or `oral` block), CARD.BLOCK.stepN (the blank of step N of a faded example), CARD.BLOCK.exN or CARD.BLOCK.exN.P (the check, or part P, of «Prova tu»/«Try it» exercise N): the `n` of the card and the block. Graded by `Lessons::Checks.grade` and answered by `Lessons::CheckAnswer` with the seed `preview` and no student, as the teacher's preview does (a choice, a matching or tiles is answered in the preview's shown ids: `shown_order`). `{revision_id, lesson, read_only: true, results[]}`; a result is `{check, component, answer, verdict (right, wrong, invalid), matched, error_code, error_index, normalized, message (the reply's message_it/message_<lang> and tr), shown_order, invalid_code}`. An unknown check is `404 E-NOT-FOUND` (field `answers/I/check`, with `checks`: every id of the lesson); a lesson/1 or unknown revision is `404 E-NOT-FOUND` |
+
+### `banco item grade REV --instance N --answer "…" [--answer "…"] [--answers-file FILE]`
+
+`--instance` gives the instance for every `--answer` (repeat `--answer` for several answers to the same instance). `--answers-file FILE` replaces both: one JSON
+array of `{instance, answer}`, the answer being any JSON value (a list of ids for an ordering, an object for a matching). Prints the server's answer. Test a refused
+answer with it before you file it.
+
+### `banco lesson grade REV --check ID --answer "…" [--answer "…"] [--answers-file FILE]`
+
+The same for a lesson check; the file is one JSON array of `{check, answer}`.
 
 ## Errors
 

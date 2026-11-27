@@ -6,6 +6,7 @@ module Api
     # blocker finding (E-BLIND-SOLVE-MISMATCH); the teacher disposes of it.
     class SolvesController < Api::BaseController
       include IndependentRoles
+      include RawAnswer
 
       before_action :load_revision
 
@@ -85,7 +86,7 @@ module Api
         results = answers.sort_by { |a| a["instance"] }.map do |a|
           verdict = "dont_know"
           unless a["dont_know"]
-            graded = Grading.grade(@text.instance_row(a["instance"]), raw_of(a["answer"]), source: "text")
+            graded = Grading.grade(@text.instance_row(a["instance"]), raw_answer(a["answer"], testlet: component == "testlet"), source: "text")
             invalid << [ a["instance"], graded ] if graded.invalid?
             verdict = graded.verdict
           end
@@ -97,15 +98,6 @@ module Api
         refuse("E-FILES", "answers/#{number}", "the answer to instance #{number} cannot be read (#{graded.invalid_code}): #{graded.message_it}", "banco solve open #{@revision.id}", 422,
                unreadable: invalid.map(&:first))
         nil
-      end
-
-      # The raw text of the stored attempts: plain text as is, structured answers as JSON.
-      def raw_of(value)
-        if component == "testlet" && value.is_a?(Hash)
-          JSON.generate(value.transform_values { |v| v.is_a?(String) ? v : JSON.generate(v) })
-        elsif value.is_a?(String) then value
-        else JSON.generate(value)
-        end
       end
 
       # A mismatch is a blocker; a solver who cannot answer is a major finding; a short

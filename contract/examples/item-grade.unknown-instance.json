@@ -1,0 +1,28 @@
+{
+  "command": "item grade",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/item-revisions/1/grade",
+    "body": {
+      "answers": [
+        {
+          "instance": 1,
+          "answer": "is scared"
+        },
+        {
+          "instance": 9,
+          "answer": "x"
+        }
+      ]
+    }
+  },
+  "response": {
+    "status": 404,
+    "body": {
+      "code": "E-NOT-FOUND",
+      "field": "answers/1/instance",
+      "message": "revision 1 has no instance 9 (it has 2: 1-2)",
+      "next": "banco review open 1"
+    }
+  }
+}

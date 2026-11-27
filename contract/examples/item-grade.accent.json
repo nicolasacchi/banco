@@ -1,0 +1,79 @@
+{
+  "command": "item grade",
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/item-revisions/2/grade",
+    "body": {
+      "answers": [
+        {
+          "instance": 1,
+          "answer": "esta"
+        },
+        {
+          "instance": 1,
+          "answer": "está"
+        },
+        {
+          "instance": 1,
+          "answer": "estás"
+        }
+      ]
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "revision_id": 1,
+      "item": "grade-es-1",
+      "read_only": true,
+      "results": [
+        {
+          "instance": 1,
+          "answer": "esta",
+          "verdict": "typical_error",
+          "matched": {
+            "kind": "slip",
+            "value": "está",
+            "code": "es_accents"
+          },
+          "error_code": "es_accents",
+          "error_codes": [
+            "es_accents"
+          ],
+          "form_violations": [],
+          "normalized": "esta",
+          "outcome": "typical_error",
+          "message_it": "Non è ancora giusta. Leggi l'aiuto e riprova."
+        },
+        {
+          "instance": 1,
+          "answer": "está",
+          "verdict": "correct",
+          "matched": {
+            "kind": "key",
+            "value": "está"
+          },
+          "error_code": null,
+          "error_codes": [],
+          "form_violations": [],
+          "normalized": "está",
+          "outcome": "correct",
+          "message_it": "Corretto."
+        },
+        {
+          "instance": 1,
+          "answer": "estás",
+          "verdict": "wrong",
+          "matched": null,
+          "error_code": null,
+          "error_codes": [],
+          "form_violations": [],
+          "normalized": "estás",
+          "outcome": "near_miss",
+          "message_it": "Ci sei quasi: controlla come l'hai scritta, forse c'è un errore di battitura."
+        }
+      ],
+      "next": "nothing was stored: no attempt, no event; to file a finding quote the verdict and the matched value"
+    }
+  }
+}

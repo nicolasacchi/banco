@@ -145,7 +145,9 @@ class LessonsChecksWave2Test < ActiveSupport::TestCase
     assert grade(check.merge("answer" => "I'll stay"), "I will stay").right?
     assert grade(check.merge("answer" => "He will not go"), "He won't go").right?
     assert grade(check.merge("answer" => "He will not go"), "He wont go").wrong?
-    assert grade(check.merge("answer" => "She is here"), "She's here").wrong?, "'s is ambiguous: not expanded"
+    assert grade(check.merge("answer" => "She is here"), "She's here").right?, "round 8: the typed 's is read as the verb the key needs"
+    assert grade(check.merge("answer" => "She was here"), "She's here").wrong?, "'s is never was"
+    assert grade(check.merge("answer" => "Anna's bag"), "Anna is bag").wrong?, "a possessive key is never read as a verb"
     assert grade(check.merge("answer" => "They are late"), "They're late").right?
     assert grade(check.merge("answer" => "I cannot go"), "I can't go").right?
     assert grade(check.merge("answer" => "I can not go"), "I can't go").right?

@@ -8,14 +8,17 @@ module Grading
     # detail: the word a message names (extra_word: «Scrivi solo il numero, senza «metri».», D-386).
     def self.message(code, detail: nil) = I18n.t("grading.messages.#{code}", word: detail, default: :"grading.messages.unparseable")
 
-    # observation and answer_part are NOT stored columns (to_attributes stays columns only): "full_sentence" says the
+    # matched, observation and answer_part are NOT stored columns (to_attributes stays columns only). matched {kind:, value:, code?} says what the answer
+    # matched, for the read-only grade commands (`banco item grade`): kind "key", "accept" (an accept entry), "error" (a declared error value, with its code) or
+    # "slip" (the key or accept entry an accent, apostrophe or typo slip is of); only a normalized_text grading sets it, the others are read from the key and the errors.
+    # "full_sentence" says the
     # student wrote the whole sentence around a `___` blank (D-339) and answer_part is the words she wrote in place of
     # the blank, as typed; the stored `normalized` is then the normalized part, which is what was graded.
     attr_reader :verdict, :error_codes, :form_violations, :normalized, :grading_method, :grader,
-                :checker_version, :ce_version, :invalid_code, :reason, :observation, :answer_part, :invalid_detail
+                :checker_version, :ce_version, :invalid_code, :reason, :observation, :answer_part, :invalid_detail, :matched
 
     def initialize(verdict:, grader:, error_codes: [], form_violations: [], normalized: nil, grading_method: nil,
-                   checker_version: nil, ce_version: nil, invalid_code: nil, reason: nil, observation: nil, answer_part: nil, invalid_detail: nil)
+                   checker_version: nil, ce_version: nil, invalid_code: nil, reason: nil, observation: nil, answer_part: nil, invalid_detail: nil, matched: nil)
       @verdict = verdict
       @grader = grader
       @error_codes = error_codes
@@ -29,6 +32,7 @@ module Grading
       @observation = observation
       @answer_part = answer_part
       @invalid_detail = invalid_detail
+      @matched = matched
     end
 
     def self.invalid(code, grader:, reason: nil, detail: nil)
@@ -56,6 +60,11 @@ module Grading
         grader_version: grader_version,
         ce_version: ce_version
       }
+    end
+
+    # The same result with what it matched (see above).
+    def with_matched(kind, value, code: nil)
+      dup.tap { |copy| copy.instance_variable_set(:@matched, { kind: kind, value: value, code: code }.compact) }
     end
 
     # The same result for a whole sentence written around a blank: +part+ is what she wrote in place of the blank.

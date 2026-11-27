@@ -53,6 +53,21 @@ class D081Test < ActiveSupport::TestCase
     assert_not_includes codes(run_item(quiet)), "E-ACCEPT-IS-ERROR"
   end
 
+  # Round 8 (D-402): «'s» is «is» and «has»; the key picks the reading it needs. An accept entry with «'s» is a clash only when it is the error value itself or the same
+  # contraction; when only the OTHER reading collides, the grader still grades the error value as the error.
+  test "E-ACCEPT-IS-ERROR: an accept entry with 's is quiet when only the other reading is the error value; the same text or the same contraction still fires" do
+    english = F.context(subject: "english", extra_skills: { "english.have-got" => { "key" => "english.have-got", "errors" => [ { "code" => "sign_error", "implicates" => [] } ] } })
+    en = lambda do |key, wrong, accept|
+      item = text_item([ text_instance(key, wrong, "Risolvi la prima.", accept: [ accept ]), text_instance("has got", "mai", "Risolvi la seconda.") ], "subject" => "english", "skill" => "english.have-got")
+      run_item(item, context: english)
+    end
+    assert_not_includes codes(en.("has got", "is got", "'s got")), "E-ACCEPT-IS-ERROR", "accept 's got for the key has got, error is got"
+    assert_not_includes codes(en.("is tired", "has tired", "she's tired")), "E-ACCEPT-IS-ERROR", "accept she's tired, error has tired"
+    assert_includes codes(en.("has got", "is got", "is got")), "E-ACCEPT-IS-ERROR", "the error value written out is a true clash"
+    assert_includes codes(en.("has got", "she's got", "she's got")), "E-ACCEPT-IS-ERROR", "the same text"
+    assert_includes codes(en.("it is cold", "it's cold", "it is cold")), "E-ACCEPT-IS-ERROR", "the same contraction: the grader would take the error as the accept entry"
+  end
+
   test "an instance accept list on a component other than normalized_text is refused" do
     inst = F.number_instance(2, 9).merge("accept" => [ "sette" ])
     result = run_item(F.static_item("instances" => [ inst, F.number_instance(4, 13) ]))
