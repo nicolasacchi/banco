@@ -55,5 +55,5 @@ it:
     # The hint of a lesson check for a slip of the writing (Lessons::Checks): the accents of Italian, of Spanish, the apostrophe.
     slips:
       it_accents: "Controlla gli accenti."
-      es_accents: "Controlla los acentos."
+      es_accents: "Controlla gli accenti."
       it_apostrophe_accent: "Controlla l'apostrofo e l'accento."

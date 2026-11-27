@@ -13,6 +13,14 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: accent-hint-in-italian
+    date: 2026-11-27
+    audience: [student, teacher]
+    kind: fix
+    title_it: "Il consiglio sugli accenti dello spagnolo è in italiano"
+    body_it: "Quando nelle lezioni di spagnolo manca o avanza un accento, il consiglio sotto la risposta ora dice «Controlla gli accenti.», tutto in italiano."
+    title_en: "The hint on Spanish accents is in Italian"
+    body_en: "When a Spanish lesson answer has a missing or extra accent, the hint under it now says «Controlla gli accenti.», all in Italian."
   - id: spanish-in-spanish
     date: 2026-11-27
     audience: [student, teacher]
