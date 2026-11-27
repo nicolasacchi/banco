@@ -146,7 +146,12 @@ module Grading
         position = key.each_with_index.to_h
         inverted = order.combination(2).count { |a, b| position[a] > position[b] }
         normalized = { "order" => order, "inverted_pairs" => inverted }.to_json
-        return result("correct", normalized: normalized) if inverted.zero?
+        return result("correct", normalized: normalized, matched: { kind: "key", value: key }) if inverted.zero?
+
+        # An alternative right order of the instance (accept: a permutation of the key, e.g. a time phrase moved): right, with the same payload as the
+        # key's, its inverted pairs counted against the order it matched, so 0.
+        alternative = Array(spec.accept).find { |a| a.is_a?(Array) && a.map(&:to_s) == order }
+        return result("correct", normalized: { "order" => order, "inverted_pairs" => 0 }.to_json, matched: { kind: "accept", value: order }) if alternative
 
         verdict_for_errors(error_hit(spec, order) { |v, a| Array(v).map(&:to_s) == a }, normalized: normalized)
       end

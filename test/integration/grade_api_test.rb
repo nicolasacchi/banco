@@ -122,6 +122,22 @@ class GradeApiTest < ActionDispatch::IntegrationTest
     assert_equal before, ledger_counts
   end
 
+  test "item grade: an ordering shows its key and an accepted alternative order as the entry that matched" do
+    item = Item.create!(subject: @english, key: "grade-order-1", kind: "practice_item")
+    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: "english", skill: "english.word-order", component: "ordering", level: 1, expected_seconds: 60 }
+    revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    elements = [ "In 1973", "Picasso", "died" ].each_with_index.map { |t, i| { id: "e#{i + 1}", text: t } }
+    ItemInstance.create!(item_revision: revision, seed: 1, display_json: JSON.generate(stem_it: "Order the tiles.", elements: elements), answer_json: JSON.generate(%w[e1 e2 e3]),
+                         errors_json: JSON.generate([ { code: "en_order", value: %w[e3 e2 e1] } ]), accept_json: JSON.generate([ %w[e2 e3 e1] ]), fingerprint: Digest::SHA256.hexdigest("order"))
+    grade_items(revision, [ { instance: 1, answer: %w[e1 e2 e3] }, { instance: 1, answer: %w[e2 e3 e1] }, { instance: 1, answer: %w[e3 e2 e1] }, { instance: 1, answer: %w[e1 e3 e2] } ])
+    assert_response :ok, json.inspect
+    key, alt, err, wrong = json["results"]
+    assert_equal [ "correct", "key" ], [ key["verdict"], key["matched"]["kind"] ]
+    assert_equal [ "correct", "accept", %w[e2 e3 e1] ], [ alt["verdict"], alt["matched"]["kind"], alt["matched"]["value"] ]
+    assert_equal [ "typical_error", "en_order" ], [ err["verdict"], err["error_code"] ]
+    assert_equal "wrong", wrong["verdict"]
+  end
+
   # ---- lessons ----
 
   test "lesson grade: 's scared is right for «is scared»; the error answer is told with its code and its message; a Prova tu check has its own id" do

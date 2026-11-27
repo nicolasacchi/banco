@@ -40,7 +40,7 @@ and the stored ids are what your `answers.json` uses. If the pictures are not re
 cannot be had, answer from the text and say so in your report. Something broken in a picture (text cut at the edge, a formula that did not draw,
 an option you cannot tell from another) is for the lead: report it, do not guess.
 
-**Test the form of an answer before you file it.** Whether a contraction («'s scared» for «is scared»), brackets, punctuation, case or accents are accepted cannot be read off anything you see: `banco item grade REV --instance N --answer "…"` grades it through the student's own path and prints the verdict, what matched and the message the student would read (`--answer` may be repeated; `--answers-file FILE` takes one JSON array of `{instance, answer}`). It stores nothing.
+**Never grade your answers before you submit.** `banco item grade` tells the verdict of an answer, so using it before `banco solve submit` turns the solve into a search for the key, and the solve is void. Answer from what you see and submit. Only after the submission, if you thought another answer defensible (a different wording, a contraction, brackets, punctuation, case, accents), test that alternative with `banco item grade REV --instance N --answer "…"` (it stores nothing); if the server refuses it, report it to the lead in your final message as a finding: the instance, the answer, the verdict and what matched.
 
 ## Figures
 

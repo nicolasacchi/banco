@@ -330,6 +330,7 @@ func TestWorkStatusWaitPollsUntilSettled(t *testing.T) {
 	if !strings.Contains(out.String(), `"passed"`) || strings.Count(out.String(), "\n") != 1 {
 		t.Errorf("only the final answer is printed: %q", out.String())
 	}
+	oneJSONDocument(t, out.String())
 }
 
 func TestWorkStatusWaitFailedExitsThree(t *testing.T) {

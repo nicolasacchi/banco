@@ -224,6 +224,19 @@ func TestItemShotsForceAsksAgainAndTakesTheNewVerdict(t *testing.T) {
 	}
 }
 
+// oneJSONDocument fails the test unless stdout is exactly one JSON value: progress lines of a wait belong on stderr, so that the saved output reads with jq.
+func oneJSONDocument(t *testing.T, stdout string) {
+	t.Helper()
+	dec := json.NewDecoder(strings.NewReader(stdout))
+	var v any
+	if err := dec.Decode(&v); err != nil {
+		t.Fatalf("stdout is not JSON (%v): %q", err, stdout)
+	}
+	if dec.More() {
+		t.Fatalf("stdout holds more than one JSON document: %q", stdout)
+	}
+}
+
 func TestItemShotsWaitSaysItsPlaceInTheQueueOnStderrWhenItChanges(t *testing.T) {
 	srv, s := newItemShotsServer(t, 202, "queued", "queued", "queued", "queued", "passed")
 	s.ahead = []int{5, 5, 2, 2}
@@ -239,6 +252,7 @@ func TestItemShotsWaitSaysItsPlaceInTheQueueOnStderrWhenItChanges(t *testing.T) 
 	if strings.Contains(res.stdout, "ahead") {
 		t.Errorf("the queue place belongs on stderr, stdout is the JSON answer: %s", res.stdout)
 	}
+	oneJSONDocument(t, res.stdout)
 	// a server that says nothing about the queue: nothing is printed
 	srv2, _ := newItemShotsServer(t, 202, "queued", "passed")
 	res = runItemShotsCLI(t, srv2.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
@@ -331,6 +345,7 @@ func TestItemShotsDefaultWaitFollowsTheQueueWhileItStandsStill(t *testing.T) {
 	if strings.Count(res.stderr, "7 render requests ahead") != 1 {
 		t.Errorf("the place in the queue is said once on stderr: %s", res.stderr)
 	}
+	oneJSONDocument(t, res.stdout)
 	if itemShotsWaitCap != 3600*time.Second {
 		t.Errorf("the hard ceiling of --wait is %s, want 1h", itemShotsWaitCap)
 	}

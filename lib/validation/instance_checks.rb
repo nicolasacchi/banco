@@ -266,20 +266,39 @@ module Validation
     def accept_rules(inst, label, seed, f)
       return if inst["accept"].nil?
 
+      return ordering_accept_rules(inst, label, seed, f) if @unit.component == "ordering"
+
       if @unit.component != "normalized_text"
-        f.add("E-GEN-SCHEMA", "#{label}/accept", "accept on an instance belongs to normalized_text items", rule: "accept_component", seed: seed)
+        f.add("E-GEN-SCHEMA", "#{label}/accept", "accept on an instance belongs to normalized_text and ordering items", rule: "accept_component", seed: seed)
         return
       end
       Array(inst["accept"]).each_with_index do |text, i|
+        unless text.is_a?(String)
+          f.add("E-GEN-SCHEMA", "#{label}/accept/#{i}", "an accepted text of a normalized_text item is a string", rule: "accept_shape", seed: seed)
+          next
+        end
         next unless Answers.punctuation_only?(text)
 
         f.add("E-SCHEMA", "#{label}/accept/#{i}", "an accepted text that is only punctuation normalizes to nothing: no answer could match it", seed: seed)
       end
     end
 
+    # An ordering's accept (round 8): alternative right orders. Each is a list of element ids that is a permutation of the answer (the same ids, once each);
+    # anything else could never be the order the student gives, or would grade a different set of elements right.
+    def ordering_accept_rules(inst, label, seed, f)
+      key = inst["answer"]
+      Array(inst["accept"]).each_with_index do |entry, i|
+        ok = entry.is_a?(Array) && key.is_a?(Array) && entry.map(&:to_s).sort == key.map(&:to_s).sort
+        next if ok
+
+        f.add("E-GEN-SCHEMA", "#{label}/accept/#{i}", "an accepted order of an ordering is a permutation of the answer: the same element ids, each once", rule: "ordering_accept_permutation", seed: seed)
+      end
+    end
+
     # The grader tries the key and the accept lists (the item's and the instance's) before the errors: an accepted text that is also a
     # declared error value is graded right, so the error never fires. Compared as the grader reads them (Grading::Closed::Text.same_answer?).
     def accept_is_error(inst, label, seed, f)
+      return ordering_accept_is_error(inst, label, seed, f) if @unit.component == "ordering"
       return unless @unit.component == "normalized_text"
 
       case_sensitive = @unit.body["case_sensitive"] == true
@@ -291,6 +310,16 @@ module Validation
 
           f.add("E-ACCEPT-IS-ERROR", "#{label}/errors/#{i}/value", "the error value #{e['value'].inspect} is also an accepted text: the grader checks accept first, so this wrong answer would be graded right", seed: seed)
         end
+      end
+    end
+
+    # An accepted order that is also a declared error order is graded right, so the error never fires.
+    def ordering_accept_is_error(inst, label, seed, f)
+      accepted = Array(inst["accept"]).select { |a| a.is_a?(Array) }.map { |a| a.map(&:to_s) }
+      Array(inst["errors"]).each_with_index do |e, i|
+        next unless e.is_a?(Hash) && e["value"].is_a?(Array) && accepted.include?(e["value"].map(&:to_s))
+
+        f.add("E-ACCEPT-IS-ERROR", "#{label}/errors/#{i}/value", "the error order #{e['value'].inspect} is also an accepted order: the grader checks accept first, so this wrong order would be graded right", seed: seed)
       end
     end
 

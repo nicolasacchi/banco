@@ -291,6 +291,7 @@ func TestLessonRenderRetryAsksTheServerForAnotherDraw(t *testing.T) {
 	if res.exit != 0 {
 		t.Fatalf("lesson render --retry: exit %d, stderr %s", res.exit, res.stderr)
 	}
+	oneJSONDocument(t, res.stdout)
 	if rec.method != "POST" || rec.path != "/api/v1/lesson-revisions/12/render" || rec.dry != "" {
 		t.Errorf("request: %+v", rec)
 	}
@@ -349,6 +350,7 @@ func TestLessonShotsDownloadsEveryImage(t *testing.T) {
 	if res.exit != 0 {
 		t.Fatalf("lesson shots: exit %d, stderr %s", res.exit, res.stderr)
 	}
+	oneJSONDocument(t, res.stdout)
 	data, err := os.ReadFile(filepath.Join(dir, "card-01_390x844-cream.webp"))
 	if err != nil || string(data) != "RIFFxxxxWEBP" {
 		t.Fatalf("image not written: %v %q", err, data)

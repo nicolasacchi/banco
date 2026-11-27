@@ -683,13 +683,27 @@
           "$ref": "#/$defs/solution"
         },
         "accept": {
-          "description": "normalized_text only: other spellings of this instance's key, added to the item's accept list for this instance alone (D-081).",
+          "description": "normalized_text: other spellings of this instance's key, added to the item's accept list for this instance alone (D-081). ordering: alternative right orders, each a permutation of the answer (a list of element ids).",
           "type": "array",
-          "maxItems": 10,
+          "maxItems": 20,
           "items": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 7,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40
+                }
+              }
+            ]
           }
         },
         "tests": {
