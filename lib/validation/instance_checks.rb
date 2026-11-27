@@ -122,7 +122,7 @@ module Validation
     private :run
 
     # W-TILE-ORDER (D-402, round 8): an ordering whose elements are words or short phrases (one to four words each) builds one sentence, like a tiles check of a
-    # lesson: Lessons::Blocks::TileOrder lists the orders that only move a time or place phrase and that neither the key nor a declared error value covers.
+    # lesson: Lessons::Blocks::TileOrder lists the orders that only move a time or place phrase and that neither the key, nor an accepted order (`accept`: arrays of element ids), nor a declared error value covers.
     # An ordering of whole sentences or of steps is no sentence-builder.
     def tile_order(display, answer, inst, label, seed, f)
       elements = Array(display["elements"])
@@ -130,8 +130,12 @@ module Validation
 
       tiles = elements.map { |e| { "id" => e["id"], "text_#{@lang}" => e["text"] } }
       errors = Array(inst["errors"]).map { |e| { "answer" => e["value"] } }
-      orders = Lessons::Blocks::TileOrder.orders({ "tiles" => tiles, "answer" => answer, "errors" => errors })
-      f.add("W-TILE-ORDER", "#{label}/answer", Lessons::Blocks::TileOrder.message(orders), rule: "tile-order", seed: seed, orders: orders) unless orders.empty?
+      accepted = Array(inst["accept"]).select { |order| order.is_a?(Array) }
+      orders = Lessons::Blocks::TileOrder.orders({ "tiles" => tiles, "answer" => answer, "accept" => accepted, "errors" => errors })
+      return if orders.empty?
+
+      remedy = "add the order to the instance's `accept` if it is right, or declare it as an error value"
+      f.add("W-TILE-ORDER", "#{label}/answer", Lessons::Blocks::TileOrder.message(orders, remedy: remedy), rule: "tile-order", seed: seed, orders: orders)
     end
 
     TILE_MAX_WORDS = 4

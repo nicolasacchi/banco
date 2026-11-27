@@ -48,10 +48,11 @@ module Lessons
         moved(answer, tiles, lang).map { |ids| text.call(ids) }.uniq - declared
       end
 
-      def message(orders)
+      # +remedy+: what the author may do about an order that is right (the lesson's check and the item's instance name their own `accept`).
+      def message(orders, remedy: "accept it in `accept` if it is right, or declare the error")
         shown = orders.first(SHOWN).map(&:inspect).join(", ")
         "the sentence is built from tiles and the time or place phrase may stand elsewhere: #{shown}#{orders.size > SHOWN ? " (and #{orders.size - SHOWN} more)" : ''} " \
-          "is neither the answer, nor accepted, nor a declared error: accept it in `accept` if it is right, or declare the error"
+          "is neither the answer, nor accepted, nor a declared error: #{remedy}"
       end
 
       # The language of the tiles (en or es), nil for Italian tiles or a mix.

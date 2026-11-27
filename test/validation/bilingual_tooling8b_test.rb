@@ -108,6 +108,21 @@ class BilingualTooling8bTest < ActiveSupport::TestCase
     assert_empty orders.call(sentences)
   end
 
+  # An ordering instance's `accept` (arrays of element ids) is read by the check itself: the item schema of this branch does not carry it yet.
+  test "W-TILE-ORDER: an order in the instance's accept is no longer listed, and the message names the instance's accept" do
+    item = ordering_item
+    unit = Validation::Units::Unit.new(path: "", skill: item["skill"], component: "ordering", body: item.except("instances"), generator: false, instances: [])
+    checks = Validation::InstanceChecks.new(unit, context: item_context, bilingual: true, subject: "english", material: true)
+    tile = ->(inst) { checks.call(inst, label: "/instances/0").find { |f| f.code == "W-TILE-ORDER" } }
+    inst = item["instances"][0]
+    assert_includes tile.call(inst).detail[:orders], "in 1973 picasso died"
+    assert_includes tile.call(inst).message, "instance's `accept`"
+    accepted = inst.merge("accept" => [ %w[e3 e4 e1 e2] ])
+    assert_not_includes tile.call(accepted).detail[:orders], "in 1973 picasso died", "an accepted order is no longer listed"
+    assert_includes tile.call(accepted).detail[:orders], "picasso in 1973 died", "the other orders still are"
+    assert_nil tile.call(inst.merge("accept" => [ %w[e3 e4 e1 e2], %w[e1 e3 e4 e2] ])), "no order is left to list"
+  end
+
   # ---- 2. E-SUPPORT-LEAK in answer formats ---------------------------------------------------------------------------------------------
 
   def goes_item
