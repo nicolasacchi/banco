@@ -536,7 +536,9 @@ module Validation
       def diagram_checks(diagram, path, line, yaml = nil, plain_only: false)
         (plain_only ? Lessons::Diagrams.plain_text_findings(diagram) : Lessons::Diagrams.check(diagram, subject: @subject)).each do |f|
           at = yaml.nil? ? line : field_line(line, "#{yaml}#{f.path}")
-          add(f.code, "#{path}#{f.path}", f.message, line: at, rule: f.rule + path)
+          # a figure of a bilingual lesson is read through its `_it` slots, but the author wrote `text_es`: name the field that is long (the Italian pass reads real `_it`)
+          shown = plain_only ? f.path : slot(f.path)
+          add(f.code, "#{path}#{shown}", f.message, line: at, rule: f.rule + path)
         end
       end
 
@@ -613,7 +615,7 @@ module Validation
             end
             plain = unmark(text, layer)
             tmp = Findings.new
-            Readability.lint(plain, field: field, role: :text, findings: tmp, quotes: layer == :italian)
+            Readability.lint(plain, field: field, role: :text, findings: tmp, quotes: layer == :italian, absolute: !field.end_with?(GLOSS_FIELD))
             tmp.each do |f|
               next if SKIP_IN_LINT.include?(f.code)
 
@@ -700,7 +702,9 @@ module Validation
       LANGUAGE_NAMES = { "en" => "English", "es" => "Spanish", "la" => "Latin", "it" => "Italian" }.freeze
       # The words of a check that are its material, never a claim of the lesson (no W-ABSOLUTE): the text around the box of a typed gap, the sentence, an option, a row,
       # a tile or an item. The prompt, the hints and the explanation are the lesson's own words.
-      MATERIAL_FIELD = %r{/(?:input_before|input_after|sentence_\w+|(?:options|elements|left|right|tiles|items)/\d+/text_\w+)\z}
+      # A `sentence` figure's text and its parts (the taught word «never» is drawn there, D-403) are material too; so is the gloss of a dialogue line (the Italian of a line).
+      MATERIAL_FIELD = %r{/(?:input_before|input_after|sentence_\w+|(?:options|elements|left|right|tiles|items)/\d+/text_\w+|(?:hero|diagram)/(?:states/\d+/)?(?:text_\w+|parts/\d+/text_\w+))\z}
+      GLOSS_FIELD = "/gloss_it".freeze
       # The wrong side of a mistake block is a form misspelled on purpose («¿Havéis…?», «cantió»): the level is not read there, in whichever pass reaches it.
       DELIBERATE_FORM = %r{/wrong_(?:en|es)\z}
 

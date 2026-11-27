@@ -1,10 +1,10 @@
 ---
 name: practice-item
-version: 3
+version: 4
 formats: banco.item/1
 ---
 
-# Brief: practice items (version 3)
+# Brief: practice items (version 4)
 
 A practice item is an item of kind `practice_item` (`banco.item/1`, `config/banco/schemas/item.json`).
 The student meets it while studying a topic: after a lesson, on one skill, with help on request and an
@@ -40,6 +40,9 @@ stop at `awaiting_teacher`.
 - Keys that are function words («in, on, at», «es, son, hay»): a hint may use them unless it quotes them, names them as the answer or sets them next to the frame of the key. A clock time such as 8:45 counts as one token in the 12-word cap, and a colon before ¿ or ¡ ends a sentence. This holds for any of the 200 most frequent words of the language (`hace`, `must`, `need`) and for a phrase of up to three such words (`have to`, `hay que`, `going to`): «si hace falta» does not leak the key «hace», «think about have to» does not leak «have to»; «Write have to», «have to» in quotes or next to the frame still do.
 - Never «X takes Y» for «with X, use Y» in a hint, a message or a solution («the verb takes -s»; say «after he, she or it, add -s»).
 - `diagnosis_item`, `short_answer` and `testlet` items must not carry `level` or `hints_it`.
+- **Grade before you re-pin.** Whether a variant is accepted cannot be read off the lists: before you submit a revision, grade every `accept` entry and every error `value` through the student's own path with `banco item grade --file ITEM_FOLDER_OR_ITEM.json --instance N --answer "…"` (a local item, nothing is stored; `--answer` may be repeated, `--answers-file` takes `{instance, answer}` pairs; with no `--file` it grades a stored revision, `banco item grade REV …`). Each must give the verdict you mean (the key, an `accept` entry, or the declared error with its code). Do it again for every re-pin: a changed key or frame moves what a variant means.
+- **A diacritic that makes another word is not a slip.** An accent that turns a word into a different one («porque» / «porqué», «el» / «él», «si» / «sí», «e» / «è») is graded wrong, or as the error value you declare for it, never «correct with a note». Declare the pair as an error value when the student may confuse it.
+- **Too many right variants: narrow the frame.** An instance's `accept` holds at most 20 entries. A typed answer that has more right variants than that (free word order, optional adverbs, every contraction × every synonym) is a frame that is too wide: do not widen the list. Show the sentence and ask for the part (a gap with a cue in brackets), or a choice, so that the right answers are few.
 - A practice item is never pinned by a blueprint (`E-BLUEPRINT-PRACTICE-ITEM`), and a topic pins only
   practice items.
 - A typed answer (`normalized_text`) whose words have a common acronym accepts both: the full words and
@@ -110,6 +113,7 @@ student text is written twice**, and both texts are yours to write: never leave 
   solution, or once the exercise is closed), never before, so he cannot answer from the Italian. Write it anyway, complete and faithful. The instruction and the
   question stems keep their Italian as usual.
 - **Generators** emit both layers in `display`, `solution` and `hints_*`; `verify.mjs` reads the target text (`instance.display.stem_en`). A static item lists both. **Making an existing generator bilingual changes what `verify.mjs` reads**: `display.stem_it` becomes `display.stem_en` (`stem_es` in spanish), and an author cannot touch `verify.mjs` (`E-VERIFY-AUTHOR`): submit the bilingual generator, then a **verifier session** (`banco work open ITEM --role verifier`) changes `display.stem_it` to `stem_<lang>` in `verify.mjs` and submits it; until then the item is `awaiting_verifier` (`E-VERIFY-STALE`).
+- **A translation button drawn by the page.** A stem whose Italian has more than 20 words (`LONG_WORDS` in `app/javascript/items/bilingual.js`) gets a small «IT» translation button of its own on the practice page, drawn by the page next to the text (the exercise's «Traduzione» opens the same translation). It is not a stray element and not a defect of the item: it is how a long translation is offered. Do not write it, and do not cut the Italian to hide it; a reviewer does not file it.
 - **Stored and served as written.** An item with no `bilingual` flag is validated and served exactly as before, until a new revision opts in. `bilingual` with a
   `_en` text in a revision without the flag, or a `_es` text in english, is `E-LANG-BILINGUAL-FLAG`.
 
@@ -181,4 +185,4 @@ The code and these briefs are public. Items live in the database, but anything y
 or a report the repository can see is public. No name of the student or of the household, no school,
 no city, no exam-session details, no programme text. Say "the student" and "the teacher".
 
-The direction of an accent (è/é, à/á…) is never tested and never makes an answer wrong (D-296); a missing accent and an apostrophe for an accent still count.
+The direction of an accent (è/é, à/á…) is never tested and never makes an answer wrong (D-296); a missing accent and an apostrophe for an accent still count. A diacritic that turns a word into another one (porque/porqué, el/él, e/è) is not a slip: it is wrong (D-403).

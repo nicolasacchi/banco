@@ -1,6 +1,6 @@
 ---
 name: lesson-english
-version: 4
+version: 5
 formats: banco.lesson/2
 ---
 
@@ -74,7 +74,7 @@ Only `available` pieces can be used; `banco lesson submit --dry-run` says what i
 - **Round 7 level.** A form of a word you teach (`teaches_*`, the glossary) is matched by its stem; an irregular form («slept», «ate») by its verb; the A2 school words (exam, piano, guitar) are known. A `word_parts` form `writ|ing` is read as «writing». The wrong side of a `mistake` is not read for the level. A quotation in «...» is not counted in the 12 words. A short text of shared words with the same Italian («La tilde», «presente») is no copy. A table cell may be `""`; a decode word may carry `parts_it` alone; `[[g:-ing form]]` and a glossary term with parentheses are allowed.
 - Grammar terms are English, with the Italian term in the glossary pair (`term_en: "modal verb"`, `term_it: "verbo modale"`). Invented but plausible contexts.
 - Every dialogue line has its Italian gloss one tap away (`gloss_it`).
-- British English by default (en-GB); contractions are accepted on both sides of a typed answer.
+- British English by default (en-GB); contractions are accepted on both sides of a typed answer. Grade every accepted variant and error value of a typed check with `banco lesson grade --file lesson.md --check ID --answer "…"` before you submit or re-pin; an `accept` list holds at most 20 entries, so a frame with more right answers (every contraction with every synonym) is shown as the sentence with the part asked (D-403).
 - Same meaning, same colour as in Italian: `subject`, `verb`, `object`, `agent`, `time` are the Italian roles.
 - Nothing depends on audio: "Ascolta" is optional and its text is always available.
 

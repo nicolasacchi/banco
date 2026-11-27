@@ -25,7 +25,7 @@ module Api
       # Blocker and major findings of the subject (all=1: minor ones too, for the third reviewer), newest revision last, with the teacher's
       # disposition, the latest response of the author and the third reviewer's opinion (the first and the second assessment). The assessments are shown only to a valid
       # session that is not an arbiter still to assess that finding (else a count only). open=1: no response yet, on the current or a pinned
-      # revision (not a superseded one), and not closed by the teacher: a finding she dismissed, or one on a lesson whose topic she approved. A finding she
+      # revision (not a superseded one), and not closed by the teacher: a finding she dismissed, or one on a lesson whose latest topic revision she approved (a newer topic revision, a re-pin, is not approved: D-403). A finding she
       # wants fixed (fix_requested), or on a lesson she sent back, is exactly what the author has still to answer (D-402).
       #
       # The rows of the items come first (kind item), then those of the lesson reviews (kind lesson, D-313: id L<review>-<n>, the lesson,

@@ -9,7 +9,7 @@ module Validation
       def body = parsed&.body
     end
 
-    WORD = /[A-Za-zÀ-ÿ0-9']+/
+    WORD = /[A-Za-zÀ-ÿ0-9'’]+/ # a contraction (I've, I’ve, l'albero) is one word, with either apostrophe
     SKIP_IN_LINT = %w[W-GULPEASE].freeze
 
     module_function

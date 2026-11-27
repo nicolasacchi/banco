@@ -61,14 +61,15 @@ module LessonFindings
     approved.include?(revision.id) ? "topic_approved" : nil
   end
 
-  # The lesson revision ids pinned by the latest approve_topic of each of +keys+.
+  # The lesson revision ids pinned by the latest approve_topic of each of +keys+, while that topic revision is still the latest of its topic: a
+  # re-pin (a newer topic revision, with the same lesson revision and other items) is not approved, so what it pins is the author's to answer again (D-403).
   def approved_lesson_revision_ids(keys)
     latest = {}
     Decision.where(kind: "approve_topic").order(:id).each do |d|
       payload = JSON.parse(d.payload_json)
       latest[payload["topic"]] = payload["topic_revision_id"] if keys.include?(payload["topic"])
     end
-    TopicRevision.where(id: latest.values).pluck(:lesson_revision_id).to_set
+    TopicRevision.where(id: latest.values).includes(:lesson).select { |t| t.lesson.topic_revisions.maximum(:seq) == t.seq }.map(&:lesson_revision_id).to_set
   end
 
   # The rows of the findings list (GET /api/v1/subjects/:subject/findings): the blocker and major findings of

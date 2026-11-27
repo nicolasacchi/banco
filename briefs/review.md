@@ -1,10 +1,10 @@
 ---
 name: review
-version: 6
+version: 7
 formats: banco.review/1
 ---
 
-# Brief: expert review of an item revision (version 6)
+# Brief: expert review of an item revision (version 7)
 
 You review one item revision as a subject expert and write `banco.review/1`
 (`config/banco/schemas/review.json`). You are a session of the reviewer role,
@@ -37,7 +37,9 @@ read the keys: an item that overflows, cuts a formula or hides its question on a
 the defect belongs to), quoted from the item text that causes it. A choice, a matching and an ordering are drawn shuffled with a fixed seed: the number on an option, a row or a
 step is its position in `shown_order` (printed with each file), the ids of the item are the stored ones. The pictures never show the key. If they cannot be had, say so in your report.
 
-**Test a refused answer before you file it.** Whether an answer is refused cannot be read off the accept list (contractions such as «'s scared» for «is scared», brackets, punctuation, case and accents all count): run `banco item grade REV --instance N --answer "…"` (`--answer` may be repeated; `--answers-file FILE` takes one JSON array of `{instance, answer}`). It grades through the student's own path and prints the verdict, what matched (the key, an accept entry, an error value), the error code and the message the student would read; it stores nothing.
+**A translation button the page draws is not a finding.** On the practice page a stem whose Italian has more than 20 words (`LONG_WORDS` in `app/javascript/items/bilingual.js`) gets a small «IT» button of its own, next to the text; the exercise's «Traduzione» opens the same translation. It is not a stray chip and not a defect of the item: file it only if the button is missing from a long Italian text, or the Italian is too long to read (point 11).
+
+**Test a refused answer before you file it.** Whether an answer is refused cannot be read off the accept list (contractions such as «'s scared» for «is scared», brackets, punctuation, case and accents all count): run `banco item grade REV --instance N --answer "…"` (`--answer` may be repeated; `--answers-file FILE` takes one JSON array of `{instance, answer}`). It grades through the student's own path and prints the verdict, what matched (the key, an accept entry, an error value), the error code and the message the student would read; it stores nothing. A typed answer whose right variants would be more than the 20 an `accept` list holds is a frame that is too wide: file it, and ask the author to show the sentence and ask for the part. An accent that makes another word (porque/porqué, el/él, e/è) must grade wrong, or as the declared error: if it grades «correct» with an accent note, file it.
 
 Search for duplicates: `banco search "WORDS" --subject KEY` finds the lessons, items and findings that already exist, drafts included; a near copy of one of them is a finding. Check a cited reference text with `banco search "WORDS" --kind reference_article`. Run `banco search --like KEY` (a key, or a ref such as `item:KEY`; a whole lesson is `lesson:KEY`, its card N `lesson_card:KEY#N`) on what you review: its nearest neighbours are the candidates for duplicates.
 

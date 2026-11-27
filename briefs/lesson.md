@@ -1,10 +1,10 @@
 ---
 name: lesson
-version: 5
+version: 6
 formats: banco.lesson/2
 ---
 
-# Brief: lessons (version 5, `banco.lesson/2`)
+# Brief: lessons (version 6, `banco.lesson/2`)
 
 You write one topic of the course for one student: a lesson made of short cards, one idea each, with
 a picture or a diagram on every idea, small questions to answer on the page, worked examples that
@@ -361,6 +361,9 @@ fields are those of a practice item of the same component, plus:
   A text in `accept` is never also an `answer` of an entry of `errors`: the grader tries `accept` first, so that wrong
   answer would be marked right (`E-ACCEPT-IS-ERROR`; the comparison ignores case, spaces, final punctuation and the
   direction of an accent, as the grader does).
+  **Grade every variant before you submit or re-pin.** Whether a variant is accepted cannot be read off the lists: grade every `accept` entry and every error `answer` with `banco lesson grade --file lesson.md --check ID --answer "…"` (the lesson you have on disk, nothing is stored and no REV is given; `ID` is CARD.BLOCK, CARD.BLOCK.exN, CARD.BLOCK.exN.P or CARD.BLOCK.stepN; `--answer` may be repeated, `--answers-file` takes `{check, answer}` pairs; a tiles, ordering or matching check takes its ids with `--ids`, see `banco lesson grade --help`). Each must give the verdict you mean (right, the declared error with its code, wrong). Do it again at every re-pin: a changed key moves what a variant means. `banco lesson grade REV …` grades a stored revision.
+  **A diacritic that makes another word is not a slip.** An accent that turns a word into another one («porque» / «porqué», «el» / «él», «si» / «sí», «e» / «è») is graded wrong, or as the error value you declare for it, never «correct with a note» (the slip rule, D-296, is for the same word with a missing or wrong mark). Declare the pair as an error with its teaching message when the student may confuse it.
+  **More than 20 right variants: narrow the frame.** An `accept` list holds at most 20 entries. A typed answer that has more right variants than that (free word order, optional adverbs, every contraction with every synonym) is a frame that is too wide: do not widen the list. Show the sentence and ask for the part (a gap, with a cue in brackets), or make it a choice, so that the right answers are few.
 - The answer is among the options, the answer is not in its own prompt, no error equals the answer
   (`E-LESSON-CHECK`, `W-CHECK-ANSWER-IN-PROMPT`). A check may ask the student to reason on a picture, never to
   copy the answer from it. At least one check after each idea worth checking.
@@ -394,7 +397,7 @@ number line intervals.
 | `equation_parts` | the anatomy of an equation | `parts: [{tex, role, label_it?}]` in order (the members and the `=`), `brackets: [{from, to, label_it, role?}]` over whole parts (at most 4) |
 | `area_model` | products, the box method | `rows`, `cols` (at most 4), `cells` |
 | `cartesian` | lines, systems | `x: [min, max]`, `y: [min, max]`, `grid`, `lines: [{id, eq, label_it?, role?}]` with `eq` as `y = 2x + 1`, `x = 3` or `2x + 3y = 6` (rational coefficients), `points: [{x, y, label_it?, role?, on_lines?: [ids]}]` (a point with `on_lines` lies exactly on each line), `segments` |
-| `sentence` | logical and grammatical analysis | `text_it`, `parts: [{id?, text_it, role, label_it?, question_it?, implied?}]` (exact substrings of `text_it`, in order, at most 10; an `implied` part such as "(noi)" is drawn dashed), `links`, `layout: line\|centre`, `states` with `op_it`, `next_label_it` (a part with the same `id` keeps its role) |
+| `sentence` | logical and grammatical analysis | `text_it`, `parts: [{id?, text_it, role, label_it?, question_it?, implied?}]` (exact substrings of `text_it`, in order, at most 10; **the figure draws only its parts: a stretch of `text_it` that no part covers is not drawn**, so give every stretch a part, `role: muted` for the ones you do not colour; an `implied` part such as "(noi)" is drawn dashed), `links`, `layout: line\|centre`, `states` with `op_it`, `next_label_it` (a part with the same `id` keeps its role) |
 | `concept_map` (schema) | classifications | `root`, `nodes: [{id, text_it, role?, icon?}]`, `edges: [{from, to, label_it?}]` forming a tree of depth at most 3 with at most 4 children per node, `links` (at most 3 cross links); in a bilingual lesson `translate_material: false` makes the nodes target-only (verb forms: `text_en|es` with no `text_it`), the edge labels stay a pair |
 | `flow` (schema) | procedures, and a loop (Do While) as a flowchart | `nodes: [{id, kind: step\|decision\|end, text_it (at most 80 characters, markup included), role?}]`, `edges: [[from, to, "label"?]]`: one main chain, a decision has 2 or 3 branches, no cycles among the edges; `loops: [{from, to, label_it?}]` (at most 2): the one way back, an arrow from a node under a decision to that decision (see «A flow that repeats»). A decision is drawn as a diamond |
 | `network` | who is linked to whom, by what | `layout: pair\|row\|triangle\|hub\|fan\|grid`, `centre` (hub), `into` (fan), `nodes: [{id, label_it, icon?, role?, note_it?, badge_it?}]` (2 to 8, label 6 words, note 25), `edges: [{from, to, kind, label_it?, what?}]` (at most 12 per state; `kind`: owes, pays, elects, trusts, appoints, commands, advises, votes_laws, vetoes, orders, promises, gives, sends; `what`: goods, money, document, order, promise, signature, information, vote), `holds: [{node, items_it}]`, `everyone: true` (a node "Tutti gli altri", id `everyone`), `filter: true` (hub: kind chips), states with `edges`, `holds`, `hide: [ids]`, `badges`, `op_it`. An arrow never reaches a hidden node |
@@ -580,7 +583,7 @@ Italian label follows the rules of every pair (not the target copied, not the ta
 
 **Material, not translated piece by piece.** The sentence of a `span_select` (`text_en`) and its spans, the tiles, the text a check reads aloud (`listen: {text_en: ...}`), the sentence of a `sentence`
 figure (its `text_en`, never beside a `text_it`) and its parts (`parts[].text_en`) are target text with no Italian twin: translate the sentence in the check's `prompt_it` (or `explain_it`). A `sentence` figure puts its
-explanation in `alt` and `caption` (pairs), and the Italian names of the roles in `label_en` / `label_it`.
+explanation in `alt` and `caption` (pairs), and the Italian names of the roles in `label_en` / `label_it`. The figure draws only its parts: a stretch of the sentence that no part covers (a comma, a word you left uncoloured) disappears from the picture, so cover the whole sentence, `role: muted` for what you do not colour. The taught word in a `sentence` figure («never», «nunca») is material: it raises no `W-ABSOLUTE`.
 
 **Parity.** The Italian must say what the target says, no more, no less: the same paragraphs and list items, the same `___` blanks, the same formulas and digits,
 the same bold words, the same colour roles (`[[subject:...]]` in both texts; the Italian one may say `[[subject|it:...]]`) and the same `[[g:..]]` terms

@@ -48,7 +48,7 @@
 .dg-mr-false_friend { stroke-dasharray: 2 8; stroke-width: 4; }
 .dg-mr-mark { fill: var(--text); stroke: var(--surface); stroke-width: 2; }
 .dg-label.dg-mr-text { color: var(--text); text-align: center; }
-.dg-label.dg-mr-side, .dg-label.dg-mr-kind, .dg-label.dg-mr-key, .dg-label.dg-mr-none { color: var(--muted); }
+.dg-label.dg-mr-side, .dg-label.dg-mr-key, .dg-label.dg-mr-none { color: var(--muted); }
 .dg-label.dg-mr-title { font-weight: 800; color: var(--text); }
 .dg-label.dg-mr-notepiece { font-weight: 700; color: var(--text); }
 .dg-label.dg-mr-note { color: var(--text); }

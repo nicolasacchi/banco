@@ -33,7 +33,8 @@ module Validation
     # the material the student works on, its negation is the content, not the way the instruction is phrased (W-NEGATIVE-STEM). codes: true for the note of an answer
     # to a finding, which may name an error code (ERROR_CODE passes the ALL-CAPS rule, being one word for the sentence length too). quotes: true for the Italian of a
     # bilingual revision, and always for such a note: a «form» or «sentence» of the language it quotes is not counted in the length of a sentence.
-    def lint(text, field:, role:, findings:, negation: true, codes: false, quotes: false)
+    # absolute: false for a text that translates a line (the gloss of a dialogue line): its «never» is the line's, not a claim of the lesson (W-ABSOLUTE).
+    def lint(text, field:, role:, findings:, negation: true, codes: false, quotes: false, absolute: true)
       return unless text.is_a?(String)
 
       plain = text.gsub(MATH, " m ")
@@ -53,7 +54,7 @@ module Validation
       if role == :message && sentences.size > Rules.get(:readability, :max_message_sentences)
         findings.add("E-MESSAGE", field, "the message has #{sentences.size} sentences (at most #{Rules.get(:readability, :max_message_sentences)})", sentences: sentences.size)
       end
-      warnings(text, plain, sentences, words, field, role, findings, negation: negation)
+      warnings(text, plain, sentences, words, field, role, findings, negation: negation, absolute: absolute)
     end
 
     # Walks a parsed JSON value and lints every *_it string by its key.
@@ -67,7 +68,7 @@ module Validation
           if skip.include?(key.to_s) && value.is_a?(String)
             next
           elsif value.is_a?(String) && key.to_s.end_with?("_it")
-            lint(value, field: field, role: role_for(key.to_s), findings: findings, negation: !(bilingual && key.to_s == "stem_it" && path.end_with?("/display")), codes: codes, quotes: bilingual)
+            lint(value, field: field, role: role_for(key.to_s), findings: findings, negation: !(bilingual && key.to_s == "stem_it" && path.end_with?("/display")) && key.to_s != "task_it", codes: codes, quotes: bilingual)
           elsif value.is_a?(Array) && key.to_s.end_with?("_it") && value.all?(String)
             # steps_it: a list of short texts, each linted on its own (D-216).
             value.each_with_index { |text, i| lint(text, field: "#{field}/#{i}", role: :text, findings: findings, codes: codes, quotes: bilingual) }
@@ -82,7 +83,7 @@ module Validation
 
     def role_for(key)
       case key
-      when "stem_it", "task_it" then :stem # the task line of an instance is an instruction too (D-402)
+      when "stem_it", "task_it" then :stem # the task line of an instance is an instruction too (D-402): its length counts, but it is no stem the student answers (no W-NEGATIVE-STEM, D-403)
       when "message_it" then :message
       when "passage_it" then :passage
       else :text
@@ -146,7 +147,7 @@ module Validation
     QUALIFIED = /\b(?:quasi|praticamente|non)\s+(?:sempre|ovunque|tutti)\b|\bquasi\s+(?:mai|nessuno)\b/
     SINGLE_ADJECTIVE = /\b((?:un|uno|una|il|lo|la|i|gli|le|ogni|questo|questa|quel|quella)(?:'|\s+)\p{L}+)\s+(?:solo|sola|soli|sole)(?=\s*(?:[,.;:!?)]|\z)|\s+(?:non|si)\b)/
 
-    def warnings(text, plain, sentences, words, field, role, findings, negation: true)
+    def warnings(text, plain, sentences, words, field, role, findings, negation: true, absolute: true)
       body = strip_markup(plain)
       if role == :passage
         index = gulpease(body, sentences, words)
@@ -164,11 +165,12 @@ module Validation
       lower = lower.gsub(SINGLE_BEFORE_NOUN, '\\1')
       lower = lower.gsub(NOT_ONLY) { |m| m.sub(/\s*\b(?:solo|soltanto)\z/, "") }
       lower = lower.gsub(QUALIFIED, " ")
-      if (w = Rules.list(:readability, :absolute_words).find { |a| lower.match?(/\b#{Regexp.escape(a)}\b/) })
+      # A word inside «…» or “…” is a quoted form (the taught «mai»), not a claim; so is a negation there: it is the content being asked about, not the instruction.
+      claim = lower.gsub(/«[^»]*»|“[^”]*”/, " ")
+      if absolute && (w = Rules.list(:readability, :absolute_words).find { |a| claim.match?(/\b#{Regexp.escape(a)}\b/) })
         findings.add("W-ABSOLUTE", field, "an absolute word (#{w}) needs a counterexample check", word: w)
       end
-      # A negation inside «…», “…” or $…$ is the content being asked about, not the instruction.
-      instruction = lower.gsub(/«[^»]*»|“[^”]*”/, " ").gsub(/\$[^$]*\$/, " ")
+      instruction = claim.gsub(/\$[^$]*\$/, " ")
       if role == :stem && negation && Rules.list(:readability, :negative_stem).any? { |re| instruction.match?(Regexp.new(re)) }
         findings.add("W-NEGATIVE-STEM", field, "the instruction is phrased as a negation")
       end

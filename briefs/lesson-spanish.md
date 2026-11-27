@@ -1,6 +1,6 @@
 ---
 name: lesson-spanish
-version: 4
+version: 5
 formats: banco.lesson/2
 ---
 
@@ -111,4 +111,4 @@ Available now. Our code computes what can be computed; you write the words and t
 
 The code and these briefs are public. Lessons live in the database, but anything you write into a file or a report the repository can see is public. No name of the student or of the household, no school, no city, no exam-session details, no programme text beyond the fragments of your refs. Say "the student" and "the teacher".
 
-The direction of an accent (è/é, à/á…) is never tested and never makes an answer wrong (D-296); a missing accent and an apostrophe for an accent still count.
+The direction of an accent (è/é, à/á…) is never tested and never makes an answer wrong (D-296); a missing accent and an apostrophe for an accent still count. A diacritic that makes ANOTHER word is not a slip: «porque» / «porqué», «que» / «qué», «como» / «cómo», «el» / «él», «si» / «sí», «tu» / «tú», «mi» / «mí», «se» / «sé» are graded wrong, or as the error value you declare for the pair (D-403). Grade every accepted variant and error value of a typed check with `banco lesson grade --file lesson.md --check ID --answer "…"` before you submit or re-pin; an `accept` list holds at most 20 entries, so a frame with more right answers is shown as the sentence with the part asked.

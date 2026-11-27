@@ -711,7 +711,8 @@ module Validation
     end
 
     # The grader keeps commas and semicolons inside a text (only the trailing marks are stripped, Grading::Closed::Text.normalize), so the
-    # key «No salimos, ya que llovía.» marks «No salimos ya que llovía.» wrong. A sentence key with one needs an accept entry that is the
+    # key «No salimos, ya que llovía.» does not mark «No salimos ya que llovía.» right (a missing comma after a fronted clause is a near miss, other
+    # changes are wrong). A sentence key with one needs an accept entry that is the
     # same sentence with fewer of them (the instance's accept or the item's), or the student who writes it as it reads is graded wrong.
     SENTENCE_END = /[.!?]\z/
     COMMA_MARKS = /[,;]/
@@ -727,7 +728,7 @@ module Validation
       return if (Array(@unit.accept) + Array(inst["accept"])).any? { |a| a.is_a?(String) && bare.(a) == bare.(key) && marks.(a) < marks.(key) }
 
       f.add("W-SENTENCE-COMMA-VARIANTS", "#{label}/answer",
-            "#{label}: the key #{key.strip[0, 60].inspect} has a comma or semicolon and the grader compares them, so the same sentence with the comma left out or elsewhere is graded wrong: add the sentence without it to accept (the instance's or the item's)",
+            "#{label}: the key #{key.strip[0, 60].inspect} has a comma or semicolon and the grader compares them, so the same sentence with the comma left out is graded as a near miss, not right (with the comma elsewhere it is wrong): add the sentence without it to accept (the instance's or the item's)",
             seed: seed)
     end
 

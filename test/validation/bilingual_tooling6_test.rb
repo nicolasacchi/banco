@@ -17,13 +17,13 @@ class BilingualToolingSixTest < ActiveSupport::TestCase
 
   test "a mirror note with markup is refused in the target language (note_en) and in the Italian (note_it)" do
     target = en.sub('note_en: "has got: two words"', 'note_en: "[[en:has got]]: two words"')
-    assert_equal [ [ "E-LESSON-DIAGRAM", "/cards/2/blocks/1/diagram/rows/0/notes/0/note_it" ] ], plain(target)
+    assert_equal [ [ "E-LESSON-DIAGRAM", "/cards/2/blocks/1/diagram/rows/0/notes/0/note_en" ] ], plain(target), "the target layer names the author's own field (D-403)"
     italian = en.sub('note_it: "has got: due parole"', 'note_it: "[[en:has got]]: due parole"')
     assert_equal [ [ "E-LESSON-DIAGRAM", "/cards/2/blocks/1/diagram/rows/0/notes/0/note_it" ] ], plain(italian)
   end
 
   test "an alt with markup is refused in both languages too" do
-    assert_equal [ [ "E-LESSON-ALT", "/cards/2/blocks/1/diagram/alt_it" ] ], plain(en.sub('alt_en: "Two sentences, Italian above', 'alt_en: "[[en:Two]] sentences, Italian above'))
+    assert_equal [ [ "E-LESSON-ALT", "/cards/2/blocks/1/diagram/alt_en" ] ], plain(en.sub('alt_en: "Two sentences, Italian above', 'alt_en: "[[en:Two]] sentences, Italian above'))
     assert_equal [ [ "E-LESSON-ALT", "/cards/2/blocks/1/diagram/alt_it" ] ], plain(en.sub('alt_it: "Due frasi, italiano sopra', 'alt_it: "[[en:Due]] frasi, italiano sopra'))
   end
 

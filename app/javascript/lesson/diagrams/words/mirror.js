@@ -212,6 +212,7 @@ function build(data, ctx) {
   const gap = 12
   let y = 8
   let targetNo = 0
+  const narrowLinks = [] // the links of the narrow rows: their kinds are explained once, under the last of them (a legend), never under every pair
 
   const roleOf = (row, side, k) => (row.roles ?? []).find((r) => r.side === side && r.piece === k)?.role
   const iconOf = (role) => (role ? roleInfo(palette, ctx.subject, role)?.icon : null)
@@ -281,7 +282,10 @@ function build(data, ctx) {
       y += t.h + 4
     }
     if (wide || select) wideRow(row, i, key, lang, links)
-    else listRow(row, i, key, lang, links)
+    else {
+      listRow(row, i, key, lang, links)
+      narrowLinks.push(...links)
+    }
     if (!select) notesBlock(row, i, key, lang)
     y += 14
   }
@@ -351,6 +355,10 @@ function build(data, ctx) {
     }
     const colW = columnFor(arrowW)
     const rx = lx + colW + arrowW
+    // the two column titles, as the wide row names its two lines: the Italian column and the other language's
+    const titleIt = label(ctx, sideOf("it"), lx, y, { anchor: "start", maxW: colW, cls: "dg-mr-side", key: `r${i + 1}:side-it`, lang: chromeLang })
+    const titleTg = label(ctx, sideOf(lang), rx, y, { anchor: "start", maxW: colW, cls: "dg-mr-side", key: `r${i + 1}:side-tg`, lang: chromeLang })
+    y += Math.max(titleIt.h, titleTg.h) + 4
     pairs.forEach((pr, n) => {
       const hs = [pr.a != null ? placement(row, "it", pr.a, row.pieces_it[pr.a], colW, true).h : 0, pr.b != null ? placement(row, lang, pr.b, row[key][pr.b], colW, true).h : 0]
       if (pr.kind === "none") hs.push(ctx.measure(word("link_none"), f, colW - 8).h)
@@ -366,17 +374,12 @@ function build(data, ctx) {
       } else {
         label(ctx, word("link_none"), pr.a != null ? rx + 4 : lx + 4, cy - lineH / 2, { anchor: "start", maxW: colW - 8, cls: "dg-mr-none", key: `r${i + 1}:none${n}`, lang: chromeLang })
       }
-      y += h + 6
-      if (pr.kind !== "none") {
-        const l = label(ctx, kindOf(pr.kind), lx, y - 2, { anchor: "start", maxW: W - lx - marginX, cls: "dg-mr-kind", key: `r${i + 1}:k${n}`, lang: chromeLang })
-        y += l.h
-      }
-      y += 8
+      y += h + 14
     })
     padX = PAD_X
   }
 
-  // narrower still: each pair as the Italian piece, a short upright link with its mark and its word, the other piece; a piece without a
+  // narrower still: each pair as the Italian piece, a short upright link with its mark, the other piece (the words of the kinds are the legend's); a piece without a
   // link says so under it. The pair's number sits at its left, in the middle.
   function stackedPairs(row, i, key, lang, pairs, plate, lx) {
     const boxW = W - lx - marginX
@@ -389,7 +392,6 @@ function build(data, ctx) {
         shape(ctx, "line", { x1: linkX, y1: y + 3, x2: linkX, y2: y + linkH - 3, cls: `dg-mr-link dg-mr-${pr.kind}`, key: `r${i + 1}:l${n}` })
         const my = y + linkH / 2
         linkMark(pr.kind, linkX, my, `r${i + 1}:l${n}:m`)
-        label(ctx, kindOf(pr.kind), linkX + 20, y + Math.round((linkH - lineH) / 2), { anchor: "start", maxW: boxW - 42, cls: "dg-mr-kind", key: `r${i + 1}:k${n}`, lang: chromeLang })
         y += linkH
       }
       if (pr.b != null) y += pieceBox(row, lang, pr.b, row[key][pr.b], lang, lx, y, boxW, `${idOf(i, "t", pr.b)}:${n}`, { wrap: true }).h
@@ -441,6 +443,7 @@ function build(data, ctx) {
   }
 
   data.rows.forEach((row, i) => drawRow(row, i, data.rows.length > 1))
+  if (narrowLinks.length) y = legend(narrowLinks, y)
   return finish(ctx, y, { states: 1, state: 0 })
 }
 

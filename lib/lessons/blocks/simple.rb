@@ -23,7 +23,7 @@ module Lessons
       def callout(block, ctx)
         max = Validation::Rules.get(:lesson2, :callout_words)
         n = Blocks.words(block["text_it"])
-        ctx.add("E-CARD-WORDS", "text_it", "a callout has #{n} words (at most #{max})") if n > max
+        ctx.add("E-CARD-WORDS", ctx.slot("text_it"), "a callout has #{n} words (at most #{max})") if n > max
       end
 
       def math(block, ctx)

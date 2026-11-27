@@ -223,6 +223,48 @@ class LessonFindingsApiTest < ActionDispatch::IntegrationTest
     assert_empty list("kind=item&open=1")
   end
 
+  test "topic with open lists the findings of every item the latest topic revision pins, whichever revision a re-pin changed (D-403)" do
+    first = make_practice_item("lf-first", "math.number")
+    second = make_practice_item("lf-second", "math.number")
+    raise_finding = ->(rev) do
+      review = ItemReview.create!(item_revision: rev, agent_session: @reviewer, checklist_json: "[]")
+      ReviewFinding.create!(item_revision: rev, source: "review", item_review: review, severity: "major", field: "stem", quote: "x", problem_it: "Ambiguo.", fix_it: "Chiarisci.")
+    end
+    make_topic(@rev1, { "math.number" => [ first, second ] })
+    on_first = raise_finding.call(first)
+    on_second = raise_finding.call(second)
+    open = -> { list("topic=#{KEY}&kind=item&open=1").map { |r| r["finding_id"] } }
+    assert_equal [ on_first.id, on_second.id ], open.call
+
+    # the second item gets a newer revision and the topic is pinned again to it: the finding on its old revision is superseded, the one on the first item is still pinned
+    newer = ItemRevision.create!(item: second.item, seq: 2, body_json: second.body_json, file_sessions_json: "{}")
+    make_topic(@rev1, { "math.number" => [ first, newer ] })
+    assert_equal [ on_first.id ], open.call
+
+    # a review of the new revision comes after the re-pin: it is listed with the one still pinned
+    fresh = raise_finding.call(newer)
+    assert_equal [ on_first.id, fresh.id ], open.call
+    # a newer topic revision that pins one more item of the topic never hides them
+    third = make_practice_item("lf-third", "math.number")
+    make_topic(@rev1, { "math.number" => [ first, newer, third ] })
+    assert_equal [ on_first.id, fresh.id ], open.call
+  end
+
+  test "a topic re-pinned after the teacher approved it is open again: the approval of the older topic revision closes nothing of the new pins (D-403)" do
+    pinned = make_practice_item("lf-repin", "math.number")
+    first = make_topic(@rev1, { "math.number" => [ pinned ] })
+    decide!("approve_topic", { topic_revision_id: first.id, topic: KEY, seq: first.seq })
+    assert_equal %w[topic_approved topic_approved], list("topic=#{KEY}&kind=lesson").map { |r| r["decision"] }
+    assert_empty list("topic=#{KEY}&kind=lesson&open=1"), "the approved topic is closed"
+
+    # the author re-pins a newer revision of an item; the lesson revision is the same one, reviewed again: its findings are the author's to answer
+    newer = ItemRevision.create!(item: pinned.item, seq: 2, body_json: pinned.body_json, file_sessions_json: "{}")
+    make_topic(@rev1, { "math.number" => [ newer ] })
+    again = review!(@rev1, [ finding("major", card: 1) ], session: session!(:reviewer, "claude-opus-5-5"))
+    assert_equal [ @major, @blocker, "L#{again.id}-1" ], list("topic=#{KEY}&kind=lesson&open=1").map { |r| r["finding_id"] }
+    assert_equal [ nil, nil, nil ], list("topic=#{KEY}&kind=lesson").map { |r| r["decision"] }, "a topic revision nobody approved is not approved"
+  end
+
   test "the list and the answers carry nothing of the student" do
     student = Student.create!(key: "prova-7", kind: "student")
     topic = make_topic(@rev1, { "math.number" => [] })
