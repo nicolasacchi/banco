@@ -1,7 +1,7 @@
 // A mark that stands right after a formula (a full stop, a comma, «?», a closing bracket or quote) or right before it (an opening bracket
 // or quote) must never be left alone at the start or the end of a line (D-335). The reader's inline nodes are rewritten so that the
 // formula and the mark run next to it share one {t: "nowrap", children} node, which the renderers draw as <span class="nowrap"> (white-space:
-// nowrap; a leading-hyphen word piece is one too, see hyphenPieces). Pure: the parsed tree is not changed, only the array it is read from; plainText and the voice (speech.js walks the DOM and
+// nowrap; a leading-hyphen word piece and an IPA transcription are one too, see hyphenPieces). Pure: the parsed tree is not changed, only the array it is read from; plainText and the voice (speech.js walks the DOM and
 // already takes a mark back to its word) read the same words as before.
 const CLOSING = /^[.,;:!?)\]»”’"'…]+/
 const OPENING = /[(\[«“‘„]+$/
@@ -10,13 +10,16 @@ const OPENING = /[(\[«“‘„]+$/
 // (D-402): it is one {t: "nowrap"} node of its own, as a formula with its mark is, so the page draws one span with the characters as written (copying them
 // gives the same text, which a non-breaking hyphen would not). It starts a word: at the start of the text, after a space or after an opening mark;
 // text that follows another node with no space ("[[es:habl]]-ando") is the rest of a word, never a piece.
-const PIECE = /(^|[\s(\[«“‘„"'])(-\p{L}[\p{L}\p{M}]*(?:-\p{L}[\p{L}\p{M}]*)*)/gu
+// An IPA transcription (a slash, no space or slash inside, a slash: «/ˈhɒs.pɪ.təl/») is one too: the stress marks ˈ and ˌ allow a break before them, which left «/» alone at the
+// end of a line. «and/or» and «km/h» have one slash, «a / b» has spaces: neither is one.
+const PIECE = /(^|[\s(\[«“‘„"'])(-\p{L}[\p{L}\p{M}]*(?:-\p{L}[\p{L}\p{M}]*)*|\/[^\s/]{1,40}\/)/gu
 
 export function hyphenPieces(nodes) {
-  if (!nodes.some((node) => node.t === "text" && node.v.includes("-"))) return nodes
+  const mayHold = (node) => node.t === "text" && (node.v.includes("-") || node.v.includes("/"))
+  if (!nodes.some(mayHold)) return nodes
   const out = []
   nodes.forEach((node, i) => {
-    if (node.t !== "text" || !node.v.includes("-")) { out.push(node); return }
+    if (!mayHold(node)) { out.push(node); return }
     const startsWord = i === 0
     let last = 0
     for (const m of node.v.matchAll(PIECE)) {

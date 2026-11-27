@@ -154,3 +154,22 @@ test("the lesson and the items renderers draw a leading-hyphen piece in one span
   })
   assert.equal(plainText("Añade -áis o -ing al final."), "Añade -áis o -ing al final.")
 })
+
+// ---- an IPA transcription (D-402, round 8) -----------------------------------------------------------------------------------------
+
+test("an IPA transcription «/ˈhɒs.pɪ.təl/» is one nowrap piece with its characters as written; «and/or», «km/h» and «a / b» are not", () => {
+  assert.deepEqual(shape(glueFormulas(inline("The word is /ˈhɒs.pɪ.təl/ here."))), [ '"The word is "', '["/ˈhɒs.pɪ.təl/"]', '" here."' ])
+  const piece = glueFormulas(inline("/ˈhɒs.pɪ.təl/ and /ˌɪn.tə/"))
+  assert.deepEqual(piece.filter((n) => n.t === "nowrap").map((n) => n.children[0].v), [ "/ˈhɒs.pɪ.təl/", "/ˌɪn.tə/" ])
+  for (const text of [ "and/or", "Speed in km/h", "a / b", "Use and/or and km/h today", "see a/b/c" ]) {
+    assert.equal(glueFormulas(inline(text)).filter((n) => n.t === "nowrap").length, 0, text)
+  }
+  withDom(() => {
+    const p = new Fake("p")
+    markup.renderInline("The word is /ˈhɒs.pɪ.təl/ here.", p)
+    assert.deepEqual(wrappers(p).map((n) => n.textContent), [ "/ˈhɒs.pɪ.təl/" ])
+    assert.equal(p.textContent, "The word is /ˈhɒs.pɪ.təl/ here.", "the copied text is unchanged")
+    assert.deepEqual(wrappers(renderRich("The word is /ˈhɒs.pɪ.təl/ here.", { subject: "english", t: {} })).map((n) => n.textContent), [ "/ˈhɒs.pɪ.təl/" ])
+  })
+  assert.equal(plainText("The word is /ˈhɒs.pɪ.təl/ here."), "The word is /ˈhɒs.pɪ.təl/ here.")
+})
