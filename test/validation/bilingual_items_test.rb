@@ -185,19 +185,20 @@ class BilingualItemsTest < ActiveSupport::TestCase
       inst["solution"]["steps"].each { |s| s.delete("text_en") }
       inst.delete("hints_en")
     end
-    # D-404: the live rules list spanish (the cut-over of D-402) and not english.
-    assert_equal %w[spanish], Validation::Rules.get(:lang, :bilingual_required)
-    assert_not_includes codes(run_item(legacy)), "E-LANG-BILINGUAL-REQUIRED", "english is not cut over"
+    # D-404, D-405: the live rules list english and spanish (the cut-over of D-402).
+    assert_equal %w[english spanish], Validation::Rules.get(:lang, :bilingual_required)
+    assert_includes codes(run_item(legacy)), "E-LANG-BILINGUAL-REQUIRED"
+    assert_not_includes codes(run_item(legacy, grandfathered: true)), "E-LANG-BILINGUAL-REQUIRED"
+    assert_not_includes codes(run_item(choice)), "E-LANG-BILINGUAL-REQUIRED"
     legacy_es = legacy.merge("subject" => "spanish", "skill" => "spanish.ser-estar")
     assert_includes codes(run_item(legacy_es)), "E-LANG-BILINGUAL-REQUIRED"
     assert_not_includes codes(run_item(legacy_es, grandfathered: true)), "E-LANG-BILINGUAL-REQUIRED"
     Validation::Rules.with(lang: { bilingual_required: [] }) do
       assert_not_includes codes(run_item(legacy_es)), "E-LANG-BILINGUAL-REQUIRED", "nothing is required while lang.bilingual_required is empty"
+      assert_not_includes codes(run_item(legacy)), "E-LANG-BILINGUAL-REQUIRED", "nothing is required while lang.bilingual_required is empty"
     end
-    Validation::Rules.with(lang: { bilingual_required: %w[english] }) do
-      assert_includes codes(run_item(legacy)), "E-LANG-BILINGUAL-REQUIRED"
-      assert_not_includes codes(run_item(legacy, grandfathered: true)), "E-LANG-BILINGUAL-REQUIRED"
-      assert_not_includes codes(run_item(choice)), "E-LANG-BILINGUAL-REQUIRED"
+    Validation::Rules.with(lang: { bilingual_required: %w[spanish] }) do
+      assert_not_includes codes(run_item(legacy)), "E-LANG-BILINGUAL-REQUIRED", "a subject off the list is not required"
     end
   end
 
@@ -294,7 +295,7 @@ class BilingualItemsTest < ActiveSupport::TestCase
                                "errors" => [ { "code" => "en_missing_third_s", "value" => "o2" }, { "code" => "en_missing_third_s", "value" => "o3" } ],
                                "solution" => { "steps" => [ { "text_it" => "Con she il verbo prende la -s." } ], "final" => right } } },
                            "tests" => { "must_accept" => [ "o1" ], "must_reject" => [ "o2" ], "blank" => "invalid" })
-    result = run_item(legacy)
+    result = run_item(legacy, grandfathered: true) # D-405: a legacy english revision keeps the pass it had
     assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
     assert_empty codes(result).grep(/LANG|PAIR/)
     assert_kind_of Array, result.instances.first[:hints].to_a, "no hints on a diagnosis item"
@@ -311,7 +312,7 @@ class BilingualItemsTest < ActiveSupport::TestCase
                { "display" => { "stem_it" => inst["display"]["stem_en"], "options" => inst["display"]["options"].map { |o| o.slice("id", "text") } }, "answer" => "o1", "errors" => inst["errors"],
                  "solution" => { "steps" => [ { "text_it" => "Si dice make the bed." } ], "final" => inst["solution"]["final"] } } },
              "sources" => choice["sources"], "tests" => choice["tests"] }
-    result = run_item(item)
+    result = run_item(item, grandfathered: true)
     assert_equal "passed", result.status, result.findings.map(&:to_h).inspect
     assert_equal [ "Uno qui.", "Due qui.", "Tre qui." ], result.instances.first[:hints]
   end
@@ -392,7 +393,7 @@ class BilingualItemsTest < ActiveSupport::TestCase
                "instances" => EACH_PASSAGES.map { |text, _| { "display" => { "stem_it" => "She ___ to school by bus.", "passage_it" => "#{text} She is happy to go there with her friends every day." }, "answer" => "goes",
                                                                 "errors" => [ { "code" => "en_missing_third_s", "value" => "go" } ], "solution" => { "steps" => [ { "text_it" => "Con she il verbo prende la s." } ], "final" => "goes" } } },
                "sources" => blank["sources"], "tests" => blank["tests"] }
-    result = run_item(legacy)
+    result = run_item(legacy, grandfathered: true)
     assert_equal "passed", result.status, result.findings.select { |f| f.severity == "error" }.map(&:to_h).inspect
     assert_empty codes(result) & %w[E-READ E-SCHEMA E-GEN-SCHEMA E-SOLUTION-IN-DISPLAY]
     assert_equal EACH_PASSAGES[0][0] + " She is happy to go there with her friends every day.", result.instances.first[:display]["passage_it"]

@@ -290,9 +290,9 @@ class BilingualTest < ActiveSupport::TestCase
 
   # ---- the rules and the codes --------------------------------------------------------------------------------------------
 
-  test "the rules have the lang block, spanish cut over (D-404, v14) and english not, and the codes of D-402 are in the registry" do
-    assert_equal %w[spanish], Validation::Rules.get(:lang, :bilingual_required)
-    assert_equal 14, Validation::Rules.version
+  test "the rules have the lang block, english and spanish cut over (D-404, D-405, v15), and the codes of D-402 are in the registry" do
+    assert_equal %w[english spanish], Validation::Rules.get(:lang, :bilingual_required)
+    assert_equal 15, Validation::Rules.version
     codes = YAML.load_file(Rails.root.join("config/banco/error_codes.yml")).fetch("validation")
     %w[E-LANG-BILINGUAL-REQUIRED E-LANG-BILINGUAL-FLAG E-LANG-PAIR-MISSING E-LANG-PAIR-ORPHAN E-LANG-PAIR-SHAPE E-LANG-PAIR-CONFLICT
        E-LANG-TRANSLATION-LANG E-LANG-TRANSLATION-COPY W-LANG-PAIR-CONFLICT W-LANG-SPAN-REDUNDANT W-LANG-LEVEL W-TOPIC-LANG-MIXED].each { |code| assert codes.key?(code), code }

@@ -13,6 +13,16 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: english-in-english
+    date: 2026-11-27
+    audience: [student, teacher]
+    kind: content
+    decisions: [D-402, D-405]
+    title_it: "Inglese: lezioni ed esercizi in inglese"
+    body_it: "Le lezioni e gli esercizi di inglese sono scritti in inglese. Sotto ogni testo c'è la traduzione italiana: la apri con un tocco quando ti serve."
+    title_en: "English: lessons and exercises in English"
+    body_en: "The English lessons and exercises are written in English. Under each text there is the Italian translation: open it with one tap when you need it."
+    link: /subjects
   - id: accent-hint-in-italian
     date: 2026-11-27
     audience: [student, teacher]

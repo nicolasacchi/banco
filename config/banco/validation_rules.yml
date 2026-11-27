@@ -24,7 +24,9 @@
 # D-402 added the `lang:` block (bilingual_required) with no number changed and the list empty: no bump.
 # v14 (D-404): lang.bilingual_required lists spanish (the cut-over of D-402: all 26 approved topics of spanish are bilingual, course revision 111). A NEW revision of a
 # spanish lesson or item needs `bilingual: true`; a revision that passed under v13 keeps its pass. english stays out until its two culture topics are rewritten.
-version: 14
+# v15 (D-405): lang.bilingual_required lists english too (the cut-over of D-402 is complete: all 29 approved topics of english are bilingual, course revision 112). A NEW revision of an
+# english lesson or item needs `bilingual: true`; a revision that passed under v14 keeps its pass.
+version: 15
 
 generator:
   seeds: 200                  # seeds 1..200 are run, in two fresh contexts
@@ -164,11 +166,11 @@ coverage:
     computer_science: [153, 161]
     spanish: [163, 186]
 
-# The bilingual courses (D-402, D-404). A new submission of an item or a lesson of a subject listed here must carry `bilingual: true` (E-LANG-BILINGUAL-REQUIRED);
+# The bilingual courses (D-402, D-404, D-405). A new submission of an item or a lesson of a subject listed here must carry `bilingual: true` (E-LANG-BILINGUAL-REQUIRED);
 # a revision that passed under older rules keeps its pass. The subjects that teach a language are english and spanish (lesson2.target_languages): spanish is listed
-# (D-404); english joins it when its two culture topics are bilingual. A revision of english may already opt in by writing the flag.
+# (D-404) and english is listed (D-405), so both require the flag.
 lang:
-  bilingual_required: [spanish]
+  bilingual_required: [english, spanish]
 
 # Phase 1b, course content (A2.1, A3.2). Lessons, course maps and topics are synchronous (no Chrome).
 course:

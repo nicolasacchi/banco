@@ -178,11 +178,12 @@ class BilingualLessonTest < ActiveSupport::TestCase
     assert_includes codes(check(spanish, "spanish")), "E-LANG-BILINGUAL-FLAG"
   end
 
-  test "E-LANG-BILINGUAL-REQUIRED: a new spanish lesson without the flag is refused (D-404), an english one is not" do
+  test "E-LANG-BILINGUAL-REQUIRED: a new spanish or english lesson without the flag is refused (D-404, D-405)" do
     spanish = source("es").sub("bilingual: true\n", "")
     assert_includes codes(check(spanish, "spanish")), "E-LANG-BILINGUAL-REQUIRED"
     assert_not_includes codes(check(source("es"), "spanish")), "E-LANG-BILINGUAL-REQUIRED"
-    assert_not_includes codes(check(edit("en", "bilingual: true\n", ""), "english")), "E-LANG-BILINGUAL-REQUIRED"
+    assert_includes codes(check(edit("en", "bilingual: true\n", ""), "english")), "E-LANG-BILINGUAL-REQUIRED"
+    assert_not_includes codes(check(source("en"), "english")), "E-LANG-BILINGUAL-REQUIRED"
   end
 
   test "the colour roles of a text and of its Italian must be the same" do

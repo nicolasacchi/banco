@@ -396,7 +396,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
     },
     # D-402: the bilingual courses; the golden item of slice 0 (english, two instances) is the good copy, each case breaks it once.
     "E-LANG-BILINGUAL-REQUIRED" => lambda {
-      Validation::Rules.with(lang: { bilingual_required: %w[english] }) { lang_codes { |i| i.delete("bilingual") } }
+      lang_codes { |i| i.delete("bilingual") }
     },
     "E-LANG-BILINGUAL-FLAG" => -> { lang_codes { |i| i.delete("bilingual") } },
     "E-LANG-PAIR-MISSING" => -> { lang_codes { |i| i.delete("answer_format_it") } },
