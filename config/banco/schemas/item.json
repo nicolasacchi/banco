@@ -138,6 +138,10 @@
     "allow_dot": {
       "type": "boolean"
     },
+    "thousands": {
+      "description": "number only: a dot that groups exactly three digits is a thousands separator (1.704 is 1704); in an english item a comma that groups exactly three digits is too (1,704 is 1704, unless the key is the decimal reading 1.704).",
+      "type": "boolean"
+    },
     "choice_only_reason_it": {
       "type": "string",
       "minLength": 1,
@@ -1018,6 +1022,9 @@
           "maxLength": 20
         },
         "allow_dot": {
+          "type": "boolean"
+        },
+        "thousands": {
           "type": "boolean"
         },
         "choice_only_reason_it": {

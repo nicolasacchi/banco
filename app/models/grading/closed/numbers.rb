@@ -82,11 +82,34 @@ module Grading
       # [Rational, written_as_a·10^n] of a text, by the item's own rules (the form scientific, the unit, the dot, the thousands).
       def read(spec, text)
         text = without_item_unit(spec, text)
+        grouped = english_grouped(spec, text)
+        return [ grouped, false ] if grouped
         if spec.form.include?("scientific")
           parse_scientific(text, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands)
         else
           [ parse(text, allow_dot: spec.allow_dot, unit: spec.unit, thousands: spec.thousands), false ]
         end
+      end
+
+      # English writes 1,704 and 12,500 (D-402, round 8): in an english item with `thousands: true` a comma that groups exactly three digits, with no other
+      # separator, is grouping, so 1,704 is 1704. 1,5 stays 1.5. When the number read as a decimal is itself right (the key is 1.704), it stays the decimal.
+      # nil when the rule does not apply to the text.
+      ENGLISH_GROUPED = /\A[+-]?[1-9]\d{0,2}(?:,\d{3})+\z/
+
+      def english_grouped(spec, text)
+        return nil unless spec.thousands && spec.subject == "english" && !spec.form.include?("scientific")
+
+        s = clean(text)
+        return nil unless s.match?(ENGLISH_GROUPED)
+
+        decimal = begin
+          parse(s, allow_dot: spec.allow_dot, unit: spec.unit, thousands: true)
+        rescue Invalid
+          nil
+        end
+        return nil if decimal && key?(spec, decimal)
+
+        parse(s.delete(","), allow_dot: spec.allow_dot, unit: spec.unit, thousands: true)
       end
 
       # A number followed by a word: «2 minuti», «2minuti», «n = 2 metri» (D-386). The word of the item itself (its stems, answer format

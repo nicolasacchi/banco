@@ -30,7 +30,7 @@ module Validation
     end
 
     # The keys of a unit body the grader reads (Grading::Spec).
-    SPEC_KEYS = %w[component skill form form_skill accent_policy spelling_policy paradigm_forms accept unit allow_dot profile case_sensitive].freeze
+    SPEC_KEYS = %w[component skill form form_skill accent_policy spelling_policy paradigm_forms accept unit allow_dot thousands profile case_sensitive].freeze
 
     def spec_for(unit, subject, instance, overrides = {})
       base = unit.body.slice(*SPEC_KEYS)

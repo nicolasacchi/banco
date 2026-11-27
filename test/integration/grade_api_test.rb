@@ -138,6 +138,22 @@ class GradeApiTest < ActionDispatch::IntegrationTest
     assert_equal "wrong", wrong["verdict"]
   end
 
+  test "item grade: an english number item with thousands reads 1,704 as 1704, and 1,5 as a decimal" do
+    item = Item.create!(subject: @english, key: "grade-number-1", kind: "practice_item")
+    body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: "english", skill: "english.numbers", component: "number", level: 1, expected_seconds: 60, thousands: true }
+    revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemInstance.create!(item_revision: revision, seed: 1, display_json: JSON.generate(stem_it: "How many grams are there?"), answer_json: JSON.generate("1704"), fingerprint: Digest::SHA256.hexdigest("n1"))
+    ItemInstance.create!(item_revision: revision, seed: 2, display_json: JSON.generate(stem_it: "How many litres?"), answer_json: JSON.generate("1.5"), fingerprint: Digest::SHA256.hexdigest("n2"))
+    grade_items(revision, [ { instance: 1, answer: "1,704" }, { instance: 1, answer: "1.704" }, { instance: 1, answer: "1,5" }, { instance: 2, answer: "1,5" } ])
+    assert_response :ok, json.inspect
+    english, italian, short, decimal = json["results"]
+    assert_equal [ "correct", "key" ], [ english["verdict"], english["matched"]["kind"] ]
+    assert_equal "1704", english["normalized"]
+    assert_equal "correct", italian["verdict"]
+    assert_equal "wrong", short["verdict"]
+    assert_equal "correct", decimal["verdict"]
+  end
+
   # ---- lessons ----
 
   test "lesson grade: 's scared is right for «is scared»; the error answer is told with its code and its message; a Prova tu check has its own id" do
