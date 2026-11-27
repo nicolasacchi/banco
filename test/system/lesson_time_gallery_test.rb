@@ -40,7 +40,8 @@ class LessonTimeGallerySystemTest < ApplicationSystemTestCase
       refs = front["refs"].to_h { |r| [ [ r["source"], r["line"] ], r["fragment"] ] }
       context = Validation::Context.new(subject: front["subject"], skill: ->(k) { { "key" => k, "errors" => [] } },
                                         source_line: ->(s, n) { (t = refs[[ s, n ]]) && { text: t, origin: "pdf" } }, topic: ->(_k) { true })
-      result = Validation::LessonChecks.call(md, subject: front["subject"], context: context)
+      # The gallery is the time family's block types in the old format: no new english submission, so D-405's bilingual requirement is not its business.
+      result = Validation::Rules.with(lang: { bilingual_required: [] }) { Validation::LessonChecks.call(md, subject: front["subject"], context: context) }
       leftovers = result.findings.reject { |f| STRUCTURE.include?(f.code) }
       raise "the gallery has findings besides its structure: #{leftovers.map { |f| [ f.code, f.field, f.message ] }.inspect}" unless leftovers.empty?
 
