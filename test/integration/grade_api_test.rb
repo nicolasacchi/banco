@@ -233,4 +233,79 @@ class GradeApiTest < ActionDispatch::IntegrationTest
     assert_equal "invalid", sentence["verdict"]
     assert_equal before, ledger_counts
   end
+
+  def matching_check(left, right, answer)
+    { "n" => 1, "type" => "check", "component" => "matching", "prompt_it" => "Abbina.",
+      "left" => left.each_with_index.map { |id, i| { "id" => id, "text_it" => "riga #{i + 1}" } }, "right" => right.each_with_index.map { |id, i| { "id" => id, "text_it" => "scelta #{i + 1}" } },
+      "answer" => answer, "errors" => [ { "answer" => answer.merge(answer.keys[0] => answer.values[1], answer.keys[1] => answer.values[0]), "code" => "swapped", "message_it" => "Le prime due sono scambiate." } ] }
+  end
+
+  test "lesson grade: a matching is graded from the lesson's own ids, as an object or JSON text, as from the shown ids; the shown ids win on a clash and `ids` says which" do
+    check = matching_check(%w[a1 a2 a3], %w[b1 b2 b3], { "a1" => "b2", "a2" => "b3", "a3" => "b1" })
+    lesson = lesson_revision(@english, "ripasso.english.matching-own", "english", [ check ])
+    before = ledger_counts
+    grade_lesson(lesson, [ { check: "1.1", answer: { "a1" => "b2", "a2" => "b3", "a3" => "b1" } } ])
+    assert_response :ok, json.inspect
+    order = json["results"].first["shown_order"]
+    shown = ->(pairs) { pairs.to_h { |l, r| [ "l#{order['left'].index(l) + 1}", "r#{order['right'].index(r) + 1}" ] } }
+    key = { "a1" => "b2", "a2" => "b3", "a3" => "b1" }
+    answers = [ key, JSON.generate(key), shown.(key), JSON.generate(shown.(key)) ]
+    grade_lesson(lesson, answers.map { |a| { check: "1.1", answer: a } })
+    json["results"].each_with_index do |r, i|
+      assert_equal [ "right", "key" ], [ r["verdict"], r["matched"]["kind"] ], "answer #{i}: #{answers[i].inspect}"
+    end
+    assert_equal answers.first, json["results"].first["answer"], "the answer is echoed as it was sent"
+
+    swapped = key.merge("a1" => "b3", "a2" => "b2")
+    grade_lesson(lesson, [ { check: "1.1", answer: swapped }, { check: "1.1", answer: { "a1" => "b1", "a2" => "b2", "a3" => "b3" } }, { check: "1.1", answer: { "a1" => "zz", "a2" => "b3", "a3" => "b1" } },
+                           { check: "1.1", answer: { "a1" => "b2", "a2" => "b3" } }, { check: "1.1", answer: key.merge("a1" => "") } ])
+    wrong, off, unknown, short, blank = json["results"]
+    assert_equal [ "wrong", "swapped", "error" ], [ wrong["verdict"], wrong["error_code"], wrong["matched"]["kind"] ]
+    assert_equal "Le prime due sono scambiate.", wrong["message"]["message_it"]
+    assert_equal "wrong", off["verdict"]
+    assert_equal [ "invalid", "invalid" ], [ unknown["verdict"], short["verdict"] ], "an id that is neither shown nor the lesson's stays as sent and is not read"
+    assert_equal [ "invalid", "incomplete_rows" ], [ blank["verdict"], blank["invalid_code"] ]
+
+    # lesson ids that are the shown names (l1..l3, r1..r3, as in «{"l1":"r3",…}»): the shown ids win unless `ids` says lesson
+    clash = matching_check(%w[l1 l2 l3], %w[r1 r2 r3], { "l1" => "r3", "l2" => "r1", "l3" => "r2" })
+    lesson = lesson_revision(@english, "ripasso.english.matching-clash", "english", [ clash ])
+    grade_lesson(lesson, [ { check: "1.1", answer: { "l1" => "r3", "l2" => "r1", "l3" => "r2" }, ids: "lesson" } ])
+    assert_response :ok, json.inspect
+    assert_equal [ "right", "key" ], [ json["results"][0]["verdict"], json["results"][0]["matched"]["kind"] ]
+    order = json["results"][0]["shown_order"]
+    shown = ->(pairs) { pairs.to_h { |l, r| [ "l#{order['left'].index(l) + 1}", "r#{order['right'].index(r) + 1}" ] } }
+    grade_lesson(lesson, [ { check: "1.1", answer: shown.({ "l1" => "r3", "l2" => "r1", "l3" => "r2" }) }, { check: "1.1", answer: shown.({ "l1" => "r3", "l2" => "r1", "l3" => "r2" }), ids: "shown" },
+                           { check: "1.1", answer: { "l1" => "r3", "l2" => "r1", "l3" => "r2" }, ids: "shown" }, { check: "1.1", answer: { "l1" => "r3", "l2" => "r1", "l3" => "r2" } },
+                           { check: "1.1", answer: { "l1" => "r3", "l2" => "r1", "l3" => "r2" }, ids: "lesson" } ])
+    assert_response :ok, json.inspect
+    assert_equal %w[right right], json["results"].first(2).map { |r| r["verdict"] }, "the shown ids win on a clash"
+    assert_equal "right", json["results"].last["verdict"]
+    assert_equal json["results"][2]["verdict"], json["results"][3]["verdict"], "no `ids` reads the clash as shown ids"
+    grade_lesson(lesson, [ { check: "1.1", answer: "x", ids: "both" } ])
+    assert_response :unprocessable_entity
+    assert_equal "E-FILES", json["code"]
+    assert_equal before, ledger_counts
+  end
+
+  test "lesson grade: the message of a wrong answer is named by language: message_es or message_en for the target text and message_it for the Italian; a legacy lesson keeps message_it" do
+    errors = [ { "answer" => "porqué", "code" => "es_causal_porque_spelling", "message_es" => "«Porqué» es un sustantivo.", "message_it" => "«Porqué» è un nome." } ]
+    check = { "n" => 1, "type" => "check", "component" => "normalized_text", "prompt_es" => "Estudio ___ tengo examen.", "prompt_it" => "Studio ___ ho un esame.", "answer" => "porque", "errors" => errors }
+    body = { schema: "banco.lesson/2", key: "ripasso.spanish.bilingual", subject: "spanish", bilingual: true, cards: [ { n: 1, blocks: [ check ] } ] }
+    lesson = Lesson.create!(subject: @spanish, key: "ripasso.spanish.bilingual", kind: "ripasso")
+    revision = LessonRevision.create!(lesson: lesson, seq: 1, source_md: "---\n", source_sha256: "3" * 64, body_json: JSON.generate(body), rules_version: Validation::Rules.version.to_s, warnings_json: "[]")
+    grade_lesson(revision, [ { check: "1.1", answer: "porqué" }, { check: "1.1", answer: "por que" }, { check: "1.1", answer: " " }, { check: "1.1", answer: "porque" } ])
+    assert_response :ok, json.inspect
+    declared, plain, blank, right = json["results"]
+    assert_equal({ "message_es" => "«Porqué» es un sustantivo.", "message_it" => "«Porqué» è un nome." }, declared["message"])
+    assert_equal "es_causal_porque_spelling", declared["error_code"]
+    assert_nil plain["message"]&.[]("message_es"), "a wrong answer with no message of its own has no target-language message"
+    assert_equal "invalid", blank["verdict"]
+    assert_equal [ "message_it" ], blank["message"].keys, "an unreadable answer is told in Italian only"
+    assert_equal "right", right["verdict"]
+    assert_nil right["message"]
+    assert_not_includes declared["message"].keys, "tr"
+
+    grade_lesson(@en_lesson, [ { check: "1.1", answer: "was scared" } ])
+    assert_equal({ "message_it" => "Usa il presente." }, json["results"].first["message"], "a lesson with Italian messages only keeps message_it")
+  end
 end

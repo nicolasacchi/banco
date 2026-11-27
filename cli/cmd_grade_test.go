@@ -203,3 +203,135 @@ func TestLessonGradeReportsAnUnknownCheckWithItsCode(t *testing.T) {
 		t.Fatalf("exit %d stderr %s", res.exit, res.stderr)
 	}
 }
+
+// D-403, round 9: a repeated --instance (or --check) would grade every answer against the last one; it is refused before anything is sent.
+func TestGradeRefusesARepeatedTargetFlag(t *testing.T) {
+	srv, g := newGradeServer(t, 200, `{}`)
+	for _, args := range [][]string{
+		{"item", "grade", "12", "--instance", "1", "--answer", "a", "--instance", "2", "--answer", "b"},
+		{"item", "grade", "12", "--instance", "1", "--instance", "1", "--answer", "a"},
+		{"lesson", "grade", "40", "--check", "1.1", "--answer", "a", "--check", "1.2", "--answer", "b"},
+	} {
+		res := runItemShotsCLI(t, srv.URL, args...)
+		if res.exit != ExitUsage || !strings.Contains(res.stderr, "E-USAGE") || !strings.Contains(res.stderr, "answers-file") {
+			t.Errorf("%v: exit %d stderr %s", args, res.exit, res.stderr)
+		}
+	}
+	if g.calls != 0 {
+		t.Errorf("a usage error sends nothing: %d calls", g.calls)
+	}
+	// one --instance with several --answer stays valid, and so does a file that pairs each answer with its own instance
+	if res := runItemShotsCLI(t, srv.URL, "item", "grade", "12", "--instance", "2", "--answer", "a", "--answer", "b"); res.exit != 0 || g.calls != 1 {
+		t.Errorf("one --instance: exit %d calls %d stderr %s", res.exit, g.calls, res.stderr)
+	}
+}
+
+// --file grades a local body: the CLI sends the files and the answers to the draft route, with no revision id, and the server stores nothing.
+func TestItemGradeFileSendsTheLocalItemToTheDraftRoute(t *testing.T) {
+	srv, g := newGradeServer(t, 200, `{"draft":true,"read_only":true,"results":[{"instance":1,"verdict":"correct"}]}`)
+	dir := t.TempDir()
+	write := func(name, text string) {
+		t.Helper()
+		path := filepath.Join(dir, name)
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("item.json", `{"subject":"english"}`)
+	write("generator.mjs", "export default {}")
+	write("verify.mjs", "export default {}")
+	write("variant.json", `{"subject":"english","variant":true}`)
+	write("notes.txt", "not sent")
+
+	res := runItemShotsCLI(t, srv.URL, "item", "grade", "--file", dir, "--instance", "2", "--answer", "'s scared")
+	if res.exit != 0 {
+		t.Fatalf("exit %d, stderr %s", res.exit, res.stderr)
+	}
+	if g.method != "POST" || g.path != "/api/v1/item-grade" || g.calls != 1 {
+		t.Errorf("one POST to the draft route: %s %s (%d calls)", g.method, g.path, g.calls)
+	}
+	want := map[string]any{
+		"files":   map[string]any{"item.json": `{"subject":"english"}`, "generator.mjs": "export default {}"},
+		"answers": []any{map[string]any{"instance": float64(2), "answer": "'s scared"}},
+	}
+	if !reflect.DeepEqual(g.body, want) {
+		t.Errorf("body %v, want %v", g.body, want)
+	}
+	if !strings.Contains(res.stdout, `"draft":true`) {
+		t.Errorf("stdout is the server's answer: %q", res.stdout)
+	}
+
+	// a lone JSON file is the item.json of the variant; the generator comes from its folder
+	if res = runItemShotsCLI(t, srv.URL, "item", "grade", "--file", filepath.Join(dir, "variant.json"), "--instance", "1", "--answer", "x"); res.exit != 0 {
+		t.Fatalf("variant: exit %d, stderr %s", res.exit, res.stderr)
+	}
+	files, _ := g.body["files"].(map[string]any)
+	if files["item.json"] != `{"subject":"english","variant":true}` || files["generator.mjs"] != "export default {}" || files["verify.mjs"] != nil {
+		t.Errorf("variant files %v", files)
+	}
+
+	// with --answers-file, and refused when a revision id is given too or the folder holds no item
+	answers := filepath.Join(dir, "answers.json")
+	write("answers.json", `[{"instance":1,"answer":"a"},{"instance":2,"answer":"b"}]`)
+	if res = runItemShotsCLI(t, srv.URL, "item", "grade", "--file", dir, "--answers-file", answers); res.exit != 0 {
+		t.Fatalf("answers-file: exit %d, stderr %s", res.exit, res.stderr)
+	}
+	if list, _ := g.body["answers"].([]any); len(list) != 2 {
+		t.Errorf("answers %v", g.body["answers"])
+	}
+	calls := g.calls
+	for _, args := range [][]string{
+		{"item", "grade", "12", "--file", dir, "--instance", "1", "--answer", "x"},
+		{"item", "grade", "--file", t.TempDir(), "--instance", "1", "--answer", "x"},
+		{"item", "grade", "--file", filepath.Join(dir, "missing.json"), "--instance", "1", "--answer", "x"},
+		{"item", "grade", "--instance", "1", "--answer", "x"},
+	} {
+		if res = runItemShotsCLI(t, srv.URL, args...); res.exit != ExitUsage {
+			t.Errorf("%v: exit %d stderr %s", args, res.exit, res.stderr)
+		}
+	}
+	if g.calls != calls {
+		t.Errorf("a usage error sends nothing: %d calls", g.calls-calls)
+	}
+}
+
+func TestLessonGradeFileSendsTheLessonMdToTheDraftRoute(t *testing.T) {
+	srv, g := newGradeServer(t, 200, `{"draft":true,"read_only":true,"results":[]}`)
+	dir := t.TempDir()
+	file := filepath.Join(dir, "lesson.md")
+	if err := os.WriteFile(file, []byte("---\nschema: banco.lesson/2\n---\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]any{
+		"files":   map[string]any{"lesson.md": "---\nschema: banco.lesson/2\n---\n"},
+		"answers": []any{map[string]any{"check": "1.2", "answer": "porque", "ids": "lesson"}},
+	}
+	for _, target := range []string{file, dir} {
+		g.calls = 0
+		res := runItemShotsCLI(t, srv.URL, "lesson", "grade", "--file", target, "--check", "1.2", "--answer", "porque", "--ids", "lesson")
+		if res.exit != 0 {
+			t.Fatalf("%s: exit %d, stderr %s", target, res.exit, res.stderr)
+		}
+		if g.method != "POST" || g.path != "/api/v1/lesson-grade" || g.calls != 1 || !reflect.DeepEqual(g.body, want) {
+			t.Errorf("%s: %s %s (%d calls) body %v, want %v", target, g.method, g.path, g.calls, g.body, want)
+		}
+	}
+	g.calls = 0
+	for _, args := range [][]string{
+		{"lesson", "grade", "40", "--file", file, "--check", "1.1", "--answer", "x"},
+		{"lesson", "grade", "--file", filepath.Join(dir, "none.md"), "--check", "1.1", "--answer", "x"},
+		{"lesson", "grade", "--file", file, "--check", "1.1", "--answer", "x", "--ids", "both"},
+		{"lesson", "grade", "40", "--check", "1.1", "--answer", "x", "--answers-file", file, "--ids", "shown"},
+		{"item", "grade", "12", "--instance", "1", "--answer", "x", "--ids", "lesson"},
+	} {
+		if res := runItemShotsCLI(t, srv.URL, args...); res.exit != ExitUsage {
+			t.Errorf("%v: exit %d stderr %s", args, res.exit, res.stderr)
+		}
+	}
+	if g.calls != 0 {
+		t.Errorf("a usage error sends nothing: %d calls", g.calls)
+	}
+}

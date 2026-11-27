@@ -36,8 +36,11 @@ module Validation
 
     attr_reader :item, :subject, :base, :files, :key, :session
 
-    def initialize(key:, base:, files:, session:)
+    # draft: the files are read as a submission is (names, sizes, item.json, generator) but belong to no item and no session: no key, no base, no stored
+    # revision to merge with, no role to check. `banco item grade --file` grades such a draft and stores nothing (D-403, round 9).
+    def initialize(key:, base:, files:, session:, draft: false)
       @session = session
+      @draft = draft
       @key = key.to_s
       @base_id = base
       @submitted = files
@@ -45,12 +48,12 @@ module Validation
 
     # Checks the request and builds the merged file set. Raises Refused.
     def prepare!
-      refuse("E-FILES", "item", "an item key is lowercase letters, digits, - and _ (at most 64)", "banco work submit DIR --item KEY", 422) unless key.match?(Item::KEY)
+      refuse("E-FILES", "item", "an item key is lowercase letters, digits, - and _ (at most 64)", "banco work submit DIR --item KEY", 422) unless @draft || key.match?(Item::KEY)
       refuse("E-FILES", "files", "send the files of the revision as an object {name: text}", "banco work submit DIR", 422) unless @submitted.is_a?(Hash) && @submitted.any?
       check_names
       check_sizes
-      @item = Item.find_by(key: key)
-      @base = base_revision
+      @item = @draft ? nil : Item.find_by(key: key)
+      @base = @draft ? nil : base_revision
       @files = merge(@base&.files || {}, @submitted)
       check_item_json
       @subject = @item ? @item.subject : subject_from_item_json
@@ -61,7 +64,7 @@ module Validation
         refuse("E-FILES", "item.json", "the item #{key} is a #{@item.practice? ? 'practice' : 'diagnosis'} item and its kind does not change; item.json says #{parsed_item['kind'].inspect}", "banco work open #{key}", 422)
       end
       check_generator_files
-      check_sessions
+      check_sessions unless @draft
       self
     end
 

@@ -8,7 +8,10 @@ module Grading
     # U+0301, NFC) on both sides, so perchè for perché and està for está are correct,
     # whatever the item's accent_policy. Missing accents are NOT folded in the
     # comparison: an accent slip is its own finding, never "correct". The tilde of ñ
-    # and the diaeresis of ü are different letters and stay.
+    # and the diaeresis of ü are different letters and stay. A mark that makes ANOTHER
+    # word (porqué for porque, el/él, Italian e/è: DiacriticPairs) is not a slip but wrong,
+    # or the declared error value. A number and a currency or percent sign are one form
+    # with or without the space (8€ = 8 €, 20% = 20 %).
     #
     # Findings, in order: exact match of an accepted answer, or one that differs only in
     # the direction of an accent (correct); a declared
@@ -31,6 +34,8 @@ module Grading
       # The subject whose letter codes (GHCC) typed in groups are not an attempt (D-403).
       CODE_SUBJECT = "computer_science"
       WORD_FINAL_APOSTROPHE = /(?<=[aeiou])'(?=[[:space:]]|\z)/
+      # A number followed by a currency or a percent sign is written with one space, whichever way it was typed: 8€ = 8 €, 20% = 20 % (D-403).
+      SIGN_AFTER_NUMBER = /(\d)[[:space:]]?([€$£%])/
 
       module_function
 
@@ -66,14 +71,16 @@ module Grading
         end
         return Closed.invalid("spaces_in_code") if spaced_code?(spec, answer, accepted)
 
-        if (slip = accent_slip(spec, answer, accepted))
+        # A diacritic that makes ANOTHER word (porqué for porque, e for è, DiacriticPairs) is no slip: a declared error value has won above, else the answer is wrong.
+        other_word = other_word?(spec, answer, accepted)
+        if !other_word && (slip = accent_slip(spec, answer, accepted))
           return Closed.result("typical_error", error_codes: [ slip ], normalized: answer, matched: slip_of(spec, answer, accepted, entries, slip))
         end
 
         if (folded_hits = folded_declared(spec, answer, accepted)).any?
           return Closed.result("typical_error", error_codes: folded_hits, normalized: answer)
         end
-        return Closed.result("near_miss", normalized: answer, matched: near_of(spec, answer, accepted, entries)) if near_miss?(spec, answer, accepted)
+        return Closed.result("near_miss", normalized: answer, matched: near_of(spec, answer, accepted, entries)) if !other_word && near_miss?(spec, answer, accepted)
 
         Closed.result("wrong", normalized: answer)
       end
@@ -91,6 +98,16 @@ module Grading
         unaccented = fold_accents(answer.gsub(WORD_FINAL_APOSTROPHE, ""))
         i = accepted.index { |c| fold_accents(c) == unaccented }
         { kind: "slip", value: i && entries[i], code: code }.compact
+      end
+
+      # Is the answer an accepted text with the diacritic of a word that the language's list calls another word (DiacriticPairs)? An apostrophe typed for an
+      # accent (e' for è) is the usual way to write the mark and stays a slip.
+      def other_word?(spec, answer, accepted)
+        return false if answer.gsub(WORD_FINAL_APOSTROPHE, "") != answer
+
+        unaccented = fold_accents(answer)
+        same = accepted.select { |c| fold_accents(c) == unaccented }
+        same.any? && same.all? { |c| DiacriticPairs.word_changed?(spec.subject, answer, c) }
       end
 
       def near_of(spec, answer, accepted, entries)
@@ -115,7 +132,7 @@ module Grading
 
       def normalize(text, case_sensitive: false)
         s = text.unicode_normalize(:nfc).gsub(INVISIBLE, "")
-        s = s.gsub(/[[:space:]]+/, " ").strip
+        s = s.gsub(/[[:space:]]+/, " ").strip.gsub(SIGN_AFTER_NUMBER, '\1 \2')
         s = s.gsub(APOSTROPHES, "'").gsub(QUOTES, '"')
         s = s.sub(LEADING_PUNCTUATION, "")
         s = strip_trailing_punctuation(s)

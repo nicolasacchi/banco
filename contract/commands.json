@@ -343,7 +343,7 @@
       "method": "POST",
       "path": "/api/v1/item-revisions/:revision/grade",
       "args": ["revision"],
-      "flags": ["--instance", "--answer", "--answers-file"],
+      "flags": ["--instance", "--answer", "--answers-file", "--file"],
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND", "E-CHROME-UNAVAILABLE"]
     },
     {
@@ -352,7 +352,7 @@
       "method": "POST",
       "path": "/api/v1/lesson-revisions/:revision/grade",
       "args": ["revision"],
-      "flags": ["--check", "--answer", "--answers-file"],
+      "flags": ["--check", "--answer", "--answers-file", "--ids", "--file"],
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND"]
     },
     {

@@ -38,7 +38,7 @@ class AccentDirectionTest < ActiveSupport::TestCase
     assert_equal [ "it_accents" ], text("perché", "perche").error_codes
     assert_equal [ "it_apostrophe_accent" ], text("perché", "perche'").error_codes
     assert_equal [ "it_apostrophe_accent" ], text("è", "e'").error_codes
-    assert_equal "typical_error", text("è", "e", paradigm_forms: []).verdict
+    assert_equal "wrong", text("è", "e", paradigm_forms: []).verdict, "e for è is another word (DiacriticPairs), not a slip"
     assert_equal "es_accents", text("está", "esta", subject: "spanish").error_codes.first
     assert_not_equal "correct", text("año", "ano", subject: "spanish").verdict
     assert_not_equal "correct", text("pingüino", "pinguino", subject: "spanish").verdict
