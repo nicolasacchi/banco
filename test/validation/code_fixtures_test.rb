@@ -427,6 +427,14 @@ class CodeFixturesTest < ActiveSupport::TestCase
       Lessons::Blocks::TileOrder.check({ "component" => "tiles", "tiles" => tiles, "answer" => %w[a b c d e f g] }, ctx)
       found.map(&:code).uniq
     },
+    # an accepted order that moves the capital tile away from the start (D-408, round 10)
+    "E-TILE-ACCEPT-FORM" => lambda {
+      found = Validation::Findings.new
+      ctx = Lessons::Blocks::Context.new(subject: "english", findings: found)
+      tiles = [ { "id" => "a", "text_en" => "When the bus arrived," }, { "id" => "b", "text_en" => "we were waiting" }, { "id" => "c", "text_en" => "in the rain." } ]
+      Lessons::Blocks::TileOrder.check({ "component" => "tiles", "tiles" => tiles, "answer" => %w[a b c], "accept" => [ %w[c a b] ] }, ctx)
+      found.map(&:code).uniq
+    },
     "W-TOPIC-LANG-MIXED" => lambda {
       found = Validation::Findings.new
       subject = Struct.new(:key).new("english")

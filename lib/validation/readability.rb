@@ -184,10 +184,12 @@ module Validation
 
     # ---- helpers ---------------------------------------------------------------
 
-    # A clock time (8:45, 12:05) is one token, not two numbers around a colon.
-    CLOCK = /(?<![\p{L}\p{N}:])\d{1,2}:\d{2}(?![\p{L}\p{N}])/
+    # A clock time (8:45, 12:05, and in English 10.00, 7.30: hour 0 to 24, minutes 00 to 59) is one token, not two numbers around a colon or a dot.
+    CLOCK = /(?<![\p{L}\p{N}:.])(?:\d{1,2}:\d{2}|(?:2[0-4]|[01]?\d)\.[0-5]\d)(?![\p{L}\p{N}]|\.\d)/
+    # The opening of a span ([[g:term]], [[time:...]], [[en|it:...]]) is markup, not a word: its letter is not counted.
+    SPAN_OPEN = /\[\[[a-z]+(?:[_-][a-z]+)*(?:\|it)?:/
 
-    def count_words(text) = text.gsub(DOTTED, "x").gsub(CLOCK, "x").scan(WORD).size
+    def count_words(text) = text.gsub(SPAN_OPEN, "").gsub(DOTTED, "x").gsub(CLOCK, "x").scan(WORD).size
 
     # A quotation, «...», “...” or "...": a form or a sentence the text talks about, which the cap on a sentence does not read word by word. An item and a lesson read the
     # same three (D-402): the level lint (Bilingual::QUOTED) leaves the same ones.

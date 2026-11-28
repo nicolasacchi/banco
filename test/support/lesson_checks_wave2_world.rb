@@ -4,7 +4,7 @@ require "minitest/mock"
 module LessonChecksWave2World
   TILES = {
     "component" => "tiles", "prompt_it" => "Costruisci la frase.",
-    "tiles" => [ { "id" => "a", "text_en" => "If" }, { "id" => "b", "text_en" => "it" }, { "id" => "c", "text_en" => "rains" }, { "id" => "d", "text_en" => "I" },
+    "tiles" => [ { "id" => "a", "text_en" => "if" }, { "id" => "b", "text_en" => "it" }, { "id" => "c", "text_en" => "rains" }, { "id" => "d", "text_en" => "I" },
                  { "id" => "e", "text_en" => "will" }, { "id" => "f", "text_en" => "stay" }, { "id" => "g", "text_en" => "rained" } ],
     "answer" => %w[a b c d e f], "accept" => [ %w[d e f a b c] ],
     "errors" => [ { "answer" => %w[a b g d e f], "code" => "en_past_in_if", "message_it" => "Dopo if, qui serve il presente." } ]

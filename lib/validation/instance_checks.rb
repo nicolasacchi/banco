@@ -131,7 +131,11 @@ module Validation
       tiles = elements.map { |e| { "id" => e["id"], "text_#{@lang}" => e["text"] } }
       errors = Array(inst["errors"]).map { |e| { "answer" => e["value"] } }
       accepted = Array(inst["accept"]).select { |order| order.is_a?(Array) }
-      orders = Lessons::Blocks::TileOrder.orders({ "tiles" => tiles, "answer" => answer, "accept" => accepted, "errors" => errors })
+      tile_check = { "tiles" => tiles, "answer" => answer, "accept" => accepted, "errors" => errors }
+      Lessons::Blocks::TileOrder.form_problems(tile_check).each_with_index do |problem, i|
+        f.add("E-TILE-ACCEPT-FORM", "#{label}/accept", problem, rule: "tile-accept-form-#{i}", seed: seed)
+      end
+      orders = Lessons::Blocks::TileOrder.orders(tile_check)
       return if orders.empty?
 
       remedy = "add the order to the instance's `accept` if it is right, or declare it as an error value"
