@@ -112,7 +112,7 @@ module Lessons
       spec = Grading::Spec.new(
         component: check["component"], subject: subject, answer: check["answer"],
         errors: errors.each_with_index.map { |e, i| { "code" => "e#{i}", "value" => e["answer"] } },
-        accept: check["accept"], unit: check["unit"], form: form,
+        accept: accept_of(check), unit: check["unit"], form: form,
         profile: check["profile"], thousands: check["thousands"], contractions: check["contractions"],
         item_texts: [ Lang.pick(check, "prompt"), Lang.pick(check, "answer_format") ].grep(String), # a number may end with a unit word they use (D-386)
         # a written word may be answered with the whole sentence around the check's `___` (D-339): the frame is its prompt
@@ -121,6 +121,20 @@ module Lessons
       )
       result = Grading::Closed.grade(spec, response, id_map: id_map.presence)
       from_result(result, errors, spec.display)
+    end
+
+    # The accepted values of a check (D-409). A written answer whose key or accepted value holds a comma («Sí, te lo doy») is right without it («sí te lo doy»): the
+    # grader ignores a final full stop and the case but not a comma, and an author should not have to list every comma-less twin. A comma between two digits is a
+    # decimal mark and stays. A twin that equals a declared wrong answer is not added (that answer is declared wrong).
+    def accept_of(check)
+      accept = check["accept"]
+      return accept unless check["component"] == "normalized_text"
+
+      known = [ check["answer"], *accept ].compact.map(&:to_s)
+      declared = check["errors"].to_a.filter_map { |e| e["answer"]&.to_s }
+      twins = known.filter_map { |t| t.gsub(/(?<!\d),|,(?!\d)/, " ").squeeze(" ").strip if t.match?(/(?<!\d),|,(?!\d)/) }
+      twins = twins.reject { |t| known.include?(t) || declared.any? { |d| Grading::Closed::Text.same_answer?(d, t) } }.uniq
+      twins.empty? ? accept : accept.to_a + twins
     end
 
     def from_result(result, errors, display = {})

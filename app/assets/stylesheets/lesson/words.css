@@ -29,6 +29,8 @@
 .dg-label.dg-wp-caption, .dg-label.dg-wp-key { color: var(--muted); text-align: center; }
 .dg-label.dg-wp-key { text-align: left; }
 .dg-word_parts .dg-target-ic { color: var(--text); }
+/* the Italian gloss of a bilingual lesson's word follows the card's translation toggle, as a text block's Italian does (translation.css: --tr-display is block or none, none when no scope is open) */
+.dg-gloss { display: var(--tr-display, none); }
 
 @media (forced-colors: active) {
   .dg-wp-box, .dg-wp-neutral { fill: Canvas; stroke: CanvasText; }

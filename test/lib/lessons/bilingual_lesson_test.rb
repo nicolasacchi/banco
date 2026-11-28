@@ -295,7 +295,7 @@ class BilingualLessonTest < ActiveSupport::TestCase
     assert_equal "subject", english["subject"]["label_en"]
     assert_equal "soggetto", english["subject"]["label_it"], "same_as keeps the Italian name it copies"
     assert_equal "Who? What?", english["subject"]["question_en"]
-    assert_equal "terminación", Lessons::Palette.roles("spanish")["ending"]["label_es"]
+    assert_equal "desinencia", Lessons::Palette.roles("spanish")["ending"]["label_es"]
     assert_equal "Find the object", Lessons::Palette.step_tags("english")["object"]["label_en"]
   end
 

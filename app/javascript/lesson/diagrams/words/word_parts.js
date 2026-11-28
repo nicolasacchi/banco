@@ -308,6 +308,9 @@ function build(data, ctx) {
   const marginX = 6
   const set = select ? (ctx.set === "syllables" ? "syllables" : "pieces") : null
   const lineH = ctx.lineH
+  // The Italian gloss a bilingual lesson's word carries (label_it, parts_it, meaning_it, an arrow's label_it: the figure's `tr` has no entry for it, so it is not target text)
+  // follows the card's translation toggle like a text block's Italian: the class says so (words.css, `--tr-display`). A legacy lesson has no toggle: its Italian stays.
+  const gloss = (text) => (ctx.lang && !select && !(data.tr && Object.hasOwn(data.tr, text)) ? " dg-gloss" : "")
   // a select figure keeps a small space between its boxes: each one is a target of its own
   const gapSelect = select ? 8 : 0
 
@@ -393,7 +396,7 @@ function build(data, ctx) {
     // ---- the caption
     if (!select) {
       if (w.label_it) {
-        const l = label(ctx, w.label_it, W / 2, y, { anchor: "middle", maxW: W - 2 * marginX - 12, cls: "dg-wp-caption", key: `${keyBase}:label` })
+        const l = label(ctx, w.label_it, W / 2, y, { anchor: "middle", maxW: W - 2 * marginX - 12, cls: `dg-wp-caption${gloss(w.label_it)}`, key: `${keyBase}:label` })
         y += l.h + 6
       }
     }
@@ -411,14 +414,14 @@ function build(data, ctx) {
       const h = Math.max(m.h, lineH) + 2 * Math.round(pad / 2)
       shape(ctx, "rect", { x: marginX, y, w: chipW, h, r: 0, cls: tint(k), key: `${keyBase}:c${k}` })
       label(ctx, t, marginX + chipW / 2, y + Math.round((h - lineH) / 2), { anchor: "middle", cls: "dg-wp-text dg-wp-chip", key: `${keyBase}:c${k}:t`, lang: info.lang === "it" ? undefined : info.lang })
-      label(ctx, w.parts_it[k], textX, y + Math.round((h - m.h) / 2), { anchor: "start", maxW: W - textX - marginX, cls: "dg-wp-meaning", key: `${keyBase}:m${k}` })
+      label(ctx, w.parts_it[k], textX, y + Math.round((h - m.h) / 2), { anchor: "start", maxW: W - textX - marginX, cls: `dg-wp-meaning${gloss(w.parts_it[k])}`, key: `${keyBase}:m${k}` })
       y += h + 6
     })
     if (w.meaning_it) {
       const text = `${TEXT.together}: ${w.meaning_it}`
       const m = ctx.measure(text, f, W - 2 * marginX - 24)
-      shape(ctx, "rect", { x: marginX, y: y + 4, w: W - 2 * marginX, h: m.h + 2 * pad, r: 10, cls: "dg-wp-note", key: `${keyBase}:note` })
-      label(ctx, text, marginX + 12, y + 4 + pad, { anchor: "start", maxW: W - 2 * marginX - 24, cls: "dg-wp-notetext", key: `${keyBase}:note:t` })
+      shape(ctx, "rect", { x: marginX, y: y + 4, w: W - 2 * marginX, h: m.h + 2 * pad, r: 10, cls: `dg-wp-note${gloss(w.meaning_it)}`, key: `${keyBase}:note` })
+      label(ctx, text, marginX + 12, y + 4 + pad, { anchor: "start", maxW: W - 2 * marginX - 24, cls: `dg-wp-notetext${gloss(w.meaning_it)}`, key: `${keyBase}:note:t` })
       y += m.h + 2 * pad + 10
     }
     return y
@@ -470,7 +473,7 @@ function build(data, ctx) {
       if (arrow.label_it) {
         const room = W - cx - 20
         const m = ctx.measure(arrow.label_it, f, room)
-        label(ctx, arrow.label_it, cx + 14, y + gap / 2 - m.h / 2, { anchor: "start", maxW: room, cls: "dg-plate dg-wp-arrowlabel", key: `arrow:${i}:t` })
+        label(ctx, arrow.label_it, cx + 14, y + gap / 2 - m.h / 2, { anchor: "start", maxW: room, cls: `dg-plate dg-wp-arrowlabel${gloss(arrow.label_it)}`, key: `arrow:${i}:t` })
       }
       y += gap
     } else if (i < eff.words.length - 1) y += 16 // two words without an arrow: some air between them

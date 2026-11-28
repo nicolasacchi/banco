@@ -1,8 +1,9 @@
 // mirror (WAVE2 2.6, T3): the Italian sentence over the target language, piece by piece. A piece written 'Glie+lo' is one word written joined.
 // Links join a piece of one side to a piece of the other: same (the same word), meaning (another word, the same meaning), shift, false_friend, told apart
 // by the line (solid, dash-dot, dashed, dotted) and by a mark on it, never by colour alone. Wide: two lines of boxes with the links between them. Narrow (a phone) or crowded: one numbered pair for each
-// link, one under the other. Notes sit under the pairs, each beginning with its piece. The Ruby twin is lib/lessons/diagrams/mirror.rb; both run
-// test/fixtures/diagrams/types/mirror.json.
+// link, one under the other; when the links cross (the two sentences order their pieces differently) the narrow figure draws each sentence whole, in its
+// own order, the pieces numbered by the pair they belong to (D-409). Every narrow form names its two languages at the head. Notes sit under the pairs, each
+// beginning with its piece. The Ruby twin is lib/lessons/diagrams/mirror.rb; both run test/fixtures/diagrams/types/mirror.json.
 import schema from "lesson/diagram_schemas/mirror"
 import palette from "lesson/palette"
 import { finish, label, roleInfo, shape, stateCount } from "lesson/diagrams/common"
@@ -179,6 +180,13 @@ export function selectForm(data) {
 
 // ---- layout -----------------------------------------------------------------------------------------------------------------------
 
+// Do two links cross: is there a piece of the Italian sentence that comes before another and goes to a piece of the other sentence that comes after it? The
+// pairs of a narrow row follow the Italian sentence, so on a crossed row the other sentence would read scrambled: the narrow figure draws both whole (wholeRow).
+export function crosses(links) {
+  const sorted = [...links].sort((x, y) => x[0] - y[0] || x[1] - y[1])
+  return sorted.some((l, k) => k > 0 && l[1] < sorted[k - 1][1])
+}
+
 // The pairs of a narrow row, in sentence order: one for each link, one for each piece with no link (the other side empty). The Italian side keeps its
 // order: a pair stands where its Italian piece does, a piece of the other language with no link stands after the pair of the nearest piece before it that
 // has one (first of all when none has). So a piece that has no partner is never moved to the end of the row.
@@ -283,7 +291,8 @@ function build(data, ctx) {
     }
     if (wide || select) wideRow(row, i, key, lang, links)
     else {
-      listRow(row, i, key, lang, links)
+      if (crosses(links)) wholeRow(row, i, key, lang, links)
+      else listRow(row, i, key, lang, links)
       narrowLinks.push(...links)
     }
     if (!select) notesBlock(row, i, key, lang)
@@ -379,15 +388,70 @@ function build(data, ctx) {
     padX = PAD_X
   }
 
+  // narrow, links that cross (D-409): each sentence whole in its own order, the Italian first and the other language under it, a box for each piece. A piece that
+  // is linked has at its left the number of its pair (one for each link) and a short line in the style of its kind, with the mark; the same number on the two pieces
+  // of a pair says what goes with what, so the order of the English or Spanish sentence is never the Italian one. A piece without a link says so under it.
+  function wholeRow(row, i, key, lang, links) {
+    const plate = Math.round(f * 0.8)
+    const slotH = 2 * plate + 4
+    const stubX = marginX + 2 * plate + 6
+    const stubW = 26
+    const bx = stubX + stubW + 4
+    const boxW = W - bx - marginX
+    const longest = (piece) => Math.max(0, ...show(piece).split(/\s+/).filter(Boolean).map((w) => ctx.measure(w, f).w))
+    if (Math.max(...[...row.pieces_it, ...row[key]].map(longest)) > boxW - 2 * padX) padX = TIGHT_PAD
+    const numbered = [...links].sort((p, q) => p[0] - q[0] || p[1] - q[1]).map(([a, b, kind], n) => ({ a, b, kind, n }))
+    const block = (side, pieces, slot, letter) => {
+      const title = label(ctx, sideOf(side), bx, y, { anchor: "start", maxW: boxW, cls: "dg-mr-side", key: `r${i + 1}:side-${slot}`, lang: chromeLang })
+      y += title.h + 4
+      pieces.forEach((text, k) => {
+        const mine = numbered.filter((l) => (slot === "it" ? l.a : l.b) === k)
+        const h = Math.max(placement(row, side, k, text, boxW, true).h + 2 * pad, mine.length * slotH, lineH + 2 * pad)
+        pieceBox(row, side, k, text, side === "it" ? undefined : lang, bx, y, boxW, idOf(i, letter, k), { h, wrap: true })
+        const first = y + (h - mine.length * slotH) / 2
+        mine.forEach((l, j) => {
+          const cy = first + j * slotH + slotH / 2
+          const at = `r${i + 1}:n${l.n}:${slot}`
+          shape(ctx, "circle", { cx: marginX + plate, cy, r: plate, cls: "dg-numplate", key: at })
+          label(ctx, String(l.n + 1), marginX + plate, cy - Math.ceil(f * 0.7), { anchor: "middle", cls: "dg-numlabel", key: `${at}:t` })
+          shape(ctx, "line", { x1: stubX, y1: cy, x2: bx - 3, y2: cy, cls: `dg-mr-link dg-mr-${l.kind}`, key: `r${i + 1}:l${l.n}:${slot}` })
+          linkMark(l.kind, stubX + stubW / 2, cy, `r${i + 1}:l${l.n}:${slot}:m`)
+        })
+        y += h
+        if (mine.length === 0) y += 4 + label(ctx, word("link_none"), bx + 4, y + 4, { anchor: "start", maxW: boxW - 8, cls: "dg-mr-none", key: `r${i + 1}:none-${slot}${k}`, lang: chromeLang }).h
+        y += 10
+      })
+    }
+    block("it", row.pieces_it, "it", "i")
+    y += 6
+    block(lang, row[key], "tg", "t")
+    padX = PAD_X
+  }
+
   // narrower still: each pair as the Italian piece, a short upright link with its mark, the other piece (the words of the kinds are the legend's); a piece without a
   // link says so under it. The pair's number sits at its left, in the middle.
   function stackedPairs(row, i, key, lang, pairs, plate, lx) {
     const boxW = W - lx - marginX
     const linkX = lx + 22
     const linkH = Math.max(30, lineH + 6)
+    // the two languages are named where each first appears: over the first Italian piece and over the first piece of the other language
+    const named = { it: false, tg: false }
+    const name = (side, slot) => {
+      if (named[slot]) return
+      named[slot] = true
+      y += label(ctx, sideOf(side), lx, y, { anchor: "start", maxW: boxW, cls: "dg-mr-side", key: `r${i + 1}:side-${slot}`, lang: chromeLang }).h + 2
+    }
     pairs.forEach((pr, n) => {
-      const top = y
-      if (pr.a != null) y += pieceBox(row, "it", pr.a, row.pieces_it[pr.a], undefined, lx, y, boxW, `${idOf(i, "i", pr.a)}:${n}`, { wrap: true }).h
+      let top = y
+      if (pr.a != null) {
+        name("it", "it")
+        top = y
+        y += pieceBox(row, "it", pr.a, row.pieces_it[pr.a], undefined, lx, y, boxW, `${idOf(i, "i", pr.a)}:${n}`, { wrap: true }).h
+      }
+      if (pr.b != null) {
+        name(lang, "tg")
+        if (pr.a == null) top = y
+      }
       if (pr.kind !== "none") {
         shape(ctx, "line", { x1: linkX, y1: y + 3, x2: linkX, y2: y + linkH - 3, cls: `dg-mr-link dg-mr-${pr.kind}`, key: `r${i + 1}:l${n}` })
         const my = y + linkH / 2

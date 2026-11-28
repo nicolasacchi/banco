@@ -10,8 +10,48 @@ module Lessons
       extend Contract
 
       PERCENT_ONLY = %w[base anchor unit marks hide chain].freeze
+      # A decimal written with a point ("18.8"), as an English text writes it (D-409).
+      POINT_DECIMAL = /\A(-?(?:0|[1-9][0-9]*))\.([0-9]+)\z/
 
       class << self
+        # D-409: an English lesson writes the numbers of a bar_model the way its text does, with a decimal point ("18.8"); the figure's exact numbers are
+        # written with a comma ("18,8", Lessons::Num), so the parser of a bilingual english lesson turns the points of every bar_model in a block (a figure, a
+        # check's figure, a more block) into commas before the block is checked. The renderer prints them with a point again (chart/format.js localNumber).
+        # A thousands point ("1.500") is never read: it is a decimal like any other here, so an author writes "1500".
+        def decimal_commas(node)
+          case node
+          when Array then node.each { |v| decimal_commas(v) }
+          when Hash
+            bar_model_numbers(node) if node["type"] == "bar_model"
+            node.each_value { |v| decimal_commas(v) }
+          end
+          node
+        end
+
+        # "18.8" is "18,8"; so is the YAML number 18.8 (an unquoted 18.80 loses its zero: quote it to keep it). Anything else stays as it is.
+        def point_to_comma(value)
+          text = value.is_a?(Float) && value.finite? ? value.to_s : value
+          text.is_a?(String) && text.match?(POINT_DECIMAL) ? text.sub(POINT_DECIMAL, "\\1,\\2") : value
+        end
+
+        # The fields of a bar_model (and of each of its states) that hold an exact number.
+        def bar_model_numbers(figure)
+          fix = ->(h, key) { h[key] = point_to_comma(h[key]) if h.is_a?(Hash) && h.key?(key) }
+          each_state = lambda do |eff|
+            fix.(eff, "base")
+            fix.(eff["anchor"], "pct")
+            fix.(eff["anchor"], "value")
+            fix.(eff["total"], "value")
+            Array(eff["bars"]).each { |b| Array(b["parts"]).each { |p| fix.(p, "value") } if b.is_a?(Hash) }
+            Array(eff["marks"]).each { |m| fix.(m, "pct") }
+            Array(eff["chain"]).each { |c| fix.(c, "pct") }
+            hide = eff["hide"]
+            hide.each_index { |i| hide[i] = point_to_comma(hide[i]) } if hide.is_a?(Array)
+          end
+          each_state.(figure)
+          Array(figure["states"]).each { |s| each_state.(s) if s.is_a?(Hash) }
+        end
+
         def static(data, c)
           case data["view"]
           when "parts"

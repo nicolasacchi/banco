@@ -36,15 +36,13 @@ class MirrorRound5Test < ActiveSupport::TestCase
     assert_empty found(figure(notes: [ { "side" => "it", "piece" => 0, "note_it" => "scrivi «los», non l'articolo" } ]))
   end
 
-  test "W-MIRROR-ORDER: crossing links warn once per row, with a message that says to pick parallel sentences; the parallel order does not (D-402, round 7)" do
+  test "crossing links are no finding any more: the narrow figure draws each sentence whole in its own order (D-409, was W-MIRROR-ORDER)" do
     crossed = figure(links: [ [ 0, 1, "meaning" ], [ 1, 0, "same" ], [ 2, 1, "same" ] ], notes: [])
     crossed["rows"][0]["pieces_it"] = %w[Ieri mangio pesce]
     crossed["rows"][0]["pieces_es"] = %w[comí ayer]
-    assert_equal [ [ "W-MIRROR-ORDER", "/rows/0/links" ] ], found(crossed)
-    warning = Lessons::Diagrams.check(crossed, subject: "spanish").find { |f| f.code == "W-MIRROR-ORDER" }
-    assert_match(/pick parallel sentences/, warning.message)
-    assert_equal "warning", Validation::Codes.severity("W-MIRROR-ORDER")
-    # the Italian order and the target order agree, a piece linked twice or a piece with no link does not make a crossing
+    assert_empty found(crossed)
+    assert_raises(KeyError) { Validation::Codes.severity("W-MIRROR-ORDER") }
+    # the parallel order, a piece linked twice and a piece with no link were never a crossing
     assert_empty found(figure)
     assert_empty found(figure(links: [ [ 1, 0, "meaning" ], [ 2, 0, "same" ], [ 2, 1, "same" ] ]).tap { |f| f["rows"][0]["notes"] = [ { "side" => "it", "piece" => 0, "note_it" => "l'articolo non c'è in spagnolo" } ] })
   end

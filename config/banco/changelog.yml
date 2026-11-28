@@ -13,6 +13,15 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: figures-and-languages-round10
+    date: 2026-11-28
+    audience: [student, teacher]
+    kind: fix
+    decisions: [D-409]
+    title_it: "Figure più chiare sul telefono e nelle lezioni di lingue"
+    body_it: "Sul telefono le due frasi a confronto restano ognuna nel suo ordine, con il nome delle due lingue sopra. Nelle parole divise in pezzi l'italiano si vede solo quando apri «Traduzione». Nelle lezioni di inglese i numeri decimali hanno il punto, e una risposta scritta senza virgola va bene lo stesso."
+    title_en: "Clearer figures on a phone and in language lessons"
+    body_en: "On a phone, the two sentences of a comparison each keep their own word order, with the names of the two languages above them. In words split into pieces, the Italian shows only when you open the translation. In English lessons decimal numbers use a point, and an answer written without a comma is still right."
   - id: physical-education-out
     date: 2026-11-28
     audience: [student, teacher]

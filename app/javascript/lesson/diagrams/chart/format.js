@@ -47,3 +47,7 @@ export function exactString(x) {
 export function authorValue(value, places) {
   return formatValue(value, places).replace(/\./g, "").replace("−", "-")
 }
+
+// The number as the page's language writes it (D-409): a figure's numbers are exact numbers written the Italian way ("1.860,5"), which Italian and Spanish
+// lessons print as they are; an English lesson (ctx.lang "en") swaps the two marks, a point for the decimals and a comma between thousands ("1,860.5").
+export const localNumber = (text, lang) => (lang === "en" ? String(text).replace(/[.,]/g, (c) => (c === "." ? "," : ".")) : text)

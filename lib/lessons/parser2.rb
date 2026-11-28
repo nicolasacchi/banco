@@ -180,6 +180,7 @@ module Lessons
         holds = @allow_reserved ? [] : false
         block, index = Directives.build(frame[:head], frame[:body], frame[:line], in_more: frame[:in_more], allow_reserved: holds, lang: @lang)
         report_holds(holds)
+        Diagrams::BarModel.decimal_commas(block) if @lang == "en" # D-409: an English lesson writes «18.8»
         @field_lines[frame[:line]] = index
         valid(block.merge("line" => frame[:line]), frame[:line])
       rescue Directives::Refused => e

@@ -43,7 +43,7 @@ test("the axis of a tense line is drawn in the language of a bilingual lesson, l
 const SPANISH = { type: "word_parts", alt_it: "La parola puedo: la radice cambia dove batte la voce.", view: "syllables", words: [{ form_es: "p[ue]d|o", label_it: "yo" }] }
 
 test("the legend of word_parts is drawn in the language of a bilingual lesson, with the strong-syllable key; a legacy lesson draws Italian", () => {
-  for (const [lang, stem, ending, strong] of [["es", "raíz", "terminación", "Aquí va el acento"], ["en", "root", "ending", "Stress here"]]) {
+  for (const [lang, stem, ending, strong] of [["es", "raíz", "desinencia", "Sílaba fuerte"], ["en", "root", "ending", "Stress here"]]) {
     const scene = wordParts.layout(SPANISH, { width: 700, fontPx: 20, subject: "spanish", lang, measure })
     assert.ok(!scene.error, scene.error?.message)
     const key = scene.labels.filter((l) => /^key:/.test(l.key ?? ""))
@@ -59,7 +59,7 @@ test("the legend of word_parts is drawn in the language of a bilingual lesson, w
     const pairs = wordParts.chromePairs(SPANISH, lang)
     assert.ok(pairs.some(([t, it]) => t === stem && it === "radice"))
     assert.ok(pairs.some(([t, it]) => t === ending && it === "desinenza"))
-    assert.ok(pairs.some(([t, it]) => t === strong && it === "Qui batte la voce"))
+    assert.ok(pairs.some(([t, it]) => t === strong && it === "Sillaba forte"))
     const legacy = wordParts.layout(SPANISH, { width: 700, fontPx: 20, subject: "spanish", measure })
     const italian = legacy.labels.filter((l) => /^key:/.test(l.key ?? ""))
     assert.ok(italian.length >= 3 && italian.every((l) => l.lang === undefined && Object.values(WORDS).includes(l.text_it)), "legacy: Italian, no language")
@@ -78,5 +78,5 @@ test("the figure's translation panel lists the axis words and the legend words a
   assert.ok(axis, "a panel with the axis words")
   assert.deepEqual([...axis.querySelectorAll("li")].map((li) => li.textContent), ["ahora → adesso", "antes → prima", "después → dopo"])
   const legend = translationPanel(SPANISH, ctx)
-  assert.ok([...legend.querySelectorAll("li")].some((li) => li.textContent === "Aquí va el acento → Qui batte la voce"))
+  assert.ok([...legend.querySelectorAll("li")].some((li) => li.textContent === "Sílaba fuerte → Sillaba forte"))
 })

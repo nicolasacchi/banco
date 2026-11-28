@@ -88,7 +88,7 @@ class WordsFamilySystemTest < ApplicationSystemTestCase
     go(4)
     assert_selector "#scheda-4 .dg-word_parts .dg-label", text: "dár"
     assert_selector "#scheda-4 .dg-word_parts [lang=es]", minimum: 4
-    assert_selector "#scheda-4 .dg-label", text: "Qui batte la voce", count: 1
+    assert_selector "#scheda-4 .dg-label", text: "Sillaba forte", count: 1
     assert_selector "#scheda-4 .dg-label", text: "pezzo attaccato", count: 1
     descr = page.evaluate_script("document.querySelector('#scheda-4 .dg-desc p').textContent")
     assert_match(/La voce batte sulla sillaba numero 1: dár\./, descr)

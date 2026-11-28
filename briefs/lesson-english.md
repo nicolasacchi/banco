@@ -1,6 +1,6 @@
 ---
 name: lesson-english
-version: 5
+version: 6
 formats: banco.lesson/2
 ---
 
@@ -94,7 +94,7 @@ Available now. Our code computes what can be computed; you write the words and t
   - A select check can ask for `targets: pieces` or `targets: syllables`; the ids are `w1p2` (the second piece of the first word) and `w1s3` (its third syllable).
     The figure the student taps shows the pieces or the syllables alike, with no mark.
 - **`mirror`**: the Italian over the other language, 1 to 3 rows, at most 12 words a side (`pieces_it`, and `pieces_es` or `pieces_en`). A piece `'Glie+lo'` is one
-  **Parallel sentences:** the narrow figure follows the Italian sentence, so choose a pair whose linked pieces come in the same order in both (`W-MIRROR-ORDER` when the links cross); a pair that reorders is split into two rows, or replaced.
+  **Different word order:** a pair whose linked pieces come in another order in the two sentences is what a mirror is for, write its links as they are (D-409). The narrow figure draws each sentence whole in its own order, the pieces numbered by their pair, so a text that says «above», «below» or «on the left» is true at one width only: name the sentence («the Italian one», «the English one») instead.
   word written joined. Each link is `[it piece, other piece, same | meaning | shift | false_friend]`: `same` is the same word in both languages (drawn «uguale»), `meaning`
   is another word with the same meaning (es «tu» and it «tuo»: drawn «stesso significato»). A `shift`, a `false_friend` and every piece with no link needs a note
   (`note_it`, at most 12 words) that says why. Links that are all `same` need `same_ok: true`. A piece with no partner stays in its place in the sentence with an empty

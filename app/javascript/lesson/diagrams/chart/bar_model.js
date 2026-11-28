@@ -7,7 +7,7 @@ import * as N from "lesson/num"
 import schema from "lesson/diagram_schemas/bar_model"
 import { effectiveState, finish, label, listIt, plain, shape, stackLabels, stateCount } from "lesson/diagrams/common"
 import { run } from "lesson/diagrams/run"
-import { authorValue, formatValue } from "lesson/diagrams/chart/format"
+import { authorValue, formatValue, localNumber } from "lesson/diagrams/chart/format"
 
 export const type = "bar_model"
 export { schema }
@@ -62,12 +62,12 @@ export function percentValues(eff) {
 }
 
 // the display text of a value string of `values` ("1860,00" -> "1.860,00 €"); null is "?"
-function shownValue(text, unit) {
+function shownValue(text, unit, lang) {
   if (text === null || text === undefined) return "?"
   const x = N.parse(text)
   if (!x) return "?"
   const places = text.includes(",") ? text.split(",")[1].length : 0
-  const body = formatValue(x, places)
+  const body = localNumber(formatValue(x, places), lang)
   return unit === "euro" ? `${body} €` : body
 }
 
@@ -153,7 +153,7 @@ function partsBuild(eff, ctx, select) {
   if (total && !select) {
     const x1 = x0 + N.toNumber(total) * scale
     // a label is drawn with its markup, as the bar's own label is (a formula: D-310); the descriptions use plain()
-    const text = `${eff.total.label_it ? `${eff.total.label_it}: ` : ""}${formatValue(total)}`
+    const text = `${eff.total.label_it ? `${eff.total.label_it}: ` : ""}${localNumber(formatValue(total), ctx.lang)}`
     const h = label(ctx, text, (x0 + x1) / 2, y, { cls: "dgq-total" }).h
     shape(ctx, "path", { d: `M${x0},${y + h + 16} V${y + h + 8} H${x1} V${y + h + 16}`, cls: "dgq-brace" })
     y += h + 24
@@ -177,7 +177,7 @@ function partsBuild(eff, ctx, select) {
         rect.target = `t${targets.length + 1}`
         targets.push(rect)
       } else {
-        const inside = hidden ? "?" : formatValue(N.parse(part.value))
+        const inside = hidden ? "?" : localNumber(formatValue(N.parse(part.value)), ctx.lang)
         const fits = ctx.measure(inside, f).w + 8 <= w
         if (fits) label(ctx, inside, x + w / 2, y + (barH - ctx.lineH) / 2, { cls: "dgq-value", role: part.role })
         const name = part.label_it ?? ""
@@ -215,7 +215,7 @@ function percentBuild(eff, ctx, select, extra) {
   const x1 = W - pad
   const xOf = (p) => x0 + (p / maxPct) * (x1 - x0)
   const barH = Math.max(34, Math.round(f * 1.9))
-  const pctText = (p) => `${authorValue(p)}%`
+  const pctText = (p) => `${localNumber(authorValue(p), ctx.lang)}%`
   const targets = []
   let y = 8
 
@@ -230,7 +230,7 @@ function percentBuild(eff, ctx, select, extra) {
       const x = xOf(t.pct)
       shape(ctx, "line", { x1: x, y1: rowTop - 6, x2: x, y2: rowTop + barH + 6, cls: `dgq-tick${t.role && !select ? ` st-${t.role}` : ""}` })
       if (t.role && !select) shape(ctx, "circle", { cx: x, cy: rowTop + barH / 2, r: 6, cls: `mk-${t.role}` })
-      if (!select) aboveSpecs.push({ text: t.plain ? t.value : shownValue(t.value, unit), cx: x, cls: "dgq-euro", role: t.role, connectFrom: rowTop - 6 })
+      if (!select) aboveSpecs.push({ text: t.plain ? t.value : shownValue(t.value, unit, ctx.lang), cx: x, cls: "dgq-euro", role: t.role, connectFrom: rowTop - 6 })
       belowSpecs.push({ text: select || !t.name ? t.pctText : `${t.pctText} ${t.name}`, cx: x, cls: "dgq-pct", role: select ? undefined : t.role, connectFrom: rowTop + barH + 6 })
       if (select && t.target) targets.push(shape(ctx, "rect", { x: x - 14, y: rowTop - 8, w: 28, h: barH + 16, r: 0, cls: "dgq-target", target: `t${targets.length + 1}` }))
     }

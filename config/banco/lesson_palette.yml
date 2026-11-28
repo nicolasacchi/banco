@@ -195,7 +195,7 @@ spanish:
       fg: {cream: "#5e4483", dark: "#e3dbed"}, mark: {cream: "#997fbd", dark: "#e3dbed"}}
     stem: {label_it: "radice", label_es: "raíz", carrier: position, shape: square,
       fg: {cream: "#7b00c8", dark: "#d898ff"}, mark: {cream: "#8e00e6", dark: "#d289ff"}, tint: {cream: "#efe3f7", dark: "#321e3e"}}
-    ending: {label_it: "desinenza", label_es: "terminación", carrier: position, shape: ring,
+    ending: {label_it: "desinenza", label_es: "desinencia", carrier: position, shape: ring,
       fg: {cream: "#255b4a", dark: "#63bfa2"}, mark: {cream: "#3e987c", dark: "#327b64"}, tint: {cream: "#e3f7f1", dark: "#1e3e34"}}
     stress: {label_it: "sillaba forte", label_es: "sílaba fuerte", carrier: glyph,
       fg: {cream: "#000f05", dark: "#b9fdcd"}, mark: {cream: "#000f05", dark: "#b9fdcd"}}
@@ -360,7 +360,7 @@ step_tags:
     stem: {label_it: "Trova la radice", label_es: "Busca la raíz", icon: scissors}
     person: {label_it: "Guarda la persona", label_es: "Mira la persona", icon: users}
     change: {label_it: "Cambia la vocale forte", label_es: "Cambia la vocal fuerte", icon: replace}
-    ending: {label_it: "Aggiungi la desinenza", label_es: "Añade la terminación", icon: puzzle}
+    ending: {label_it: "Aggiungi la desinenza", label_es: "Añade la desinencia", icon: puzzle}
     listen: {label_it: "Ascolta", label_es: "Escucha", icon: volume-2}
     thing: {label_it: "Trova la cosa", label_es: "Busca la cosa", icon: box}
     whom: {label_it: "Trova a chi", label_es: "Busca a quién", icon: hand-helping}

@@ -76,6 +76,18 @@ class LessonsChecksTest < ActiveSupport::TestCase
     assert grade(spanish, "esta", subject: "spanish").wrong?
   end
 
+  test "normalized_text: a key or an accepted value with a comma is right without it, a decimal comma stays, a declared error is never swallowed (D-409)" do
+    check = { "component" => "normalized_text", "prompt_it" => "Rispondi.", "answer" => "Sí, te lo doy.", "accept" => [ "Sí, se lo doy" ] }
+    %w[Sí,\ te\ lo\ doy. sí\ te\ lo\ doy sí\ se\ lo\ doy].each { |a| assert grade(check, a, subject: "spanish").right?, a }
+    assert grade(check, "sí te lo digo", subject: "spanish").wrong?
+    number = { "component" => "normalized_text", "prompt_it" => "Scrivi.", "answer" => "3,5 litros" }
+    assert grade(number, "3,5 litros", subject: "spanish").right?
+    assert grade(number, "35 litros", subject: "spanish").wrong?, "the comma between digits is a decimal mark, never punctuation"
+    declared = { "component" => "normalized_text", "prompt_it" => "Rispondi.", "answer" => "No, gracias", "errors" => [ { "answer" => "no gracias", "message_it" => "Manca la virgola." } ] }
+    assert grade(declared, "No, gracias", subject: "spanish").right?
+    assert_equal "Manca la virgola.", grade(declared, "no gracias", subject: "spanish").message_it
+  end
+
   test "matching: pairs by shown ids, a classification may reuse a right item" do
     check = { "component" => "matching", "prompt_it" => "Abbina.", "reuse_right" => true,
               "left" => [ { "id" => "l1", "text_it" => "uno" }, { "id" => "l2", "text_it" => "due" }, { "id" => "l3", "text_it" => "tre" } ],

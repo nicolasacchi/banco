@@ -201,7 +201,7 @@ export function translationPanel(data, ctx) {
 //   `label.lang`            the layout says the text is written in that language (a part of a sentence, a word, a piece): target-only material is left out
 //                           of the check like the fragments of an exercise (data-tr-exempt), an Italian one is Italian;
 //   a served `_it` slot     target text; it has its Italian when the figure's `tr` has it (the panel lists it), else the check asks for it;
-//   anything else           text the layout wrote itself (the legend's «Qui batte la voce», a role's name, a counter): interface text, Italian.
+//   anything else           text the layout wrote itself (the legend's «Sillaba forte», a role's name, a counter): interface text, Italian.
 // A label never draws a `.tr` of its own: a text in the drawing has no room for a line under it, the figure's panel says it.
 export function markLabel(node, label, ctx, { served, figureCtx }) {
   if (!ctx.lang) return
