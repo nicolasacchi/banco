@@ -52,7 +52,10 @@ module Teacher
       [ /\Asubject is a subject key, or an empty string to clear the recommendation\z/, ->(_names, *) { "Scegli una materia, oppure togli il consiglio." } ],
       [ /\Ano subject is recommended now\z/, ->(_names, *) { "Non c'è nessun consiglio da togliere." } ],
       [ /\A(\w+) is already the recommended subject\z/, ->(_names, *) { "Questa materia è già quella consigliata." } ],
-      [ /\Athe course of (\w+) is not open to the student\z/, ->(_names, *) { "Il corso di questa materia non è ancora aperto allo studente." } ]
+      [ /\Athe course of (\w+) is not open to the student\z/, ->(_names, *) { "Il corso di questa materia non è ancora aperto allo studente." } ],
+      [ /\Aa correction is required\z/, ->(_names, *) { "Scrivi la correzione." } ],
+      [ /\Athe correction is at most (\d+) characters\z/, ->(_names, n) { "La correzione è troppo lunga: al massimo #{n} caratteri." } ],
+      [ /\Awriting submission (\d+) is not a student's text: the preview's texts are not corrected\z/, ->(_names, *) { "Questo è un testo della prova come studente: non si corregge." } ]
     ].freeze
 
     module_function

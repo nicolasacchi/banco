@@ -151,6 +151,9 @@
   <% if comment_unread_count.positive? %>
     <%= ui_notice :info, nil, html: { id: "comment-replies" } do %><strong><%= t("comments.today_line") %></strong> <a href="/comments"><%= t("comments.today_link") %></a><% end %>
   <% end %>
+  <% @new_corrections.each do |topic| %>
+    <%= ui_notice :info, nil, html: { class: "writing-today", data: { topic: topic.key } } do %><strong><%= t("writing.today.line", topic: topic_title(topic)) %></strong> <a class="writing-today-link" href="<%= spath("/topics/#{topic.key}#writing") %>"><%= t("writing.today.link") %></a><% end %>
+  <% end %>
   <% if @nothing %>
     <%= ui_notice :info, t("today.closed"), html: { id: "course-closed" } %>
   <% end %>

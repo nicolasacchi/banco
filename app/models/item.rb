@@ -14,6 +14,9 @@ class Item < ApplicationRecord
 
   def practice? = PRACTICE_KINDS.include?(kind)
 
+  # A writing task (D-407): a short_answer with a word range, which a topic pins in `writing`. Read from the latest revision.
+  def writing? = kind == "short_answer" && latest_revision.present? && JSON.parse(latest_revision.body_json).key?("words_min")
+
   # Reserve (D-125): the items of a subject that the subject's latest blueprint does not
   # pin. Derived, nothing is stored: pin one and it is in the test again. With no
   # blueprint yet, nothing is a reserve.

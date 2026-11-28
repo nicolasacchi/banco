@@ -46,7 +46,7 @@ module Privacy
                 drop: %w[agent_session_id brief_sha256],
                 description_it: "i punteggi che l'assistente del docente ha proposto per le tue risposte scritte, prima che il docente decidesse."),
       Table.new(name: "decisions", scope: mine.call(Decision), drop: decision_private,
-                description_it: "le decisioni del docente che ti riguardano: il consenso, le correzioni delle tue risposte, la chiusura del test d'ingresso, l'apertura del corso. Di ognuna c'è chi l'ha presa e quando."),
+                description_it: "le decisioni del docente che ti riguardano: il consenso, le correzioni delle tue risposte e dei tuoi testi, la chiusura del test d'ingresso, l'apertura del corso. Di ognuna c'è chi l'ha presa e quando."),
       Table.new(name: "app_events", scope: mine.call(AppEvent), drop: [],
                 description_it: "le cose che banco ha annotato su di te: le scelte in Impostazioni, le risposte rifiutate perché non valide, i promemoria mostrati prima di un esercizio, le risposte segnalate, e ogni volta che hai scaricato i tuoi dati."),
       Table.new(name: "practice_serves", scope: mine.call(PracticeServe), drop: %w[seed],
@@ -72,7 +72,9 @@ module Privacy
       Table.new(name: "comment_events", scope: ->(student) { CommentEvent.where(comment_id: comments.call(student)) }, drop: %w[request_id],
                 description_it: "che cosa è successo a ogni commento: le risposte del docente, quando è stato letto, chiuso o riaperto, le tue risposte e quando ne hai cancellato uno (i commenti cancellati ci sono ancora). Il tuo indirizzo di rete c'è solo nelle righe scritte da te."),
       Table.new(name: "ratings", scope: mine.call(Rating), drop: [],
-                description_it: "le stelle e i commenti che hai dato agli esercizi e alle lezioni, con l'esercizio o la lezione e la versione che avevi davanti.")
+                description_it: "le stelle e i commenti che hai dato agli esercizi e alle lezioni, con l'esercizio o la lezione e la versione che avevi davanti."),
+      Table.new(name: "writing_submissions", scope: mine.call(WritingSubmission), drop: [],
+                description_it: "i testi che hai scritto da te negli argomenti («Scrivi tu»), con l'argomento e il compito che avevi davanti e quando li hai consegnati.")
     ].freeze
 
     # Tables that are not about a student, with why: the export test needs every table of the schema in TABLES or here.

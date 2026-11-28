@@ -1,0 +1,36 @@
+<% content_for :title, t("teacher.writings.title") %>
+<main class="page wide">
+  <%= ui_page_header t("teacher.writings.title"), back: [ t("teacher.menu.home"), with_student("/teacher") ] %>
+  <%= render "teacher/student_picker" %>
+  <% blocker = decision_blocker %>
+  <p class="hint"><%= t("teacher.writings.intro") %></p>
+  <p id="writings-summary" class="hint writings-summary"><%= t("teacher.writings.summary", pending: @board.pending.size, corrected: @board.corrected.size) %></p>
+
+  <% { pending: @board.pending, corrected: @board.corrected }.each do |status, entries| %>
+    <h2 id="writings-<%= status %>-title"><%= t("teacher.writings.#{status}_title") %></h2>
+    <% if entries.empty? %><%= ui_empty t("teacher.writings.none_#{status}") %><% end %>
+    <% entries.each do |entry| %>
+      <% submission = entry.submission %>
+      <article class="card writing-entry" id="writing-<%= submission.id %>" data-writing-submission="<%= submission.id %>" data-status="<%= status %>">
+        <h3><%= entry.subject.name_it %> · <%= entry.topic_title %> · <%= ref_for(entry.item_key) %></h3>
+        <p class="writing-meta"><%= t("teacher.writings.meta", student: student_name(submission.student), at: teacher_time(submission.created_at), words: submission.word_count) %>
+          <% if entry.words_min %><%= t("teacher.writings.range", min: entry.words_min, max: entry.words_max) %><% end %></p>
+        <h4><%= t("teacher.writings.task") %></h4>
+        <p class="prompt" data-writing-task-text><%= entry.task_it %></p>
+        <% if entry.notes_it.present? %><p class="writing-task-notes" data-writing-notes><strong><%= t("teacher.writings.notes") %></strong> <%= entry.notes_it %></p><% end %>
+        <h4><%= t("teacher.writings.text") %></h4>
+        <p class="student-text answer-quote writing-text" data-student-text><%= submission.text %></p>
+        <% if entry.correction %>
+          <h4><%= t("teacher.writings.correction_done") %></h4>
+          <p class="writing-correction-text" data-writing-correction><%= entry.correction.text_it %></p>
+          <p class="hint"><%= t("teacher.writings.corrected_by", teacher: entry.correction.teacher, at: teacher_time(entry.correction.at)) %></p>
+        <% end %>
+        <%= decision_form("/teacher/writing-submissions/#{submission.id}/correct") do %>
+          <label class="hint" for="correction-<%= submission.id %>"><%= t(entry.correction ? "teacher.writings.correct_again" : "teacher.writings.correction") %></label>
+          <textarea id="correction-<%= submission.id %>" class="answer-input wide" name="text_it" rows="8" maxlength="<%= WritingSubmission::CORRECTION_MAX %>" required><%= entry.correction&.text_it %></textarea>
+          <div class="button-row"><button type="submit" class="button<%= ' secondary' if entry.correction %>" <%= "disabled" if blocker %>><%= t(entry.correction ? "teacher.writings.save_again" : "teacher.writings.save") %></button></div>
+        <% end %>
+      </article>
+    <% end %>
+  <% end %>
+</main>

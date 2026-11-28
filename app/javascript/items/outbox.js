@@ -11,19 +11,23 @@
 // The prefix tells whose entries these are: the diagnosis keeps banco.outbox., the practice pages
 // banco.poutbox. (option prefix), so an entry of one can never be resent to the endpoint of the other.
 // A page may also name the fields it posts (fields), the JSON statuses that end an entry (statuses) and
-// the HTTP statuses whose JSON body is an answer, not a failure (httpStatuses, e.g. 409 for a closed serve).
+// the HTTP statuses whose JSON body is an answer, not a failure (httpStatuses, e.g. 409 for a closed serve) and the name of the id
+// field of an entry (idField, client_attempt_id unless a page says otherwise).
 export const DIAGNOSIS_PREFIX = "banco.outbox."
 export const PRACTICE_PREFIX = "banco.poutbox."
+// The writing box (D-407) has one outbox per task: banco.woutbox.<item revision id>. (the trailing dot keeps 12 apart from 123), the id field is client_writing_id.
+export const WRITING_PREFIX = "banco.woutbox."
 const DEFAULT_FIELDS = ["served_event_id", "client_attempt_id", "raw", "source"]
 
 export class Outbox {
   constructor({ url, csrf, storage = null, fetchImpl = (...args) => window.fetch(...args), prefix = DIAGNOSIS_PREFIX,
-                fields = DEFAULT_FIELDS, statuses = ["recorded", "invalid"], httpStatuses = [200] }) {
+                fields = DEFAULT_FIELDS, statuses = ["recorded", "invalid"], httpStatuses = [200], idField = "client_attempt_id" }) {
     this.url = url
     this.prefix = prefix
     this.fields = fields
     this.statuses = statuses
     this.httpStatuses = httpStatuses
+    this.idField = idField
     this.csrf = csrf
     this.fetchImpl = fetchImpl
     this.memory = new Map()
@@ -39,7 +43,7 @@ export class Outbox {
       if (!key || !key.startsWith(this.prefix)) continue
       try {
         const entry = JSON.parse(this.storage.getItem(key))
-        if (entry && entry.client_attempt_id) this.memory.set(entry.client_attempt_id, entry)
+        if (entry && entry[this.idField]) this.memory.set(entry[this.idField], entry)
       } catch (_error) {
         // an unreadable entry is left alone, never guessed at
       }
@@ -48,9 +52,9 @@ export class Outbox {
 
   add(entry) {
     const stored = { ...entry, queued_at: Date.now() }
-    this.memory.set(stored.client_attempt_id, stored)
+    this.memory.set(stored[this.idField], stored)
     try {
-      this.storage?.setItem(this.prefix + stored.client_attempt_id, JSON.stringify(stored))
+      this.storage?.setItem(this.prefix + stored[this.idField], JSON.stringify(stored))
     } catch (_error) {
       // storage full or refused: the memory copy still serves this page
     }
@@ -86,8 +90,8 @@ export class Outbox {
     for (const entry of this.pending()) {
       const reply = await this.post(entry)
       if (reply.blocked) return { blocked: true, reason: reply.reason, results }
-      results[entry.client_attempt_id] = reply.body
-      this.remove(entry.client_attempt_id)
+      results[entry[this.idField]] = reply.body
+      this.remove(entry[this.idField])
     }
     return { blocked: false, results }
   }

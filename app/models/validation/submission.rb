@@ -68,8 +68,8 @@ module Validation
       self
     end
 
-    # The brief this item is written under: practice items have their own.
-    def brief_name = parsed_item["kind"] == "practice_item" ? "practice-item" : "diagnosis-item"
+    # The brief this item is written under: practice items have their own, and so has a writing task (D-407: the brief says how to write one).
+    def brief_name = parsed_item["kind"] == "practice_item" || (parsed_item["kind"] == "short_answer" && parsed_item.key?("words_min")) ? "practice-item" : "diagnosis-item"
 
     # The files this submission adds or changes against its base.
     def changed

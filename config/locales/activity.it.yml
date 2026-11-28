@@ -32,6 +32,7 @@ it:
       release_course_closed: "Chiuso il corso allo studente"
       set_focus_subject_set: "Consigliata la materia da cui cominciare"
       set_focus_subject_clear: "Tolto il consiglio sulla materia da cui cominciare"
+      correct_writing: "Corretto un testo dello studente"
   teacher:
     activity:
       title: "Chi ha fatto che cosa"

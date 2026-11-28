@@ -63,6 +63,8 @@ module StudentExportWorld
     CommentEvent.create!(comment: comment, kind: "reply", origin: "web", actor: "nik", text_it: OTHER_MARKER, created_at: Time.current)
     Rating.create!(student: other, client_rating_id: "r-other-1", target_kind: "item", target_key: "item-1", subject: rows["subjects"], topic_revision: topic, item_revision: rows["item_revisions"],
                    practice_serve: serve, stars: 1, text_it: OTHER_MARKER, language: "it", created_at: Time.current)
+    WritingSubmission.create!(student: other, topic_revision: topic, item_revision: rows["item_revisions"], client_writing_id: "w-other-1", text: OTHER_MARKER, word_count: 1,
+                              created_at: Time.current)
     AppEvent.create!(kind: "invalid_input", student: other, payload_json: { text: OTHER_MARKER }.to_json)
     Decision.create!(kind: "record_consent", student: other, payload_json: { reason_it: OTHER_MARKER }.to_json, request_id: "req-other-1", teacher_login: "nik",
                      remote_addr: "203.0.113.200")

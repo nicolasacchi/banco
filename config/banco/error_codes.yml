@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 42
+version: 43
 
 validation:
   # Skill graph (synchronous).
@@ -99,6 +99,8 @@ validation:
   E-POOL-REDO: { stage: blueprint, severity: error, description: "A skill has fewer than 6 distinct-fingerprint instances across 2 items with 3 low-guess, and does not declare redo_reserve false; or a pinned descent skill has no low-guess instance." }
   E-BLUEPRINT-ENTRIES: { stage: blueprint, severity: error, description: "The blueprint has fewer than 4 or more than 10 entries." }
   E-BLUEPRINT-UNPINNED-DESCENT: { stage: blueprint, severity: error, description: "A skill the descent can reach from the starting skills has neither pinned items nor a not_assessed reason in descent[] (D-038)." }
+  E-WRITING-RANGE: { stage: ruby, severity: error, description: "A writing task (a short_answer with a word range, D-407) has words_min more than words_max." }
+  E-BLUEPRINT-WRITING-ITEM: { stage: blueprint, severity: error, description: "A blueprint pins a writing task (D-407): it belongs to a topic, the entry test has none." }
   E-ITEM-NOT-PASSED: { stage: blueprint, severity: error, description: "A pinned item revision has no passed validation." }
   # Review and blind solve.
   E-QUOTE-NOT-FOUND: { stage: review, severity: error, description: "A review finding quotes text that is not an exact substring of the item." }
@@ -199,6 +201,7 @@ validation:
   E-TOPIC-PIN: { stage: ruby, severity: error, description: "The lesson with the topic key or a pinned revision does not exist, or a pinned revision is not a revision of the named lesson or item." }
   E-TOPIC-SKILLS: { stage: ruby, severity: error, description: "Practice skills differ from the map topic's skills, a skill twice, an item pinned twice, or the pinned lesson's skills differ from the topic's." }
   E-TOPIC-ITEM-KIND: { stage: ruby, severity: error, description: "A pinned item is not a practice_item, or its skill is not the entry's skill." }
+  E-TOPIC-WRITING: { stage: ruby, severity: error, description: "A pinned writing task (D-407) is not a short_answer item of the topic's subject with a word range, or is also pinned as an exercise or twice." }
   E-TOPIC-POOL: { stage: ruby, severity: error, description: "Per skill: no level-1 item, fewer than practice.topic_min_instances_per_skill distinct fingerprints, or fewer than practice.topic_min_low_guess_instances_per_skill low-guess ones (for an extra topic, D-324: practice.extra_topic_min_instances_per_skill and practice.extra_topic_min_low_guess_instances_per_skill)." }
   W-TOPIC-INSTANCE-IN-LESSON: { stage: ruby, severity: warning, description: "A pinned instance display equals (normalized) a lesson exercise or worked-example line." }
   W-PRACTICE-DIAGNOSIS-OVERLAP: { stage: ruby, severity: warning, description: "A pinned instance has the fingerprint of a diagnosis instance of the same skill." }

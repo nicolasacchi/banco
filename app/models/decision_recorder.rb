@@ -26,7 +26,8 @@
 class DecisionRecorder
   KINDS = %w[approve_skill_graph approve_blueprint confirm_test_reviewed dispose_finding confirm_grade reject_grade resolve_attempt
              void_diagnosis_run void_revision_attempts extend_diagnosis_run close_diagnosis_run release_diagnosis
-             record_consent kind_override send_back_item set_formula_sheet approve_topic send_back_lesson release_course set_focus_subject].freeze
+             record_consent kind_override send_back_item set_formula_sheet approve_topic send_back_lesson release_course set_focus_subject
+             correct_writing].freeze
   CSRF_KEY = "banco.csrf_valid".freeze
   DEVICE_COOKIE = "banco_device".freeze
   RESOLVE_VERDICTS = (Grading::VERDICTS - %w[invalid short_answer]).freeze
@@ -88,7 +89,8 @@ class DecisionRecorder
     GROUP = "api".freeze
 
     # The kinds a teacher token may record (D-327). Not record_consent (the parent's consent for a minor) and not
-    # release_diagnosis (it opens the entry test to the student): those stay with the browser and the console.
+    # release_diagnosis (it opens the entry test to the student): those stay with the browser and the console. Not correct_writing (D-407) either:
+    # the correction of a student's text is a person's own words (firm rule 1); a bot only reads the texts and the corrections.
     KINDS = %w[approve_skill_graph approve_blueprint confirm_test_reviewed dispose_finding confirm_grade reject_grade resolve_attempt
                void_diagnosis_run void_revision_attempts extend_diagnosis_run close_diagnosis_run kind_override send_back_item
                set_formula_sheet approve_topic send_back_lesson release_course set_focus_subject].freeze
@@ -525,6 +527,20 @@ class DecisionRecorder
     raise Invalid, "the course of #{subject.key} is not open to the student" unless Course::State.released_revision_id(subject)
 
     [ subject, student, { subject: subject.key } ]
+  end
+
+  # The teacher's correction of a text the student wrote himself (D-407): her own words (text_it), a person's, never a bot's (not in Api::KINDS). The text must
+  # be a real student's (the preview student's texts are not corrected) and the correction 1 to WritingSubmission::CORRECTION_MAX characters. The latest
+  # correction of a text counts, so a slip is mended by a new one; the student sees it under his text.
+  def correct_writing
+    submission = find(WritingSubmission, :writing_submission_id)
+    raise Invalid, "writing submission #{submission.id} is not a student's text: the preview's texts are not corrected" unless submission.student.kind == "student"
+
+    text = WritingSubmission.clean(@params[:text_it])
+    raise Invalid, "a correction is required" if text.empty?
+    raise Invalid, "the correction is at most #{WritingSubmission::CORRECTION_MAX} characters" if text.length > WritingSubmission::CORRECTION_MAX
+
+    [ submission.subject, submission.student, { writing_submission_id: submission.id, topic: submission.topic_key, item: submission.item_key, text_it: text } ]
   end
 
   def truthy?(value) = ActiveModel::Type::Boolean.new.cast(value) == true

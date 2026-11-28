@@ -25,6 +25,8 @@ Rails.application.routes.draw do
       get "subjects/:key/practice" => "practice#show", constraints: key, as: :teacher_practice
       get "subjects/:key/practice/skills/:skill" => "practice#skill", constraints: key.merge(skill: /[a-z0-9][a-z0-9._\-]*/), as: :teacher_practice_skill
       get "corrections" => "corrections#show", as: :teacher_corrections
+      # «Testi da correggere» (D-407): the texts the student wrote himself; the teacher corrects (a decision), a guest only reads.
+      get "writings" => "writings#show", as: :teacher_writings
       # Who did what (D-334): the teachers' and bots' actions, read-only.
       get "activity" => "activity#show", as: :teacher_activity
       # The student's comments (D-304): the teacher reads and answers; a guest sees the counts only.
@@ -116,6 +118,8 @@ Rails.application.routes.draw do
       get "civics" => "course#civics"
       get "topics/:topic" => "topics#show", constraints: topic
       get "topics/:topic/lesson" => "lessons#show", constraints: topic
+      # «Scrivi tu» (D-407): the student sends a text of his own on a writing task of the topic; the preview writes the preview student's row.
+      post "topics/:topic/writings" => "writings#create", constraints: topic
       # «I miei schemi» (D-372): the summary card of a topic (opens when the topic is done) and the list of the schemas.
       get "topics/:topic/schema" => "schemas#show", constraints: topic, as: :schema
       get "schemas" => "schemas#index", as: :schemas
@@ -181,6 +185,8 @@ Rails.application.routes.draw do
       post "subjects/:subject/course-release", action: :release_course, constraints: { subject: /[a-z_]+/ }
       # The subject the student starts from (D-399): subject in the body, an empty one clears the recommendation.
       post "focus", action: :set_focus_subject
+      # The correction of a text the student wrote himself (D-407): the teacher's own words, a decision of the browser and the console, never of the API.
+      post "writing-submissions/:writing_submission_id/correct", action: :correct_writing, constraints: { writing_submission_id: id }
       post "release", action: :release
       post "consent", action: :consent
     end
@@ -334,6 +340,10 @@ Rails.application.routes.draw do
     get "api/v1/comments" => "api/v1/comments#index", format: false
     # The student's ratings (D-365): bot_read and teacher tokens read them; nobody writes them over the API.
     get "api/v1/ratings" => "api/v1/ratings#index", format: false
+    # The texts the student wrote himself and the teacher's corrections (D-407): bot_read and teacher tokens read them; the correction is the teacher's own
+    # words, recorded in the browser or at the console, never over the API.
+    get "api/v1/writings" => "api/v1/writings#index", format: false
+    get "api/v1/writings/:id" => "api/v1/writings#show", constraints: { id: /\d+/ }, format: false
     # Where the grader may be wrong (D-368): the exercises to check and the not-right tries with their signals; bot_read and teacher tokens, the student's own words for the teacher's alone.
     get "api/v1/grading/review" => "api/v1/grading_review#show", format: false
     comment = { id: /\d+/ }

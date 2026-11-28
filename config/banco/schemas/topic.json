@@ -45,6 +45,21 @@
       "minLength": 1,
       "maxLength": 300
     },
+    "writing": {
+      "description": "D-407: the writing tasks of the topic, short_answer items of the topic's subject (pinned like the exercises: a key and a revision). The student writes a text of his own and the teacher corrects it; a writing task is never part of the practice, of the skill states or of the topic's completion.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item", "revision"],
+        "properties": {
+          "item": { "$ref": "#/$defs/item_key" },
+          "revision": { "$ref": "#/$defs/pin" }
+        }
+      }
+    },
     "practice": {
       "type": "array",
       "minItems": 1,

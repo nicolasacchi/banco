@@ -93,6 +93,26 @@ done and the current year's programme (`seconda-2025-26`) does not have; the stu
   the topic page shows the badge; approval and release are the same as for any topic.
 
 
+## Writing tasks: a text of his own, corrected by the teacher (D-407)
+
+A topic may pin **writing tasks** (`writing` in `banco.topic/1`, 1 to 3 pins of the form `{"item": KEY, "revision": N|"latest"}`, stored with integer revisions): the student
+writes a text of his own (an Italian narrative or argumentative text, a Spanish biography, an English description or message) and the teacher corrects it. The guided writing
+exercises (pieces to order and complete) are as they were; a task is **not an exercise**.
+
+- Item: a `short_answer` of the topic's subject with `words_min` and `words_max` (the range shown to the student, both or neither, 1 to 600; `E-WRITING-RANGE` when the first is
+  over the second) and `teacher_notes_it` (what the teacher looks at; never served to the student, never translated). The task text is `prompt.stem_it` (`stem_en|es` beside it for
+  english and spanish). The rubric the schema asks of a short answer stands beside the notes. `E-TOPIC-WRITING` (the pin is not such an item, twice, or also an exercise), a blueprint never
+  pins one (`E-BLUEPRINT-WRITING-ITEM`). Independent review and blind solve as for any pinned item (the approval gate reads `TopicRevision#pinned_item_revision_ids`).
+- Never in the practice: no serve, no try, no skill state, no part of the topic's completion; `practice/6` and the rules version are unchanged.
+- Student: on the topic page after the exercises, «Scrivi tu» (`topics/_writing`, `writing_controller.js`): the task, the word range, a box with a live word count, a draft kept in
+  localStorage, «Consegna» (`POST /topics/:topic/writings`, 1 to 4000 characters, idempotent on `client_writing_id`). Then «Consegnato. Lo corregge il docente.» and the text
+  read-only; when corrected, the correction under the text and «Scrivi una nuova versione» (a new row; a new text waits for the correction of the last). Oggi says «Il docente ha
+  corretto un tuo testo» until he opens the topic page (the app event `writing_correction_seen`). The teacher's preview writes only the preview student.
+- Teacher: «Testi da correggere» (`/teacher/writings`): pending first, then corrected, each with the task, the notes, the text and the form «Correzione»; the decision `correct_writing`
+  (browser and console, never the API: `DecisionRecorder::Api::KINDS` does not list it). The topic page lists the tasks in «Testi da scrivere». A bot reads with
+  `GET /api/v1/writings` and `banco writings list|show` (`bot_read` and `teacher` tokens).
+- Data: the append-only `writing_submissions` (a student's own words: never indexed by search, in «Scarica i miei dati»).
+
 ## Lesson format 2 (rich lessons, D-244..D-251)
 
 A lesson revision is `banco.lesson/1` (eight sections, D-224) or `banco.lesson/2` (the `schema:` line of `lesson.md` says which; `banco brief show lesson`

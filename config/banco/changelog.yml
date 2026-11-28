@@ -13,6 +13,15 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: free-writing
+    date: 2026-11-28
+    audience: [student, teacher]
+    kind: software
+    decisions: [D-406, D-407]
+    title_it: "Scrivi tu: un testo tuo, corretto dal docente"
+    body_it: "In alcuni argomenti, dopo gli esercizi, trovi «Scrivi tu»: scrivi un testo tuo e lo consegni. Il docente lo corregge e sotto il tuo testo trovi la correzione; poi puoi scrivere una versione nuova."
+    title_en: "Write it yourself: a text of your own, corrected by your teacher"
+    body_en: "In some topics, after the exercises, you find a place to write a text of your own and send it in. Your teacher corrects it and the correction appears under your text; then you can write a new version."
   - id: physical-education-out
     date: 2026-11-28
     audience: [student, teacher]

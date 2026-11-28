@@ -1,0 +1,33 @@
+/*
+ * «Scrivi tu» (D-407): the student's writing box on the topic page, and the teacher's page «Testi da correggere». Lengths are rem, so the root size of
+ * D-354 scales the box. A text is shown as he wrote it (line breaks kept, long words wrapped); the correction is the teacher's own words under it.
+ */
+.topic-writing { margin-top: var(--space-5); }
+.writing-task { display: grid; gap: var(--space-2); max-width: 100%; box-sizing: border-box; }
+.writing-task [hidden] { display: none; }
+.writing-stem { margin: 0; font-size: var(--text-l); line-height: var(--leading-tight); white-space: pre-line; overflow-wrap: anywhere; }
+.writing-range { margin: 0; color: var(--muted); }
+.writing-form { display: grid; gap: var(--space-2); }
+.writing-form label { font-weight: 700; }
+.writing-form textarea { min-height: 12rem; resize: vertical; }
+.writing-meta { margin: 0; color: var(--muted); font-size: var(--text-s); }
+.writing-status { margin: 0; font-weight: 700; }
+.writing-status:empty { display: none; }
+.writing-note { margin: 0; font-weight: 700; }
+.writing-note:focus { outline: none; }
+.writing-text, .writing-correction-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.writing-text { padding: var(--space-3); border: var(--border-soft) solid var(--line); border-radius: var(--radius-m); background: var(--surface); }
+.writing-correction { display: grid; gap: var(--space-1); padding: var(--space-3); border-inline-start: 0.25rem solid var(--primary); background: var(--surface); border-radius: var(--radius-s); }
+.writing-correction h3 { margin: 0; font-size: var(--text-m); }
+.writing-versions { margin-top: var(--space-2); }
+.writing-version { margin-top: var(--space-2); display: grid; gap: var(--space-1); }
+.writing-version h3, .writing-version h4 { margin: 0; font-size: var(--text-m); }
+.writing-today .writing-today-link { margin-left: var(--space-1); }
+
+/* The teacher's page ------------------------------------------------------------ */
+.writings-summary { margin: var(--space-2) 0; }
+.writing-entry { display: grid; gap: var(--space-2); margin-top: var(--space-3); max-width: 100%; box-sizing: border-box; }
+.writing-entry h3 { margin: 0; }
+.writing-entry .writing-meta { color: var(--muted); }
+.writing-entry textarea { min-height: 8rem; width: 100%; box-sizing: border-box; }
+.writing-task-notes { margin: 0; padding: var(--space-2); border-radius: var(--radius-s); background: var(--surface); }

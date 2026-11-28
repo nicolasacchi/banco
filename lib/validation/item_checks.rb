@@ -16,6 +16,7 @@ module Validation
       graph_errors(item, context, findings)
       composite(item, context, findings)
       testlet_skills(item, findings)
+      writing_range(item, findings)
       form_skill_closure(item, context, findings)
       sources(item, context, findings)
       assets(item, files, findings)
@@ -26,6 +27,17 @@ module Validation
       calculator(item, findings)
       support_method_words(item, findings)
       code_scan(files, findings)
+    end
+
+    # ---- the writing task (D-407) ----------------------------------------------------
+
+    # A short answer with a word range is a writing task: the student writes a text of his own, the teacher corrects it. The range must be a range.
+    def writing_range(item, findings)
+      min = item["words_min"]
+      max = item["words_max"]
+      return unless min.is_a?(Integer) && max.is_a?(Integer) && min > max
+
+      findings.add("E-WRITING-RANGE", "/words_min", "words_min #{min} is more than words_max #{max}: the range the student is shown must run from the least to the most", rule: "range")
     end
 
     # ---- W-STEPS-METHOD (D-216) ------------------------------------------------------

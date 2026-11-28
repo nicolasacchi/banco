@@ -86,7 +86,7 @@ class PublicApiHardeningTest < ActionDispatch::IntegrationTest
   end
 
   test "record_consent and release_diagnosis are not decisions of the API, a dry run included" do
-    assert_equal %w[record_consent release_diagnosis], (DecisionRecorder::KINDS - DecisionRecorder::Api::KINDS).sort
+    assert_equal %w[correct_writing record_consent release_diagnosis], (DecisionRecorder::KINDS - DecisionRecorder::Api::KINDS).sort
     assert_empty DecisionRecorder::Api::KINDS - DecisionRecorder::KINDS
     %w[record_consent release_diagnosis].each do |kind|
       [ nil, true ].each do |confirm|

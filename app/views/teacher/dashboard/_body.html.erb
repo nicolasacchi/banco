@@ -1,7 +1,7 @@
 <% home = dashboard.home %>
 <% counts = dashboard.counts %>
 <ul class="stat-strip" id="waiting-counts" aria-label="<%= t('teacher.dashboard.counts_label') %>">
-  <% %i[findings corrections topics comments contests].each do |kind| %>
+  <% %i[findings corrections topics comments contests writings].each do |kind| %>
     <li class="stat<%= ' zero' if counts.public_send(kind).zero? %>" data-count="<%= kind %>"><b><%= counts.public_send(kind) %></b> <span><%= t("teacher.dashboard.count.#{kind}") %></span></li>
   <% end %>
 </ul>

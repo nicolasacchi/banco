@@ -1,0 +1,36 @@
+{
+  "schema": "banco.item/1",
+  "schema_version": 1,
+  "kind": "short_answer",
+  "subject": "italian",
+  "skill": "italian.narrative-text",
+  "component": "short_answer",
+  "prompt": {
+    "stem_it": "Racconta una giornata a scuola in un testo di tuo pugno: dove sei, che cosa succede, come finisce."
+  },
+  "rubric": {
+    "points": [
+      {
+        "id": "cause",
+        "weight": 2,
+        "expected_it": "Indica una causa."
+      },
+      {
+        "id": "effect",
+        "weight": 1,
+        "expected_it": "Indica una conseguenza."
+      }
+    ],
+    "threshold": 0.6,
+    "model_answer_it": "Una risposta completa nomina la causa e la conseguenza."
+  },
+  "sources": [
+    {
+      "kind": "textbook",
+      "ref": "capitolo di esempio",
+      "fragment": "cause e conseguenze"
+    }
+  ],
+  "words_min": 80,
+  "teacher_notes_it": "Guarda l'ordine dei fatti, i tempi del passato e la punteggiatura."
+}

@@ -106,6 +106,7 @@ module Teacher
         map_entry: review.entry, lesson: lesson(review, text: lesson_text),
         lesson_reviews: review.reviews.map { |row| lesson_review(row, review) },
         exercises: review.exercises.each_with_index.map { |ex, i| exercise(ex, i + 1) },
+        writing: review.writing_tasks.map { |t| card_json(t.card).merge(task_it: t.stem, words_min: t.words_min, words_max: t.words_max, teacher_notes_it: t.notes_it) },
         findings: { lesson: review.lesson_findings.map { |e| lesson_finding(e, review) }, items: review.cards_with_findings.map { |c| { item: c.item.key, revision_id: c.revision.id, findings: c.findings.map { |f| finding(f) } } },
                     count: review.findings_count, clear: review.findings_clear? },
         send_backs: review.send_backs.map { |sb| sb.transform_keys(&:to_s) },

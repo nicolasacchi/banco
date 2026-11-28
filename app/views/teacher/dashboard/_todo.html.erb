@@ -4,11 +4,11 @@
           when :release
             todo.reason.empty? ? t("teacher.dashboard.todo.release_ready") : t("teacher.dashboard.todo.release", missing: todo.reason.map { |m| t("teacher.dashboard.missing.#{m}") }.to_sentence(two_words_connector: " e ", last_word_connector: " e "))
           when :test_blocked then t("teacher.dashboard.todo.test_blocked", reason: todo.reason)
-          when :topics, :corrections then t("teacher.dashboard.todo.#{todo.kind}", count: todo.count)
+          when :topics, :corrections, :writings then t("teacher.dashboard.todo.#{todo.kind}", count: todo.count)
           when :jobs, :backup then todo.reason
           else t("teacher.dashboard.todo.#{todo.kind}")
           end %>
-<% icon = { findings: "triangle-alert", graph: "map", test_ready: "list-checks", test_blocked: "lightbulb", topics: "book-open", corrections: "notebook-pen", jobs: "triangle-alert", backup: "triangle-alert", release: "sparkles" }.fetch(todo.kind, "info") %>
+<% icon = { findings: "triangle-alert", graph: "map", test_ready: "list-checks", test_blocked: "lightbulb", topics: "book-open", corrections: "notebook-pen", writings: "notebook-pen", jobs: "triangle-alert", backup: "triangle-alert", release: "sparkles" }.fetch(todo.kind, "info") %>
 <%= ui_icon(icon, css: "todo-icon") %>
 <span class="todo-text"><% if name %><strong class="todo-subject"><%= name %></strong>: <% end %><%= todo.href ? dash_link(text, todo.href) : text %>
 <% if todo.extra %><span class="hint"><%= t("teacher.dashboard.clear_of", count: todo.extra) %></span><% end %></span>

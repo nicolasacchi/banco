@@ -8,7 +8,7 @@ module Validation
   #
   # items: ->(revision_id string) { ItemInfo | nil }
   module BlueprintChecks
-    ItemInfo = Struct.new(:id, :skills, :passed, :instances, :kind, :latest_passed_id, :testlet_skills, :rules_version, keyword_init: true)
+    ItemInfo = Struct.new(:id, :skills, :passed, :instances, :kind, :latest_passed_id, :testlet_skills, :rules_version, :writing, keyword_init: true)
     # instances: [{fingerprint:, low_guess:}]; latest_passed_id: the newest passed revision of the
     # same item (nil when unknown), for W-STALE-PIN; testlet_skills: every skill of a testlet's
     # sub items (nil otherwise), for W-TESTLET-MULTI-SKILL; rules_version: the rules version of the
@@ -75,6 +75,10 @@ module Validation
         end
         if info.kind == "practice_item"
           findings.add("E-BLUEPRINT-PRACTICE-ITEM", "#{field}/#{i}", "item revision #{id} is a practice item: a blueprint pins diagnosis items only", revision: id)
+          next
+        end
+        if info.writing
+          findings.add("E-BLUEPRINT-WRITING-ITEM", "#{field}/#{i}", "item revision #{id} is a writing task: it belongs to a topic, the entry test pins diagnosis items only", revision: id)
           next
         end
         findings.add("E-ITEM-NOT-PASSED", "#{field}/#{i}", "item revision #{id} has no passed validation", rule: "not_passed", revision: id) unless info.passed
