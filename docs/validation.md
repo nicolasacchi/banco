@@ -113,7 +113,7 @@ connects, one browser context per run is disposed in `ensure`, and a reaper disp
 the contexts that no live run owns. Test, development and CI launch a local Chrome
 (`BROWSER_PATH`) with Ferrum's `ignore_default_browser_options` and curated flags
 (never `--disable-web-security`). Every use goes through `ChromeRunner`'s shared
-`flock` with two slots (`tmp/chrome.lock`, `tmp/chrome.lock.1`, `ChromeRunner::SLOTS`, D-402: two runs at once, a Chrome and a context for each, the reaper only when the other slot is free; the `chrome` queue has two threads); a dry run waits for it up to 25 s
+`flock` with three slots (`tmp/chrome.lock`, `tmp/chrome.lock.1`, `tmp/chrome.lock.2`, `ChromeRunner::SLOTS`, D-402 and D-408: three runs at once, a Chrome and a context for each, the reaper only when the other slots are free; the `chrome` queue has two threads and the item shots' queue `chrome_shots` one of its own); a dry run waits for it up to 25 s
 (`BANCO_DRY_RUN_CHROME_WAIT`) and answers 409 `E-CHROME-BUSY` when it is still taken.
 
 Chrome loads `/h/<run-token>/harness.html` from the harness listener (port 3200,
@@ -175,7 +175,7 @@ whose cards are fast and whose total is not is told by them.
 ## The shots of an item as the student sees it on a phone (D-336)
 
 On demand, never part of a verdict. `POST /api/v1/item-revisions/ID/shots` (a content role; `banco item shots REV --dir DIR --wait`) enqueues
-`RenderItemRevisionJob` once (queue `chrome`, priority 20: after item validation, the lesson render and the page validations); `Validation::ItemRenderRunner` opens the harness listener's
+`RenderItemRevisionJob` once (queue `chrome_shots`, a thread and a slot of its own since D-408: it never waits behind the validations or the lesson renders; a `queued` request whose job is gone is answered with an `error` row by `ExpireLostItemRendersJob` every 15 minutes); `Validation::ItemRenderRunner` opens the harness listener's
 `/h/<irev-token>/item-render.html?n=N` (`HarnessController#item`, `items/render_host.js`) for each stored instance in one browser
 context at 390 x 844, cream, device scale 1, and takes a WebP of the whole page (never under 844 px tall). The page is the student's own: the same CSS, importmap,
 templates, MathLive, KaTeX and figures (`Items::Figures`), inside the practice page's card (a `practice_item`) or the sitting's, unanswered, with what
@@ -184,7 +184,7 @@ shuffled with the fixed seed `item-shots|REVISION|N`; each shot's metadata says 
 drawn), so a number in the picture maps to the stored id. The host measures each instance and the runner records its findings (all aids, never a
 gate): `E-ITEM-OVERFLOW` (the page wider than the window, something wider than its box, a long formula that scrolls sideways) and `E-ITEM-RENDER` (an exception or
 console error, a KaTeX error, markup printed as text, a figure that did not draw, a timeout). Numbers: the `item_render` block of
-`validation_rules.yml` (150 s per revision, 12 s per instance, 40 instances, 30 minutes before a lost request is asked again). The rows are
+`validation_rules.yml` (300 s per revision, 12 s per instance, 40 instances, 30 minutes before a lost request is asked again). The rows are
 `item_renders` (append-only: `queued`, then `passed`, `failed` or `error`); the pictures live in the lesson shots' store
 (`storage/lesson_shots/<sha256>.webp`) and `bin/purge-lesson-shots` removes those of an old, unpinned, superseded item revision too. `banco review open` and
 `banco solve open` request the shots and print `item_shots.fetch`; the briefs `review` (4) and `solve` (3) say to look at them first. Tests:
