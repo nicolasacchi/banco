@@ -7,7 +7,7 @@ module Teacher
     TABLES = %w[decisions item_revisions item_validations item_reviews blind_solves review_findings finding_responses
                 finding_assessments grade_proposals blueprint_revisions skill_graph_revisions course_revisions topic_revisions
                 lesson_revisions lesson_reviews lesson_finding_responses diagnosis_runs diagnosis_events attempts attempt_gradings practice_serves
-                practice_attempts practice_gradings practice_events practice_contests student_questions students].freeze
+                practice_attempts practice_gradings practice_events practice_contests student_questions students writing_submissions].freeze
     APP_EVENTS_WHERE = "kind <> '#{Minutes::KIND}'".freeze
 
     TTL = Rails.env.test? ? 0 : 5 # seconds: several open tabs share one computation

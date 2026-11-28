@@ -1,0 +1,30 @@
+# «Scrivi tu» (D-407): il testo che lo studente scrive da sé su un argomento e che il docente corregge, e la riga di Oggi sulla correzione nuova.
+# Il gemello inglese è writing.en.yml. I testi del docente (la pagina «Testi da correggere») sono in teacher_writing.it.yml.
+it:
+  writing:
+    title: "Scrivi tu"
+    intro: "Qui scrivi un testo tuo. Non è un esercizio e non conta per finire l'argomento: lo legge il docente e lo corregge."
+    words: "Da %{min} a %{max} parole."
+    label: "Il tuo testo"
+    words_one: "1 parola"
+    words_other: "%{count} parole"
+    chars: "%{n} caratteri su %{max}"
+    draft_kept: "La bozza resta qui anche se chiudi la pagina."
+    send: "Consegna"
+    sending: "Sto consegnando…"
+    sent: "Consegnato. Lo corregge il docente."
+    your_text: "Il tuo testo consegnato"
+    correction: "Correzione del docente"
+    again: "Scrivi una nuova versione"
+    cancel: "Annulla"
+    empty: "Scrivi qualcosa prima di consegnare."
+    too_long: "Il testo è troppo lungo: al massimo %{max} caratteri."
+    pending: "Il testo che hai già consegnato aspetta ancora la correzione."
+    error: "Non è partito. Riprova: il testo è al sicuro."
+    invalid: "Non posso consegnarlo adesso."
+    versions: "Le versioni di prima (%{n})"
+    version: "Versione %{n}"
+    not_corrected: "Non ancora corretta."
+    today:
+      line: "Il docente ha corretto un tuo testo: %{topic}."
+      link: "Leggi la correzione"

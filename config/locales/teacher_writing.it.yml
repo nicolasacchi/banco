@@ -1,0 +1,41 @@
+# «Testi da correggere» (D-407): i testi che lo studente scrive da sé sugli argomenti e che il docente corregge. Solo italiano (le pagine del docente).
+# I testi dello studente sono in writing.it.yml.
+it:
+  teacher:
+    decided:
+      correct_writing: "Correzione registrata: lo studente la vede sotto il suo testo."
+    menu:
+      writings: "Testi da correggere"
+    dashboard:
+      count:
+        writings: "Testi da correggere"
+      todo:
+        writings:
+          one: "Un testo scritto dallo studente da correggere."
+          other: "%{count} testi scritti dallo studente da correggere."
+    review:
+      writing:
+        title: "Testi da scrivere"
+        intro: "Compiti di scrittura libera di questo argomento: lo studente scrive un testo suo e lo correggi tu. Non sono esercizi, non entrano nella pratica né nel finire l'argomento; il controllo dell'approvazione li legge come gli altri."
+        words: "Da %{min} a %{max} parole."
+        notes: "Che cosa guardare:"
+        open: "Apri la scheda"
+    writings:
+      title: "Testi da correggere"
+      intro: "Testi che lo studente ha scritto da sé nei compiti di scrittura degli argomenti. La correzione è tua: le tue parole, sotto il testo dello studente."
+      summary: "Da correggere: %{pending}. Corretti: %{corrected}."
+      pending_title: "Da correggere"
+      corrected_title: "Corretti"
+      none_pending: "Nessun testo aspetta la tua correzione."
+      none_corrected: "Nessun testo corretto finora."
+      meta: "%{student}, %{at}, %{words} parole."
+      range: "Chiesto: da %{min} a %{max} parole."
+      task: "Il compito"
+      notes: "Che cosa guardare:"
+      text: "Il testo dello studente"
+      correction: "Correzione"
+      correct_again: "Cambia la correzione"
+      correction_done: "La correzione"
+      corrected_by: "Corretto da %{teacher}, %{at}."
+      save: "Invia la correzione"
+      save_again: "Registra la nuova correzione"

@@ -28,15 +28,17 @@ module Validation
       lesson, lesson_revision = lesson_pin(doc, key, entry, findings)
       practice_skills(doc, entry, findings)
       resolved = pins(doc, subject, findings)
+      writing = writing_pins(doc, subject, findings)
       pool(resolved, findings, extra: entry["kind"] == "extra")
       instances_vs_lesson(resolved, lesson_revision, findings) if lesson_revision
-      mixed(doc, entry, subject, lesson_revision, resolved, findings)
+      mixed(doc, entry, subject, lesson_revision, resolved, findings, writing: writing)
       overlap(resolved, subject, findings)
       return Result.new(findings: findings) if findings.any_error? || lesson.nil?
 
       stored = doc.merge("lesson_revision" => lesson_revision.id,
                          "practice" => resolved.map { |entry_pins| { "skill" => entry_pins[:skill], "items" => entry_pins[:pins].map { |p| { "item" => p[:key], "revision" => p[:revision].id } } } })
-      Result.new(findings: findings, stored: stored, lesson_revision: lesson_revision, item_revisions: resolved.flat_map { |e| e[:pins].map { |p| p[:revision] } })
+      stored["writing"] = writing.map { |p| { "item" => p[:key], "revision" => p[:revision].id } } if writing.any?
+      Result.new(findings: findings, stored: stored, lesson_revision: lesson_revision, item_revisions: resolved.flat_map { |e| e[:pins].map { |p| p[:revision] } } + writing.map { |p| p[:revision] })
     end
 
     # ---- the bilingual courses (D-402) ----------------------------------------------------------------
@@ -55,11 +57,12 @@ module Validation
     # W-TOPIC-LANG-MIXED: a topic is one unit of rewriting. When its lesson, its pinned items, its title or its intro are not all bilingual
     # (and at least one is), the student reads English or Spanish in one place and today's pages in another: the warning lists the parts that
     # are not. Nothing for a topic of another subject, or of one that is not bilingual at all.
-    def mixed(doc, entry, subject, lesson_revision, resolved, findings)
+    def mixed(doc, entry, subject, lesson_revision, resolved, findings, writing: [])
       lang = Lessons::Lang.target(subject.key) or return
       parts = []
       parts << [ "the lesson", lesson_revision.body["bilingual"] == true ] if lesson_revision
       resolved.each { |e| e[:pins].each { |p| parts << [ "the item #{p[:key]}", p[:bilingual] ] } }
+      writing.each { |p| parts << [ "the writing task #{p[:key]}", p[:bilingual] ] }
       parts << [ "the title", entry["bilingual"] == true || entry.key?("title_#{lang}") ]
       parts << [ "the intro", doc.key?("intro_#{lang}") ] if doc.key?("intro_it") || doc.key?("intro_#{lang}")
       return if parts.none?(&:last) || parts.all?(&:last)
@@ -122,6 +125,32 @@ module Validation
           { key: pin["item"], revision: revision, info: info, level: body["level"], bilingual: body["bilingual"] == true }
         end
         { skill: entry["skill"], pins: list }
+      end
+    end
+
+    # The writing tasks of the topic (D-407): short_answer items of the subject with a word range, each pinned once and none of them also an exercise. They take no
+    # part in the practice (no pool, no skill): [{key:, revision:, bilingual:}] for what resolved, E-TOPIC-WRITING for what did not.
+    def writing_pins(doc, subject, findings)
+      seen = doc["practice"].flat_map { |e| e["items"].map { |pin| pin["item"] } }
+      Array(doc["writing"]).each_with_index.filter_map do |pin, i|
+        field = "/writing/#{i}"
+        item = Item.find_by(subject: subject, key: pin["item"])
+        unless item
+          findings.add("E-TOPIC-PIN", field, "there is no item #{pin['item']} in #{subject.key}", rule: "no_writing-#{pin['item']}")
+          next
+        end
+        if seen.include?(pin["item"])
+          findings.add("E-TOPIC-WRITING", field, "#{pin['item']} is pinned twice: a writing task is not also an exercise", rule: "twice-#{pin['item']}")
+          next
+        end
+        seen << pin["item"]
+        revision = resolve_item(item, pin["revision"], field, findings) or next
+        body = JSON.parse(revision.body_json)
+        unless body["kind"] == "short_answer" && body["words_min"] && body["words_max"]
+          findings.add("E-TOPIC-WRITING", field, "#{pin['item']} is not a writing task: a topic pins a short_answer item with words_min and words_max (banco brief show practice-item)", rule: "kind-#{pin['item']}")
+          next
+        end
+        { key: pin["item"], revision: revision, bilingual: body["bilingual"] == true }
       end
     end
 

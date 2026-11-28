@@ -630,6 +630,23 @@
       "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND"]
     },
     {
+      "name": "writings list",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/writings",
+      "args": [],
+      "flags": ["--status", "--subject", "--topic", "--student", "--limit"],
+      "error_codes": ["E-AUTH", "E-FILES", "E-NOT-FOUND"]
+    },
+    {
+      "name": "writings show",
+      "local": false,
+      "method": "GET",
+      "path": "/api/v1/writings/:id",
+      "args": ["id"],
+      "error_codes": ["E-AUTH", "E-NOT-FOUND"]
+    },
+    {
       "name": "grading review",
       "local": false,
       "method": "GET",

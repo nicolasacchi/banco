@@ -201,6 +201,18 @@
     },
     "case_sensitive": {
       "type": "boolean"
+    },
+    "words_min": {
+      "description": "short_answer only, a writing task (D-407): the least number of words the student is asked for, shown to him. With words_max.",
+      "type": "integer", "minimum": 1, "maximum": 600
+    },
+    "words_max": {
+      "description": "short_answer only, a writing task (D-407): the most words the student is asked for, shown to him (what he sends is capped at 4000 characters). With words_min.",
+      "type": "integer", "minimum": 1, "maximum": 600
+    },
+    "teacher_notes_it": {
+      "description": "short_answer only, a writing task (D-407): what the teacher looks at when she corrects the text (the points, the usual slips). Read by the teacher, never served to the student; never translated.",
+      "type": "string", "minLength": 1, "maxLength": 1200
     }
   },
   "required": [
@@ -294,6 +306,11 @@
             "const": "short_answer"
           }
         },
+        "dependentRequired": {
+          "words_min": ["words_max"],
+          "words_max": ["words_min"],
+          "teacher_notes_it": ["words_min"]
+        },
         "not": {
           "anyOf": [
             {
@@ -378,6 +395,10 @@
         "not": { "anyOf": [{ "required": ["sub_items"] }, { "required": ["rubric"] }] },
         "oneOf": [{ "required": ["instances"] }, { "required": ["generator"] }]
       }
+    },
+    {
+      "if": { "properties": { "kind": { "enum": ["diagnosis_item", "testlet", "practice_item"] } }, "required": ["kind"] },
+      "then": { "not": { "anyOf": [{ "required": ["words_min"] }, { "required": ["words_max"] }, { "required": ["teacher_notes_it"] }] } }
     },
     {
       "if": { "properties": { "kind": { "enum": ["diagnosis_item", "short_answer", "testlet"] } }, "required": ["kind"] },

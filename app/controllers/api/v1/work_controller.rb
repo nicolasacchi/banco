@@ -28,7 +28,7 @@ module Api
 
         revision = item.latest_revision
         body = { item: item.key, subject: item.subject.key, kind: item.kind, role: role, revision_id: revision.id, seq: revision.seq,
-                 base: revision.id, status: revision.status, brief: brief_row(item.practice? ? "practice-item" : "diagnosis-item") }
+                 base: revision.id, status: revision.status, brief: brief_row(item.practice? || item.writing? ? "practice-item" : "diagnosis-item") }
         body.merge!(role == "verifier" ? verifier_view(revision) : { files: revision.files })
         body[:review_findings] = review_findings(revision) unless role == "verifier"
         render json: body.merge(validation: validation_row(revision), teacher_comments: Teacher::SendBacks.for_item(item))

@@ -17,6 +17,8 @@ class CourseController < ApplicationController
     end
     # «Ripassa uno schema» (D-372): one schema he has opened, the same all day.
     @schema_pick = Course::Schemas.new(view, open_all: preview?).daily_pick(acting_student.key)
+    # «Il docente ha corretto un tuo testo» (D-407): the topics whose correction he has not opened yet, until the topic page draws it.
+    @new_corrections = Writings::Seen.unseen(acting_student).filter_map { |n| view.find_topic(n.submission.topic_key)&.last }.uniq(&:key)
     load_diagnosis_block
     @nothing = !@course_open && @diagnosis.nil?
   end

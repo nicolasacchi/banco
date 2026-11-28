@@ -8,6 +8,8 @@ module Teacher
     # student's templates draw, and whether the teacher has seen it.
     Exercise = Data.define(:card, :skill, :skill_label, :level, :purpose_it, :samples, :seen)
     Sample = Data.define(:view, :presentation)
+    # A writing task of the topic (D-407): what the student is asked, the range he is shown, what the teacher looks at, and the item's gate.
+    WritingTask = Data.define(:card, :stem, :words_min, :words_max, :notes_it)
     Check = Data.define(:name, :done, :reasons)
     CHECK_GROUPS = { map: /not in the latest course map/, versions: /pinned lesson revision|no longer the newest passed/,
                      lesson: /no review by an independent|sent the lesson revision back/, exercises: /is not approvable/, viewed: /was not opened/, render: /render check/,
@@ -91,9 +93,25 @@ module Teacher
       end
     end
 
+    # The writing tasks the latest topic revision pins (D-407), in the order of the file, each as the same card as an exercise (gate, review, blind solve,
+    # findings); none for most topics. They are items of the topic's review but never part of the exercises the teacher plays.
+    def writing_cards
+      @writing_cards ||= begin
+        ids = latest ? latest.writing_pins.map { |pin| pin["revision"] } : []
+        revisions = ItemCard.load(ids)
+        dispositions = ReviewFinding.dispositions
+        back = SendBacks.by_revision(ids)
+        ids.filter_map { |id| revisions[id] }.map { |rev| ItemCard.build(rev, dispositions, back) }
+      end
+    end
+
+    def writing_tasks
+      writing_cards.map { |c| WritingTask.new(c, Items::Text.both_of(c.body["prompt"], "stem"), c.body["words_min"], c.body["words_max"], c.body["teacher_notes_it"]) }
+    end
+
     def open_findings
       @open_findings ||= begin
-        ids = latest.body["practice"].flat_map { |p| p["items"].map { |i| i["revision"] } }
+        ids = latest.pinned_item_revision_ids
         found = ReviewFinding.must_be_disposed.where(item_revision_id: ids).order(:id).reject { |f| ReviewFinding.dispositions.key?(f.id) }
         found.size
       end
@@ -143,7 +161,7 @@ module Teacher
       end
     end
 
-    def item_cards = skill_blocks.flat_map(&:cards)
+    def item_cards = skill_blocks.flat_map(&:cards) + writing_cards
     def cards_with_findings = item_cards.select { |c| c.findings.any? }
     def findings_count = lesson_findings.size + item_cards.sum { |c| c.findings.size }
 

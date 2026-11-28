@@ -337,6 +337,21 @@ class BilingualItemsTest < ActiveSupport::TestCase
     assert_equal [ "/passage_it" ], at(run_item(broken), "E-LANG-TRANSLATION-LANG")
   end
 
+  test "D-407: a bilingual writing task is a short answer with a pair stem, a word range and the teacher's notes in Italian only" do
+    item = { "schema" => "banco.item/1", "schema_version" => 1, "kind" => "short_answer", "component" => "short_answer", "subject" => "english", "bilingual" => true, "skill" => "english.present-simple",
+             "prompt" => { "stem_en" => "Describe your day. Say where you are and what you do.", "stem_it" => "Descrivi la tua giornata. Di' dove sei e che cosa fai." },
+             "words_min" => 40, "words_max" => 80, "teacher_notes_it" => "Guarda la terza persona e la -s del presente.",
+             "rubric" => { "points" => [ { "id" => "present", "expected_it" => "Usa il presente.", "weight" => 1 }, { "id" => "three", "expected_it" => "Dice tre cose.", "weight" => 1 } ],
+                           "model_answer_en" => "I wake up at seven. I go to school by bus. I like music.", "model_answer_it" => "Mi sveglio alle sette. Vado a scuola in autobus. Mi piace la musica.", "threshold" => 0.5 },
+             "sources" => choice["sources"] }
+    assert_empty Banco::Schemas.validate("item", item).map(&:message)
+    result = run_item(item)
+    assert_equal "passed", result.status, result.findings.select { |f| f.severity == "error" }.map(&:to_h).inspect
+    assert_empty codes(result).grep(/LANG/), "the notes are the teacher's own: no pair is wanted for them"
+    assert_equal "E-SCHEMA", Banco::Schemas.validate("item", item.merge("teacher_notes_en" => "Look at the third person.")).first&.code, "the notes are never translated"
+    assert_includes codes(run_item(item.merge("words_min" => 90))), "E-WRITING-RANGE"
+  end
+
   # ---- a reading text per instance (display.passage_*) --------------------------------------------------------------------------------------
 
   # The golden blank item with a passage in each instance's display (D-402: three to five questions on each text, not ten on one).

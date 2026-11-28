@@ -20,7 +20,7 @@ module Search
       end
 
       def pinned_item_revision_ids(topics = topic_revisions)
-        topics.flat_map { |t| Array(t.body["practice"]).flat_map { |p| Array(p["items"]).map { |i| i["revision"] } } }.uniq
+        topics.flat_map { |t| Array(t.body["practice"]).flat_map { |p| Array(p["items"]).map { |i| i["revision"] } } + t.writing_pins.map { |i| i["revision"] } }.uniq
       end
 
       def item_revisions(topics = topic_revisions)

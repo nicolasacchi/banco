@@ -1,10 +1,10 @@
 ---
 name: practice-item
-version: 4
+version: 5
 formats: banco.item/1
 ---
 
-# Brief: practice items (version 4)
+# Brief: practice items (version 5)
 
 A practice item is an item of kind `practice_item` (`banco.item/1`, `config/banco/schemas/item.json`).
 The student meets it while studying a topic: after a lesson, on one skill, with help on request and an
@@ -44,7 +44,7 @@ stop at `awaiting_teacher`.
 - **A diacritic that makes another word is not a slip.** An accent that turns a word into a different one («porque» / «porqué», «el» / «él», «si» / «sí», «e» / «è») is graded wrong, or as the error value you declare for it, never «correct with a note». Declare the pair as an error value when the student may confuse it.
 - **Too many right variants: narrow the frame.** An instance's `accept` holds at most 20 entries. A typed answer that has more right variants than that (free word order, optional adverbs, every contraction × every synonym) is a frame that is too wide: do not widen the list. Show the sentence and ask for the part (a gap with a cue in brackets), or a choice, so that the right answers are few.
 - A practice item is never pinned by a blueprint (`E-BLUEPRINT-PRACTICE-ITEM`), and a topic pins only
-  practice items.
+  practice items for its exercises (and, under `writing`, the writing tasks of the last section).
 - A typed answer (`normalized_text`) whose words have a common acronym accepts both: the full words and
   the acronym, one as the instance's key and the other in that instance's `accept` (accepted «prodotto
   interno lordo» and «PIL»; an item-level `accept` far from the keys is `W-ACCEPT-ITEM-LEVEL`). Case is
@@ -58,6 +58,25 @@ stop at `awaiting_teacher`.
   programme line: `{"kind": "seconda_line", "ref": "ufficiale-2026-27:N", "fragment": "..."}`, checked
   like any programme line (`E-SOURCE`: the line exists, is citable, holds the exact fragment) and shown
   to the reviewer among the programme lines. Do not fall back to `inferred` for it.
+
+## A writing task: a text of his own (D-407)
+
+A topic may also ask the student for a **text of his own**, which the teacher corrects: an Italian narrative or argumentative text, a Spanish biography, an English description or
+message. It is not an exercise: no answer is graded, no hint, no instance, nothing counts for finishing the topic, and the guided writing exercises (pieces to order and complete)
+stay exercises as they are. Write it as an item of kind `short_answer` (`banco.item/1`, `config/banco/schemas/item.json`) with:
+
+- `prompt.stem_it`: the task, in plain words: who writes to whom or about what, what the text must hold (three or four things), in the form the student will write it (a narrative, a
+  biography, a message). For `english` and `spanish` the task is written in the language the student writes, `stem_en|es`, with its Italian under `stem_it` (D-402, the same pair
+  as every student text; the sentence caps of the target language apply to the task too).
+- `words_min` and `words_max` (both; 1 to 600): the range **shown to the student**, plain numbers a student at this level can reach in the time of the topic (for example 60 and 120).
+  It is advice, not a limit: the text is capped at 4000 characters.
+- `teacher_notes_it`: what the teacher looks at when she corrects, in Italian, the points of the task and the slips to expect (tenses, agreement, order of the facts, the register
+  of a message), at most 1200 characters. The student **never** reads it and it is never translated, never a model text. Write for her, not for the student.
+- The `rubric` that the schema asks of every short answer (two or three points with `expected_it`, a threshold and a `model_answer_it`, a pair in a bilingual item) stands beside the
+  notes: it tells the reviewer what a good text holds. `skill` is a skill of the topic's subject, `sources` as any item.
+
+A writing task goes through the same review and blind solve as any item (D-168: the blind solver sends a sample text), and the topic pins it **beside** the exercises, never in them:
+`"writing": [{"item": "it-write-1", "revision": "latest"}]` (`banco brief show topic`). A blueprint never pins one (`E-BLUEPRINT-WRITING-ITEM`).
 
 ## Messages and solutions: what the student reads
 

@@ -123,7 +123,7 @@ module Approval
       page_revisions(revision).reject { |r| ticked.include?(r.id.to_s) }.map { |r| format(PAGE_CONFIRM, r.page.key, r.id) }
     end
 
-    def item_revision_ids(revision) = revision.body["practice"].flat_map { |p| p["items"].map { |i| i["revision"] } }
+    def item_revision_ids(revision) = revision.pinned_item_revision_ids
 
     def map_entry(subject, key)
       course = CourseRevision.where(subject: subject).order(:seq).last or return nil

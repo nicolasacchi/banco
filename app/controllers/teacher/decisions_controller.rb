@@ -16,7 +16,7 @@ module Teacher
     before_action :allow_decisions!
 
     PERMITTED = %i[revision_id finding_id disposition reason_it grade_proposal_id attempt_id verdict error_code run_id
-                   item_revision_id acknowledged statement_it subject skill override_kind reason_code comment_it enabled back lesson_revision_id confirm_seen lesson_findings_reason_it open].freeze
+                   item_revision_id acknowledged statement_it subject skill override_kind reason_code comment_it enabled back lesson_revision_id confirm_seen lesson_findings_reason_it open writing_submission_id text_it].freeze
     # follow_opinions reads params[:pairs] itself.
 
     {
@@ -26,7 +26,7 @@ module Teacher
       void_revision_attempts: "void_revision_attempts", release: "release_diagnosis", consent: "record_consent",
       kind_override: "kind_override", send_back_item: "send_back_item", set_formula_sheet: "set_formula_sheet",
       approve_topic: "approve_topic", send_back_lesson: "send_back_lesson", release_course: "release_course",
-      set_focus_subject: "set_focus_subject"
+      set_focus_subject: "set_focus_subject", correct_writing: "correct_writing"
     }.each do |action, kind|
       define_method(action) { decide(kind) }
     end

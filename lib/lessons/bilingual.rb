@@ -23,7 +23,7 @@ module Lessons
     # Keys (their base, without `_it`) that are never paired: the teacher's own words, what points at the Italian textbook, what is graded or
     # typed by a program. `rubric.points[].expected_it` and the short answer's `model_answer_it` follow Q5 of D-402: the rubric stays Italian, the
     # model answer is a pair like any other text (`model_answer_en` is the English one).
-    EXEMPT = %w[description choice_only_reason notes reachable_ok book reason scope_reason expected input].freeze
+    EXEMPT = %w[description choice_only_reason notes reachable_ok book reason scope_reason expected input teacher_notes].freeze
 
     FIELDS = {
       # R2: bare keys that hold the subject's language. Base => the pointer of the hash that holds it (the key's twin is `<base>_it`). The table of a lesson

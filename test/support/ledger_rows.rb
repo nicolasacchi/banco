@@ -109,6 +109,8 @@ module LedgerRows
     rows["student_questions"] = StudentQuestion.create!(student: rows["students"], client_question_id: "q-1", text_it: "Non ho capito.")
     rows["comments"] = Comment.create!(student: rows["students"], client_comment_id: "c-ledger-1", reason: "other", page_path: "/today", page_kind: "today", created_at: now)
     rows["comment_events"] = CommentEvent.create!(comment: rows["comments"], kind: "read", origin: "web", actor: "nik", created_at: now)
+    rows["writing_submissions"] = WritingSubmission.create!(student: rows["students"], topic_revision: topic, item_revision: rows["item_revisions"], client_writing_id: "w-ledger-1",
+                                                            text: "Un testo scritto da me.", word_count: 5, created_at: now)
     rows["ratings"] = Rating.create!(student: rows["students"], client_rating_id: "r-ledger-1", target_kind: "item", target_key: "item-1", subject: rows["subjects"], topic_revision: topic,
                                      item_revision: rows["item_revisions"], practice_serve: serve, stars: 4, text_it: "Mi è piaciuto.", language: "it", created_at: now)
   end

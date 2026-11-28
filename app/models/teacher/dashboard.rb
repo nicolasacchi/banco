@@ -39,18 +39,18 @@ module Teacher
     # The pending actions, most blocking first: findings, graphs, tests ready, tests blocked, topics, corrections, the system's lines
     # (failed jobs, a late backup), release.
     def todos
-      @todos ||= [ findings, graphs, tests_ready, tests_blocked, topics, corrections, system_lines, release_line ].flatten
+      @todos ||= [ findings, graphs, tests_ready, tests_blocked, topics, corrections, writings, system_lines, release_line ].flatten
     end
 
     # Days a «Per me va bene così» counts as waiting for the teacher (D-400: it writes no comment, so it is no «commento nuovo»).
     CONTEST_DAYS = 7
 
     # The numbers of what waits, for the strip above the list: findings to decide, answers to correct, topics to approve, new comments, contests.
-    Counts = Data.define(:findings, :corrections, :topics, :comments, :contests)
+    Counts = Data.define(:findings, :corrections, :topics, :comments, :contests, :writings)
 
     def counts
       @counts ||= Counts.new(rows.sum { |r| r.waiting.to_h[:findings].to_i }, home.corrections, rows.sum { |r| r.course&.awaiting.to_i },
-                             Comments::Inbox.counts["sent"].to_i, contests)
+                             Comments::Inbox.counts["sent"].to_i, contests, writing_board.count)
     end
 
     # What the student sent to the teacher with «Per me va bene così» in the last CONTEST_DAYS days (from the start of the day, so the number
@@ -96,6 +96,13 @@ module Teacher
     def corrections
       home.corrections_by_subject.sort_by { |s, _| s.position.to_i }.map { |s, n| Todo.new(:corrections, s, n, with_student("/teacher/corrections"), nil, nil, nil) }
     end
+
+    # The texts the student wrote himself that wait for her correction (D-407), one line for each subject.
+    def writings
+      writing_board.pending_by_subject.sort_by { |s, _| s.position.to_i }.map { |s, n| Todo.new(:writings, s, n, with_student("/teacher/writings"), nil, nil, nil) }
+    end
+
+    def writing_board = @writing_board ||= Writings::Board.new(student: student)
 
     # What the operator should look at on the installation (D-369): jobs that failed for good in the last 24 hours, and a backup that is late or
     # missing. Each line is made only when there is something to say, and its Italian text is in `reason`. Nothing of it reaches the student.

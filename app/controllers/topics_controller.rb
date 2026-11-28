@@ -13,6 +13,9 @@ class TopicsController < ApplicationController
     @intro = target || body["intro_it"].presence
     @intro_tr = body["intro_it"].presence if target
     @read = course_view.lesson_read?(@topic)
+    # «Scrivi tu» (D-407): the writing tasks of the topic and his texts. A correction he sees now is no longer new (the preview records nothing).
+    @writing = Writings::StudentBlock.new(acting_student, @topic)
+    Writings::Seen.record(acting_student, @writing.corrected) unless preview?
   end
 
   private

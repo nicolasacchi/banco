@@ -43,6 +43,7 @@ teachers and bots did lately (D-333, D-334). `banco next` alone says, for each s
 | The entry test's report | `banco diagnosis report --subject SUBJECT --student student` |
 | The student's comments, with his follow-ups to your replies (`student_reply` events) | `banco comments list`, `banco comments show ID` |
 | What the student thinks of the exercises and the lessons: stars and a comment (D-365), read-only | `banco ratings list [--subject S] [--topic T] [--kind item\|lesson] [--since DATE] [--student KEY]` |
+| The texts the student wrote himself on the writing tasks, pending and corrected (D-407), read-only: the correction is the teacher's own words, never a bot's | `banco writings list [--status pending\|corrected] [--topic T] [--student KEY]`, `banco writings show ID` |
 | Where the grader may be wrong: the exercises to check, the manual corrections, the not-right tries with their signals (D-368), read-only; a `bot_read` token without the student's words | `banco grading review [--since DATE] [--subject S] [--student KEY]` |
 | What changed for the student and the teacher (D-375): the hand-written entries and the topics approved again, with the teacher's reason for a `bot_read` or `teacher` token; every token role reads it | `banco changelog [--audience student\|teacher] [--since DATE] [--student KEY]` |
 | Answers that wait for the teacher | `banco answers pending` |

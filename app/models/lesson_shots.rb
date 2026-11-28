@@ -74,7 +74,7 @@ module LessonShots
   def item_revisions_pinned
     pinned = Set.new
     BlueprintRevision.find_each { |b| pinned.merge(b.pinned_item_revision_ids) }
-    TopicRevision.find_each { |t| pinned.merge(Array(t.body["practice"]).flat_map { |p| Array(p["items"]).map { |i| i["revision"].to_i } }) }
+    TopicRevision.find_each { |t| pinned.merge(Array(t.body["practice"]).flat_map { |p| Array(p["items"]).map { |i| i["revision"].to_i } } + t.writing_pins.map { |i| i["revision"].to_i }) }
     pinned
   end
 end

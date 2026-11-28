@@ -1,10 +1,10 @@
 ---
 name: topic
-version: 1
+version: 2
 formats: banco.topic/1
 ---
 
-# Brief: a topic (version 1)
+# Brief: a topic (version 2)
 
 A topic is what the teacher approves and the student opens: one lesson revision and, for each skill of
 the topic, 2 to 4 practice item revisions. You write the topic file (`banco.topic/1`,
@@ -48,6 +48,9 @@ state with `banco topics list --subject KEY` and `banco topic open KEY`.
 - A pinned item is a `practice_item` of that skill (`E-TOPIC-ITEM-KIND`); a pinned revision must exist
   and belong to the named lesson or item (`E-TOPIC-PIN`); an item revision that has not passed is
   `E-ITEM-NOT-PASSED`.
+- **Writing tasks (D-407).** `"writing": [{"item": KEY, "revision": "latest"|N}]` (1 to 3) pins short_answer items of the subject that ask the student for a text of his own, which the teacher
+  corrects (`banco brief show practice-item`, the section on writing tasks). They stand **beside** the exercises: not a skill's items, no pool, never part of the topic's completion. A pin is a
+  short_answer with `words_min` and `words_max` (`E-TOPIC-WRITING`), pinned once, not also an exercise; the item revision has its review and blind solve like any pinned item.
 - Pool (`E-TOPIC-POOL`), per skill: at least one level 1 item, at least 20 distinct instances
   (distinct fingerprints) and at least 12 hard to guess. An `extra` topic (outside the programme,
   D-324: its exercises are optional for the student) needs at least 10 distinct instances and 6 hard

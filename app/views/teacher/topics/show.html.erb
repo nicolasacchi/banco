@@ -197,6 +197,31 @@
             </article>
           <% end %>
         </div>
+        <%# D-407: the writing tasks the topic pins, with what the teacher looks at; the student writes, she corrects (Testi da correggere). Not exercises: the practice never serves them. %>
+        <% if review.writing_tasks.any? %>
+          <section id="topic-writing" class="writing-tasks" aria-labelledby="topic-writing-title">
+            <h3 id="topic-writing-title"><%= t("teacher.review.writing.title") %></h3>
+            <p class="hint"><%= t("teacher.review.writing.intro") %></p>
+            <% review.writing_tasks.each do |task| %>
+              <% card = task.card %>
+              <article class="card writing-task" data-writing-task="<%= card.revision.id %>">
+                <p><%= ref_for(card.item) %> <span class="key"><%= t("teacher.skill.revision", seq: card.revision.seq) %></span> · <%= t("teacher.review.writing.words", min: task.words_min, max: task.words_max) %></p>
+                <p class="prompt" data-writing-stem><%= task.stem %></p>
+                <% if task.notes_it.present? %><p data-writing-notes><strong><%= t("teacher.review.writing.notes") %></strong> <%= task.notes_it %></p><% end %>
+                <p class="gate" data-approvable="<%= card.gate.approvable %>">
+                  <% if card.gate.approvable %><strong><%= t("teacher.skill.ready") %></strong>
+                  <% else %><strong><%= t("teacher.skill.not_ready") %></strong> <%= safe_join(gate_sentences(card.gate.reasons), " ") %><% end %></p>
+                <% unless reader_only? %><p class="card-actions"><a class="button secondary small" href="/teacher/items/<%= card.revision.id %>"><%= t("teacher.review.writing.open") %></a></p><% end %>
+                <% if !reader_only? || card.send_backs.any? %>
+                  <details class="more" data-more="send-back">
+                    <summary><%= t("teacher.review.send_back_item") %></summary>
+                    <%= render "teacher/items/send_back", card: card, blocker: blocker %>
+                  </details>
+                <% end %>
+              </article>
+            <% end %>
+          </section>
+        <% end %>
       </details>
 
       <details id="step-findings" class="review-step card" data-action="toggle->topic-review#opened" open data-step="findings" data-topic-review-target="step" data-done="<%= done[:findings] %>">

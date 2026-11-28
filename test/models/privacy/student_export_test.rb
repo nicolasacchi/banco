@@ -126,6 +126,15 @@ class StudentExportTest < ActiveSupport::TestCase
     assert_includes archive.fetch("README.txt"), "- ratings.json: le stelle e i commenti"
   end
 
+  test "the texts he wrote himself are in the file with the readable names, and not another student's (D-407)" do
+    assert_includes Privacy::StudentExport.table_names, "writing_submissions"
+    text = json("writing_submissions.json").sole
+    assert_equal [ student.id, "Un testo scritto da me.", 5 ], text.values_at("student_id", "text", "word_count")
+    assert_equal [ "item-1", "ripasso.math.demo" ], text.values_at("item_key", "lesson_key")
+    assert_equal [ 1 ], json("writing_submissions.json", other).map { |r| r["word_count"] }
+    assert_includes archive.fetch("README.txt"), "- writing_submissions.json: i testi che hai scritto da te"
+  end
+
   # ---- what is not in the file ----------------------------------------------------------------------------
 
   test "nothing of another student is in any file" do

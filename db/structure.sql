@@ -780,7 +780,27 @@ CREATE TRIGGER ratings_no_update BEFORE UPDATE ON ratings
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 CREATE TRIGGER ratings_no_delete BEFORE DELETE ON ratings
 BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TABLE "writing_submissions" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "student_id" integer NOT NULL, "topic_revision_id" integer NOT NULL, "item_revision_id" integer NOT NULL, "client_writing_id" varchar NOT NULL, "text" text NOT NULL, "word_count" integer NOT NULL, "created_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_50cdf39ebc"
+FOREIGN KEY ("student_id")
+  REFERENCES "students" ("id")
+, CONSTRAINT "fk_rails_96b01fd611"
+FOREIGN KEY ("topic_revision_id")
+  REFERENCES "topic_revisions" ("id")
+, CONSTRAINT "fk_rails_60530f75bf"
+FOREIGN KEY ("item_revision_id")
+  REFERENCES "item_revisions" ("id")
+, CONSTRAINT writing_submissions_text_length CHECK (length(text) BETWEEN 1 AND 4000), CONSTRAINT writing_submissions_word_count CHECK (word_count >= 1));
+CREATE INDEX "index_writing_submissions_on_student_id" ON "writing_submissions" ("student_id") /*application='Banco'*/;
+CREATE INDEX "index_writing_submissions_on_topic_revision_id" ON "writing_submissions" ("topic_revision_id") /*application='Banco'*/;
+CREATE INDEX "index_writing_submissions_on_item_revision_id" ON "writing_submissions" ("item_revision_id") /*application='Banco'*/;
+CREATE UNIQUE INDEX "index_writing_submissions_on_client_writing_id" ON "writing_submissions" ("client_writing_id") /*application='Banco'*/;
+CREATE INDEX "index_writing_submissions_on_student_and_item" ON "writing_submissions" ("student_id", "item_revision_id", "id") /*application='Banco'*/;
+CREATE TRIGGER writing_submissions_no_update BEFORE UPDATE ON writing_submissions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
+CREATE TRIGGER writing_submissions_no_delete BEFORE DELETE ON writing_submissions
+BEGIN SELECT RAISE(ABORT, 'append-only'); END;
 INSERT INTO "schema_migrations" (version) VALUES
+('20261128100000'),
 ('20261123200000'),
 ('20261123100000'),
 ('20261119153000'),

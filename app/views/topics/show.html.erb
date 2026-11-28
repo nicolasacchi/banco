@@ -1,5 +1,5 @@
 <% content_for :title, topic_title(@topic) %>
-<% offered = @topic.title_paired? || @intro_tr.present? || @topic.skills.any? { |skill| course_view.label_translation(skill) } %>
+<% offered = @topic.title_paired? || @intro_tr.present? || @topic.skills.any? { |skill| course_view.label_translation(skill) } || @writing.translations? %>
 <% skill_states = @topic.skills.map { |skill| course_view.state(skill) } %>
 <% done_count = skill_states.count { |s| Practice::Today::DONE.include?(s.state) } %>
 <main class="page course topic-page" style="--subject: var(--accent-<%= @subject_view.subject.key %>, var(--soft-primary))" <%= tr_scope_attrs(offered, topic: @topic) %>>
@@ -64,6 +64,8 @@
       </ul>
     </li>
   </ol>
+  <%# D-407: the writing tasks of the topic, after the exercises; never part of the topic's completion. %>
+  <%= render "topics/writing", block: @writing, topic: @topic if @writing.any? %>
   <%# D-372: a done topic has its schema, the summary card of the lesson at a glance. %>
   <% if schema_open?(@topic) %>
     <p class="topic-schema button-row" id="topic-schema"><a class="button secondary" id="schema-link" href="<%= schema_href(@topic.key) %>"><%= ui_icon("map") %> <%= t("schemas.topic_link") %></a></p>

@@ -41,6 +41,11 @@ module Course
           stale << { skill: entry["skill"], item: pin["item"], pinned: pin["revision"], newest_passed: newest.id } if newest && newest.id != pin["revision"]
         end
       end
+      revision.writing_pins.each do |pin| # D-407: a writing task is pinned like an exercise, with no skill
+        item = Item.joins(:revisions).find_by(item_revisions: { id: pin["revision"] }) or next
+        newest = item.revisions.includes(:validations).select { |r| r.status == "passed" }.max_by(&:seq)
+        stale << { skill: nil, item: pin["item"], pinned: pin["revision"], newest_passed: newest.id } if newest && newest.id != pin["revision"]
+      end
       [ stale, { pinned: revision.lesson_revision_id, latest: revision.lesson.latest_revision.id } ]
     end
 
@@ -53,7 +58,7 @@ module Course
       lesson_revision = revision.lesson_revision
       out << "the lesson revision has no review by an independent session" unless lesson_revision.counting_reviews.any?
       out << "the teacher sent the lesson revision back" if Decisions.lesson_sent_back?(lesson_revision)
-      item_revisions = ItemRevision.where(id: revision.body["practice"].flat_map { |p| p["items"].map { |i| i["revision"] } }).includes(:validations, :reviews, :blind_solves)
+      item_revisions = ItemRevision.where(id: revision.pinned_item_revision_ids).includes(:validations, :reviews, :blind_solves)
       out << "#{item_revisions.count { |r| r.status != 'passed' }} pinned item revision(s) have not passed validation" if item_revisions.any? { |r| r.status != "passed" }
       out << "#{item_revisions.count { |r| !Review::Gate.worked?(r) }} pinned item revision(s) lack an expert review or a blind solve" if item_revisions.any? { |r| !Review::Gate.worked?(r) }
       sent = item_revisions.select { |r| Teacher::SendBacks.sent_back?(r) }
