@@ -8,7 +8,7 @@
 #   reviewer and the teacher (W-).
 # stage: where the code is raised (schema, ruby, chrome, roundtrip, verify,
 #   blueprint, review, grading, api).
-version: 44
+version: 45
 
 validation:
   # Skill graph (synchronous).
@@ -169,6 +169,7 @@ validation:
   E-CHEM-SYMBOL: { stage: ruby, severity: error, description: "An element symbol inside \\ce{} or \\mathrm{} that is not in chem/elements, case-exact." }
   W-ES-TILDE: { stage: ruby, severity: warning, description: "A Spanish word written with a tilde that the stress rule does not need, or without the tilde it needs." }
   W-TILE-ORDER: { stage: ruby, severity: warning, description: "A tiles check of a lesson, or an ordering instance of word tiles (one to four words each), of English or Spanish builds a sentence whose time or place phrase (a tile or a run of tiles that starts with a preposition or a time word) could stand at the start, at the end or next to its place, and that order is neither the answer, nor accepted, nor a declared error value: a right sentence in another order is refused. The detail lists the orders (D-402, round 8)." }
+  E-TILE-ACCEPT-FORM: { stage: ruby, severity: error, description: "A tiles check of a lesson, or an ordering instance of word tiles, of English or Spanish: in the key order or an accepted order a tile that ends with a full stop, question mark or exclamation mark is not the last, or the tile that opens the sentence with a capital (not «I», not a name) is not the first, so the built order is no sentence. Write the tiles without the capital and the final punctuation, or accept only orders that keep the tile in place (D-408)." }
   E-LESSON-LANG: { stage: ruby, severity: error, description: "A target-language key (_en, _es, _la) in a subject that does not teach that language, two target languages in one figure, or Italian text that the lint can tell in a _en or _es key." }
   W-LANG-LEVEL: { stage: ruby, severity: warning, description: "A target-language word outside the first 3000 words, the lesson's glossary and its teaches_en or teaches_es list; the reviewer judges. On every _en or _es text of a bilingual revision, items included (D-402)." }
   # The bilingual courses of english and spanish (D-402): every student text of a bilingual revision is a pair, the target language under <base>_en|_es and its Italian under <base>_it.

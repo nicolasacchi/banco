@@ -69,8 +69,8 @@
           "error_codes": [],
           "form_violations": [],
           "normalized": "estás",
-          "outcome": "near_miss",
-          "message_it": "Ci sei quasi: controlla come l'hai scritta, forse c'è un errore di battitura."
+          "outcome": "unrecognised",
+          "message_it": "Non è ancora giusta. Leggi l'aiuto e riprova."
         }
       ],
       "next": "nothing was stored: no attempt, no event; to file a finding quote the verdict and the matched value"

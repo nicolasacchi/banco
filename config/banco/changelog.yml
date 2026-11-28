@@ -31,6 +31,42 @@ entries:
     body_it: "In alcuni argomenti, dopo gli esercizi, trovi «Scrivi tu»: scrivi un testo tuo e lo consegni. Il docente lo corregge e sotto il tuo testo trovi la correzione; poi puoi scrivere una versione nuova."
     title_en: "Write it yourself: a text of your own, corrected by your teacher"
     body_en: "In some topics, after the exercises, you find a place to write a text of your own and send it in. Your teacher corrects it and the correction appears under your text; then you can write a new version."
+  - id: matching-note-with-words
+    date: 2026-11-28
+    audience: [student, teacher]
+    kind: fix
+    decisions: [D-408]
+    title_it: "Abbinamenti quasi giusti: il consiglio usa le parole"
+    body_it: "Quando in un abbinamento una sola coppia è sbagliata, il messaggio dice quale coppia con le parole dell'esercizio, non con delle sigle."
+    title_en: "Matching almost right: the note uses the words"
+    body_en: "When one pair of a matching is wrong, the note names that pair with the words of the exercise, not with codes."
+  - id: spanish-subject-pronoun
+    date: 2026-11-28
+    audience: [student, teacher]
+    kind: fix
+    decisions: [D-408]
+    title_it: "Spagnolo: puoi scrivere anche il pronome"
+    body_it: "Nei vuoti che chiedono un verbo puoi scrivere anche il pronome soggetto giusto: «yo he ido» va bene come «he ido». Con un pronome che non corrisponde la risposta resta da rifare."
+    title_en: "Spanish: you can write the subject pronoun too"
+    body_en: "In a gap that asks for a verb, you may also write the subject pronoun that fits: both of these are right, the verb alone and the pronoun with it. A pronoun that does not fit is still marked not right."
+  - id: ending-is-not-a-typo
+    date: 2026-11-28
+    audience: [student, teacher]
+    kind: fix
+    decisions: [D-408]
+    title_it: "Una desinenza sbagliata non è un errore di battitura"
+    body_it: "Se in inglese o in spagnolo la desinenza di un verbo non è quella giusta, la risposta è da rifare e l'aiuto ti porta alla regola. «Errore di battitura» resta solo per le lettere scambiate o mancanti."
+    title_en: "A wrong verb ending is not called a typo"
+    body_en: "In English or Spanish, when the ending of a verb is not the right one, the answer is marked not right yet and the hint leads you to the rule. The typo message stays for swapped or missing letters."
+  - id: english-short-forms
+    date: 2026-11-28
+    audience: [student, teacher]
+    kind: fix
+    decisions: [D-398, D-408]
+    title_it: "Inglese: le forme brevi sono controllate meglio"
+    body_it: "Nelle risposte in inglese le forme brevi valgono solo dove hanno senso: «'s» non apre una domanda, «amn't» non è una forma valida e «'s» vale «has» solo davanti a un participio passato."
+    title_en: "English: short forms are checked more carefully"
+    body_en: "In English answers a short form is accepted only where it makes sense: 's does not open a question, amn't is not a valid form, and 's stands for has only before a past participle."
   - id: physical-education-out
     date: 2026-11-28
     audience: [student, teacher]

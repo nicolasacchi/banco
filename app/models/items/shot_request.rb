@@ -43,7 +43,7 @@ module Items
     end
 
     # How many other render requests wait before this one: the `queued` rows that are the latest of their revision, are not stale and are older than the row (the
-    # job takes them in order). Item validations and lesson renders have a higher priority and run first; they are not counted. Cheap: one query, no Solid Queue.
+    # job takes them in order). The shots have a lane of their own (`chrome_shots`, D-408): item validations and lesson renders do not run before them and are not counted. Cheap: one query, no Solid Queue.
     def self.ahead(row, now: Time.current)
       ItemRender.where(status: "queued").where("item_renders.id < ?", row.id).where("item_renders.created_at >= ?", now - Validation::Rules.get(:item_render, :queued_stale_minutes).minutes)
                 .where("NOT EXISTS (SELECT 1 FROM item_renders later WHERE later.item_revision_id = item_renders.item_revision_id AND later.id > item_renders.id)").count
@@ -56,6 +56,38 @@ module Items
 
       SolidQueue::Job.where(class_name: RenderItemRevisionJob.name, finished_at: nil).where.missing(:failed_execution)
                      .where("arguments LIKE ?", "%\"arguments\":[#{row.item_revision_id.to_i},#{row.id.to_i}]%").exists?
+    end
+
+    # The (revision id, request id) pairs of the render jobs that are in Solid Queue and neither finished nor failed, from one query; nothing is known without
+    # Solid Queue (test, development), so the age alone says (the caller treats every stale row as lost).
+    def self.pending_requests
+      return Set.new unless ActiveJob::Base.queue_adapter_name == "solid_queue"
+
+      SolidQueue::Job.where(class_name: RenderItemRevisionJob.name, finished_at: nil).where.missing(:failed_execution).pluck(:arguments).filter_map do |stored|
+        # Solid Queue stores the job as JSON text and reads it back as a Hash
+        args = (stored.is_a?(String) ? JSON.parse(stored) : stored)["arguments"]
+        args.first(2) if args.is_a?(Array) && args.size >= 2
+      rescue JSON::ParserError, NoMethodError
+        nil
+      end.to_set
+    end
+
+    # The lost requests (D-408): a `queued` row that is the latest of its revision, older than queued_stale_minutes, whose job is gone (finished, failed or never
+    # there: a restart, a crash between the row and the job). A row that nothing will answer keeps `item shots --wait` of that revision waiting, so each is answered
+    # with an `error` row (append-only: the row stays) saying so; the next request enqueues again as it does after any error. Expired, never re-enqueued: nobody is
+    # waiting for most of them and a thousand renders at once would drown the shots lane. Returns how many.
+    def self.expire_lost(now: Time.current)
+      cutoff = now - Validation::Rules.get(:item_render, :queued_stale_minutes).minutes
+      pending = pending_requests
+      lost = ItemRender.where(status: "queued").where("item_renders.created_at < ?", cutoff)
+                       .where("NOT EXISTS (SELECT 1 FROM item_renders later WHERE later.item_revision_id = item_renders.item_revision_id AND later.id > item_renders.id)")
+                       .reject { |row| pending.include?([ row.item_revision_id, row.id ]) }
+      lost.each do |row|
+        ItemRender.create!(item_revision_id: row.item_revision_id, status: "error", rules_version: Validation::Rules.version.to_s, harness_version: Validation::Harness.item_version,
+                           result_json: JSON.generate("errors" => [], "message" => "LostRequest: no job was left for the request #{row.id} (the queue was restarted or the job was lost); ask again"),
+                           shots_json: "[]")
+      end
+      lost.size
     end
 
     private

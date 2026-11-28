@@ -9,11 +9,12 @@ module Validation
   # with_lock, which takes one of SLOTS flocks (tmp/chrome.lock, tmp/chrome.lock.1)
   # shared by every process of the host, so at most SLOTS runs drive Chrome at a
   # time (two since D-402: with twelve authors a lesson render waited twenty minutes
-  # behind the one before it). Each run has its own browser context; what two runs
+  # behind the one before it; three since D-408, the third for the item shots, which have a
+  # queue lane of their own and so never wait behind the lesson renders). Each run has its own browser context; what two runs
   # must not share is handled here: a local Chrome is launched for each slot, and the
   # reaper (below) works only when no other slot is in use, so it never disposes the
-  # context of a run that is drawing. The queue's `chrome` lane (config/queue.yml)
-  # has as many threads as there are slots.
+  # context of a run that is drawing. The queue's two lanes that drive Chrome, `chrome` and `chrome_shots` (config/queue.yml),
+  # have as many threads between them as there are slots.
   #
   # Production: the banco-chrome sidecar (chromedp/headless-shell on the internal
   # network). BANCO_CHROME_HOST is a name; it is resolved to an IP right before
@@ -36,8 +37,8 @@ module Validation
     class Timeout < Error; end
 
     LOCK_PATH = -> { ENV["BANCO_CHROME_LOCK"].presence || Rails.root.join("tmp/chrome.lock").to_s }
-    # How many runs may drive Chrome at once, and so how many threads the `chrome` queue has (test/validation/chrome_runner_test.rb says they agree).
-    SLOTS = 2
+    # How many runs may drive Chrome at once, and so how many threads the Chrome lanes have between them (test/validation/chrome_runner_test.rb says they agree).
+    SLOTS = 3
 
     FLAGS = {
       "headless" => nil,

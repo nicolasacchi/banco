@@ -12,7 +12,7 @@ class NearTextTest < ActiveSupport::TestCase
 
   CASES.each do |c|
     test "vector #{c['id']}" do
-      kind = Grading::NearText.kind(c["answer"], c["candidates"], case_sensitive: c["case_sensitive"] == true)
+      kind = Grading::NearText.kind(c["answer"], c["candidates"], case_sensitive: c["case_sensitive"] == true, subject: c["subject"])
 
       c["expect"] ? assert_equal(c["expect"].to_sym, kind, c["id"]) : assert_nil(kind, c["id"])
     end

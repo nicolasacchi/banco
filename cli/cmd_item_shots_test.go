@@ -237,10 +237,27 @@ func oneJSONDocument(t *testing.T, stdout string) {
 	}
 }
 
-func TestItemShotsWaitSaysItsPlaceInTheQueueOnStderrWhenItChanges(t *testing.T) {
+func TestItemShotsWaitPrintsNothingButTheJSONAnswerUnlessProgressIsAsked(t *testing.T) {
+	// Round 10: an agent that merges stderr into stdout (`2>&1 | jq`) got a line of text before the JSON. Without --progress the wait is silent.
 	srv, s := newItemShotsServer(t, 202, "queued", "queued", "queued", "queued", "passed")
 	s.ahead = []int{5, 5, 2, 2}
 	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
+	if res.exit != 0 {
+		t.Fatalf("exit %d, stderr %s", res.exit, res.stderr)
+	}
+	if res.stderr != "" {
+		t.Errorf("--wait without --progress writes nothing to stderr: %q", res.stderr)
+	}
+	oneJSONDocument(t, res.stdout)
+	if !strings.HasPrefix(res.stdout, "{") {
+		t.Errorf("stdout starts with the JSON object, nothing before it: %q", res.stdout)
+	}
+}
+
+func TestItemShotsWaitSaysItsPlaceInTheQueueOnStderrWhenItChanges(t *testing.T) {
+	srv, s := newItemShotsServer(t, 202, "queued", "queued", "queued", "queued", "passed")
+	s.ahead = []int{5, 5, 2, 2}
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait", "--progress")
 	if res.exit != 0 {
 		t.Fatalf("exit %d, stderr %s", res.exit, res.stderr)
 	}
@@ -255,7 +272,7 @@ func TestItemShotsWaitSaysItsPlaceInTheQueueOnStderrWhenItChanges(t *testing.T) 
 	oneJSONDocument(t, res.stdout)
 	// a server that says nothing about the queue: nothing is printed
 	srv2, _ := newItemShotsServer(t, 202, "queued", "passed")
-	res = runItemShotsCLI(t, srv2.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
+	res = runItemShotsCLI(t, srv2.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait", "--progress")
 	if res.exit != 0 || strings.Contains(res.stderr, "ahead") {
 		t.Errorf("no queue_ahead: exit %d stderr %s", res.exit, res.stderr)
 	}
@@ -278,7 +295,7 @@ func movingQueue(t *testing.T, n int, delay time.Duration) (*httptest.Server, *i
 func TestItemShotsWaitGoesOnWhileTheQueueGoesDown(t *testing.T) {
 	// 60 looks of 25 ms are 1.5 s of waiting with --timeout 1: only the queue moving each look keeps the wait alive
 	srv, _ := movingQueue(t, 60, 25*time.Millisecond)
-	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait", "--timeout", "1")
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait", "--timeout", "1", "--progress")
 	if res.exit != 0 {
 		t.Fatalf("the queue kept moving but the wait gave up: exit %d stderr %s", res.exit, res.stderr)
 	}
@@ -338,7 +355,7 @@ func TestItemShotsDefaultWaitFollowsTheQueueWhileItStandsStill(t *testing.T) {
 	}
 	srv, s := newItemShotsServer(t, 202, append(statuses, "running", "passed")...)
 	s.ahead, s.delay = append(ahead, 7), 25*time.Millisecond
-	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait", "--progress")
 	if res.exit != 0 {
 		t.Fatalf("the render was queued all along but the default wait gave up: exit %d stderr %s", res.exit, res.stderr)
 	}
@@ -480,5 +497,56 @@ func TestItemShotsRefusesTwoPicturesForOneFile(t *testing.T) {
 	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir())
 	if res.exit == 0 || !strings.Contains(res.stderr, "instance-01_390x844.webp") {
 		t.Errorf("exit %d, stderr %s", res.exit, res.stderr)
+	}
+}
+
+// Round 10: a queued request that the server calls stale (its job is gone) is asked for again while the wait goes on, once; the new request's verdict ends the wait.
+func TestItemShotsWaitAsksAgainForARequestTheServerCallsStale(t *testing.T) {
+	var mu sync.Mutex
+	posts, looks := 0, 0
+	sha := strings.Repeat("c", 64)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		mu.Lock()
+		defer mu.Unlock()
+		w.Header().Set("X-Banco-Contract", contract.Digest())
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case req.URL.Path == "/api/v1/item-revisions/12/shots" && req.Method == "POST":
+			posts++
+			if posts == 1 {
+				w.WriteHeader(200)
+				_, _ = w.Write([]byte(`{"enqueued":false,"status":"queued","render_id":7,"why_not":"a render is already queued"}`))
+				return
+			}
+			w.WriteHeader(202)
+			_, _ = w.Write([]byte(`{"enqueued":true,"status":"queued","render_id":9}`))
+		case req.URL.Path == "/api/v1/item-revisions/12/shots":
+			looks++
+			switch {
+			case posts < 2: // the first request is called lost: stale
+				_, _ = w.Write([]byte(`{"revision_id":12,"status":"queued","stale":true,"render_id":7,"errors":[],"notes":[],"instances":1,"seed_note":"n","shots":[]}`))
+			case looks < 6:
+				_, _ = w.Write([]byte(`{"revision_id":12,"status":"queued","render_id":9,"errors":[],"notes":[],"instances":1,"seed_note":"n","shots":[]}`))
+			default:
+				_, _ = w.Write([]byte(`{"revision_id":12,"status":"passed","render_id":10,"errors":[],"notes":[],"instances":1,"seed_note":"n","shots":[{"instance":1,"seed":"s","shown_order":{},"viewport":"390x844-cream","width":390,"height":700,"available":true,"path":"/api/v1/item-revisions/12/shots/` + sha + `"}]}`))
+			}
+		case req.URL.Path == "/api/v1/item-revisions/12/shots/"+sha:
+			w.Header().Set("Content-Type", "image/webp")
+			_, _ = w.Write([]byte("RIFFxxxxWEBP"))
+		default:
+			w.WriteHeader(404)
+		}
+	}))
+	t.Cleanup(srv.Close)
+	res := runItemShotsCLI(t, srv.URL, "item", "shots", "12", "--dir", t.TempDir(), "--wait")
+	if res.exit != 0 {
+		t.Fatalf("exit %d, stderr %s", res.exit, res.stderr)
+	}
+	if posts != 2 {
+		t.Errorf("the stale request is asked again once: %d requests in all", posts)
+	}
+	oneJSONDocument(t, res.stdout)
+	if !strings.Contains(res.stdout, `"status":"passed"`) {
+		t.Errorf("the new request's verdict: %s", res.stdout)
 	}
 }

@@ -10,7 +10,15 @@ module Lessons
     # tiles of LINK (articles, prepositions, the words that only lead into the phrase) up to the first tile that is not one of them: «por la mañana», «En 1973»,
     # «hoy», «after school». Each such phrase is moved, alone, to the start, to the end and one or two tiles before and one after where it stands (next to a verb of one or two tiles); an order that is not
     # the key, not accepted and not a declared error value is listed. Only a warning: the author reads the orders and accepts the right ones.
+    #
+    # E-TILE-ACCEPT-FORM (round 10, D-408): the tiles are text, and an order that the key or `accept` names is shown to the student as the sentence he built. A tile that
+    # ends with `.`, `?` or `!` must be the last of every such order, and a tile that opens with a capital (the sentence's own: not «I», not a name or a word the
+    # frequency lists do not know, which is a proper noun) must be the first: otherwise an accepted order reads «in the rain. When the bus arrived, we were waiting» or
+    # «mi hermano está cansado Hoy», which is no sentence. The author writes the tiles without the sentence's capital and full stop, or keeps the tile in place
+    # in every order. The capital counts only when the key opens with it: a capital in the middle of the key is a name.
     module TileOrder
+      FINAL = /[.?!…][)"»”’']*\z/
+      CAPITAL = /\A[¿¡"«“(]*\p{Lu}/
       PHRASE = {
         "en" => %w[in on at under over near behind beside between inside outside across around during after before since until yesterday today tomorrow tonight now
                    then soon later here there every last next],
@@ -29,10 +37,44 @@ module Lessons
 
       # Adds the warning to +ctx+ for the tiles +check+ when there is an order to list.
       def check(check, ctx)
+        form_problems(check).each_with_index { |problem, i| ctx.add("E-TILE-ACCEPT-FORM", "accept", problem, rule: "tile-accept-form-#{i}") }
         orders = orders(check)
         return if orders.empty?
 
         ctx.add("W-TILE-ORDER", "answer", message(orders), rule: "tile-order", orders: orders)
+      end
+
+      # The messages of E-TILE-ACCEPT-FORM for +check+ (same shape as +orders+): [] when every order that the key or `accept` names keeps its final-punctuation tile
+      # last and the capital tile of the sentence first. One message for each tile and order, the key's first.
+      def form_problems(check)
+        tiles = check["tiles"].to_a.to_h { |t| [ t["id"], t ] }
+        lang = language(tiles.values)
+        key = Array(check["answer"])
+        return [] unless lang && key.size >= 2 && key.all? { |id| tiles.key?(id) }
+
+        text = ->(id) { tiles[id]["text_#{lang}"].to_s.strip }
+        orders = [ key ] + check["accept"].to_a.select { |o| o.is_a?(Array) && o.size == key.size && o.all? { |id| tiles.key?(id) } }
+        initial = key.first if text.call(key.first).match?(CAPITAL) && !proper_noun?(lang, text.call(key.first))
+        orders.uniq.flat_map do |order|
+          sentence = order.map(&text).join(" ")
+          order.each_with_index.filter_map do |id, i|
+            if text.call(id).match?(FINAL) && i < order.size - 1
+              "the tile #{text.call(id).inspect} ends the sentence with a full stop, question mark or exclamation mark and must be the last tile of every order, but #{sentence.inspect} puts it " \
+                "elsewhere: write the tiles without the final punctuation, or accept only orders that end with it"
+            elsif id == initial && i.positive?
+              "the tile #{text.call(id).inspect} opens the sentence with a capital and must be the first tile of every order, but #{sentence.inspect} puts it elsewhere: " \
+                "write it in lower case (the student reads the built order as a sentence), or accept only orders that start with it"
+            end
+          end
+        end.uniq
+      end
+
+      # A name or a word that the frequency lists do not know (Picasso, Malaga): the capital is the word's own, wherever it stands. «I» and «I'm» likewise.
+      def proper_noun?(lang, tile_text)
+        word = tile_text.scan(/\p{L}[\p{L}'’]*/).first.to_s
+        return true if lang == "en" && word.match?(/\AI(?:['’]\p{L}+)?\z/)
+
+        Validation::Bilingual.names(lang).include?(word.downcase) || !Lessons::Lexicon.known?(lang, word)
       end
 
       # The orders to list for +check+ ({"tiles" => [{"id", "text_en"|"text_es"}], "answer" => ids, "accept" => [ids], "errors" => [{"answer" => ids}]}): lower-case

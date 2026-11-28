@@ -96,7 +96,7 @@ module Practice
     def near_kind(spec, key, text)
       return nil unless key == "wrong" && spec.component == "normalized_text"
 
-      Grading::NearText.kind(text.to_s, ([ spec.answer ] + spec.accept).map(&:to_s), case_sensitive: false)
+      Grading::NearText.kind(text.to_s, ([ spec.answer ] + spec.accept).map(&:to_s), case_sensitive: false, subject: spec.subject)
     end
 
     def contested?(attempt, contested_ids = nil)

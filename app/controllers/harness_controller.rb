@@ -54,10 +54,18 @@ class HarnessController < ActionController::API
     shown = Items::ShotPresentation.call(revision, instance, number)
     html = ApplicationController.render(template: "harness/item_render", layout: false,
                                         assigns: { theme: params[:theme].to_s == "dark" ? "dark" : "cream", frame: shown[:frame], hints: shown[:hints],
-                                                   item: shown[:item], config: { number: number, texts: Object.new.extend(ApplicationHelper).student_texts } })
+                                                   item: shown[:item], config: item_config(instance, number) })
     hashes = html.scan(%r{<script(?![^>]*\bsrc=)(?![^>]*application/json)[^>]*>(.*?)</script>}m).map { |(code)| "'sha256-#{Base64.strict_encode64(Digest::SHA256.digest(code))}'" }
     response.set_header("Content-Security-Policy", format(Validation::Harness::ITEM_CSP, hashes: hashes.join(" ")))
     send_data html, type: "text/html; charset=utf-8", disposition: "inline"
+  end
+
+  # What the item host is told besides the item: the number and the texts; with `?answered=1` also the Italian of the passage, which the student reads only
+  # after the answer (the shot of the answered state, D-408).
+  def item_config(instance, number)
+    config = { number: number, texts: Object.new.extend(ApplicationHelper).student_texts }
+    config[:passage_it] = Practice::Payload.passage(instance)[:passage_it] if params[:answered].to_s == "1"
+    config
   end
 
   # GET /assets/items/:sha256.svg: an item's figure, as the student's <img> asks for it (Items::Figures, D-321). Content-addressed and the same bytes

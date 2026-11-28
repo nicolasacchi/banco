@@ -432,10 +432,15 @@ module Validation
       text.to_s.gsub(Readability::MATH, " ").gsub(QUOTED_SPAN, " ").gsub(QUOTED, " ").gsub(MARKUP_SPAN, '\1').gsub(LINK, '\1').gsub(PIECES, " ")
     end
 
+    MERIDIEM = /\A[ap]\.m\.\z/i
+
     # The sentences of a target-language text: a full stop (or ? or !) followed by a space ends one, also after a letter («acaba en n. Lleva») and inside a
     # closing quote (`.»`, `?»`, `!»`); a semicolon splits; a line ends one. Only the titles and a dotted abbreviation (a.m.) keep their stop.
     def target_sentences(text)
-      protected = text.gsub(ABBREVIATIONS) { |m| m.tr(".", "\u0001") }.gsub(Readability::DOTTED) { |m| m.tr(".", "\u0001") }
+      protected = text.gsub(ABBREVIATIONS) { |m| m.tr(".", "\u0001") }.gsub(Readability::DOTTED) do |m|
+        # a.m. and p.m. close a sentence when a capital follows, as a.C. and d.C. do (Readability::ERAS); any other dotted abbreviation (e.g., i.e.) never does
+        m.match?(MERIDIEM) && Regexp.last_match.post_match.match?(/\A\s+\p{Lu}/) ? m : m.tr(".", "\u0001")
+      end
       protected.split(/(?<=[.!?…][»”"])\s+|(?<=[.!?…])\s+|;\s*|\n+/).map { |s| s.tr("\u0001", ".").strip }.reject { |s| s.scan(Readability::WORD).empty? }
     end
 

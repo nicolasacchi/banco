@@ -226,6 +226,60 @@ class ItemShotsApiTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # D-408: a request whose job is gone is answered with an `error` row, so that the status of the revision says it and a waiting client asks again.
+  test "a lost request (the latest row of its revision, queued, stale, no job in Solid Queue) is expired with an error row; a request whose job waits, a fresh one and an answered one are not" do
+    c = ApplicationRecord.connection
+    c.create_table(:solid_queue_jobs) do |t|
+      t.string :queue_name, null: false
+      t.string :class_name, null: false
+      t.text :arguments
+      t.datetime :finished_at
+      t.datetime :created_at, null: false
+    end
+    c.create_table(:solid_queue_failed_executions) do |t|
+      t.bigint :job_id, null: false
+      t.text :error
+      t.datetime :created_at, null: false
+    end
+    [ SolidQueue::Job, SolidQueue::FailedExecution ].each(&:reset_column_information)
+    queued = ->(rev, at) { ItemRender.create!(item_revision: rev, status: "queued", harness_version: Validation::Harness.item_version, result_json: "{}", shots_json: "[]", created_at: at) }
+    lost = make_revision("shots-lost", "math.number", instances: 1, component: "choice")
+    waiting = make_revision("shots-waiting", "math.number", instances: 1, component: "choice")
+    fresh = make_revision("shots-fresh", "math.number", instances: 1, component: "choice")
+    answered = make_revision("shots-answered", "math.number", instances: 1, component: "choice")
+    superseded = make_revision("shots-superseded", "math.number", instances: 1, component: "choice")
+    lost_row = queued.call(lost, 3.hours.ago)
+    waiting_row = queued.call(waiting, 3.hours.ago)
+    c.insert("INSERT INTO solid_queue_jobs (queue_name, class_name, arguments, created_at) VALUES ('chrome_shots', 'RenderItemRevisionJob', " \
+             "#{c.quote(%({"job_class":"RenderItemRevisionJob","arguments":[#{waiting.id},#{waiting_row.id}]}))}, #{c.quote(Time.current)})")
+    queued.call(fresh, 1.minute.ago)
+    queued.call(answered, 3.hours.ago)
+    verdict!(revision: answered)
+    old = queued.call(superseded, 5.hours.ago)
+    queued.call(superseded, 3.hours.ago)
+    ActiveJob::Base.stub(:queue_adapter_name, "solid_queue") do
+      assert_equal 2, Items::ShotRequest.expire_lost, "the lost one and `superseded`, whose latest row is queued and old: only the latest row of a revision counts"
+    end
+    assert_equal "error", ItemRender.latest_for(lost).status
+    assert_match(/no job was left for the request #{lost_row.id}/, ItemRender.latest_for(lost).result["message"])
+    assert_equal "error", ItemRender.latest_for(superseded).status
+    assert_equal "queued", ItemRender.latest_for(waiting).status
+    assert_equal "queued", ItemRender.latest_for(fresh).status
+    assert_equal "passed", ItemRender.latest_for(answered).status
+    assert_equal 2, ItemRender.where(item_revision_id: superseded.id, status: "queued").count, "append-only: the queued rows stay"
+    assert_operator old.id, :<, ItemRender.latest_for(superseded).id
+    ActiveJob::Base.stub(:queue_adapter_name, "solid_queue") { assert_equal 0, Items::ShotRequest.expire_lost, "a second sweep finds nothing" }
+    # the status says it, and a request enqueues again as after any error
+    api_as(@agent, shots_path(lost))
+    assert_equal "error", json["status"]
+    assert_match(/ask again/, json["message"])
+    assert_enqueued_jobs 1, only: RenderItemRevisionJob do
+      api_as(@agent, shots_path(lost), method: :post)
+    end
+    assert_response :accepted
+    assert_enqueued_with(job: ExpireLostItemRendersJob) { ExpireLostItemRendersJob.perform_later }
+  end
+
   test "while a request is queued the list says how many requests wait before it: the queued rows that are the latest of their revision and not stale" do
     queued = ->(rev, at = Time.current) { ItemRender.create!(item_revision: rev, status: "queued", harness_version: Validation::Harness.item_version, result_json: "{}", shots_json: "[]", created_at: at) }
     other = make_revision("shots-q2", "math.number", instances: 1, component: "choice")
@@ -308,9 +362,9 @@ class ItemShotsApiTest < ActionDispatch::IntegrationTest
 
   # ---- the job ----
 
-  test "the job is on the chrome queue below item validation, and draws unless a verdict has been appended since its request" do
+  test "the job is on the chrome_shots lane of its own (D-408), below item validation, and draws unless a verdict has been appended since its request" do
     job = RenderItemRevisionJob.new
-    assert_equal "chrome", job.queue_name
+    assert_equal "chrome_shots", job.queue_name
     assert_equal 20, job.priority
     assert_operator job.priority, :>, ValidateItemRevisionJob.new.priority.to_i
     assert_operator job.priority, :>, RenderLessonRevisionJob.new.priority, "a shot waits for the lesson renders that gate approval"

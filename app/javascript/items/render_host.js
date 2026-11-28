@@ -13,6 +13,7 @@ import { renderItem } from "items/render"
 import { ensureChem } from "items/markup"
 import { rawMarkupIn } from "lesson/raw_markup"
 import { refresh } from "items/translation"
+import { reveal } from "items/bilingual"
 
 const errors = []
 const note = (message) => errors.push(String(message).slice(0, 300))
@@ -30,6 +31,8 @@ const box = document.getElementById("item-box")
 // ?tr=1 (D-402): the item as the student sees it with «Traduzione» open: the item box is a translation scope that is on. Without it the Italian is drawn but
 // hidden, as the student first sees the exercise.
 const translationOpen = new URLSearchParams(location.search).get("tr") === "1"
+// ?answered=1 (D-408): the item as the page shows it after the answer: the passage's Italian (config.passage_it, sent for this request only) is added under the passage.
+const answered = new URLSearchParams(location.search).get("answered") === "1"
 
 // A bound on every wait: a page that never settles answers by name instead of leaving the server's Chrome to give up on it.
 const READY_LIMIT_MS = Math.min(Number(new URLSearchParams(location.search).get("ready_ms")) || 20000, 20000)
@@ -117,12 +120,13 @@ const ready = (async () => {
     await waitFor("the fonts", document.fonts?.ready)
     // a web font is fetched when text first wears it: every face is loaded before the instance is measured, or its text is measured in the fallback
     if (document.fonts) await waitFor("the fonts", Promise.allSettled([...document.fonts].map((face) => face.load())))
-    // The shots are the solver's pictures too: the passage's Italian (withheld from the student until the answer) is not in the presentation, so it is not drawn.
+    // The shots are the solver's pictures too: the passage's Italian (withheld from the student until the answer) is not in the presentation, so it is drawn only in the answered state.
     const handle = await waitFor("the item", renderItem(presentation, { t: config.texts }))
     box.setAttribute("data-tr-scope", "item")
     box.setAttribute("data-translation", translationOpen ? "on" : "off")
     box.appendChild(handle.element)
     handle.mounted()
+    if (answered && config.passage_it) reveal(box, config.passage_it)
     refresh(box)
     // a chemistry formula is drawn as plain text until mhchem arrives (items/markup.js); the redraw is queued on the same promise
     if (uses(/\\(?:ce|pu)\{/)) await waitFor("mhchem", ensureChem().catch(() => {}))

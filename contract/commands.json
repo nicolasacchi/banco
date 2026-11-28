@@ -334,7 +334,7 @@
       "method": "GET",
       "path": "/api/v1/item-revisions/:revision/shots",
       "args": ["revision"],
-      "flags": ["--dir", "--wait", "--force", "--timeout"],
+      "flags": ["--dir", "--wait", "--force", "--timeout", "--progress"],
       "error_codes": ["E-AUTH", "E-NOT-FOUND", "E-ITEM-NOT-PASSED", "E-CHROME-UNAVAILABLE"]
     },
     {

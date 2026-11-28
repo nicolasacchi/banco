@@ -363,8 +363,8 @@ practice:                     # practice items (A2.4) and topics (A2.3)
 item_render:
   viewport: [390, 844, cream]
   max_instances: 40           # instances drawn (in the order of their ids; the solver's and the reviewer's numbers); a longer pool is drawn to here and says so
-  budget_seconds: 150         # one revision (a timeout is findings, the shots already taken stay)
+  budget_seconds: 300         # one revision (a timeout is findings, the shots already taken stay); 150 before D-408 doubled and tripled the pictures of a bilingual item
   instance_seconds: 12        # one instance: the page drawn, measured and pictured
   queued_stale_minutes: 30    # a `queued` row without a later row for this long is a lost job: a new request enqueues again
-  translation_instances: 1    # a bilingual item: the first n instances are pictured a second time with the Italian translation open (`-tr`, D-402)
+  translation_instances: 40   # a bilingual item: the first n instances (all of them up to max_instances, D-408) are pictured a second time with the Italian translation open (`-tr`, D-402), and an instance with an Italian passage a third time as answered (`-answered`)
   max_shot_height: 9000       # a taller instance is pictured to here and reported
