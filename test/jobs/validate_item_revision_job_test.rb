@@ -147,8 +147,8 @@ class ValidateItemRevisionJobTest < ActiveJob::TestCase
   test "the job runs on the chrome queue" do
     assert_equal "chrome", ValidateItemRevisionJob.new.queue_name
     queues = YAML.load_file(Rails.root.join("config/queue.yml"), aliases: true)["default"]["workers"]
-    chrome = queues.find { |w| w["queues"] == "chrome" }
-    assert_equal Validation::ChromeRunner::SLOTS, chrome["threads"], "as many threads as Chrome has slots: two runs at a time"
+    lanes = queues.select { |w| %w[chrome chrome_shots].include?(w["queues"]) }
+    assert_equal Validation::ChromeRunner::SLOTS, lanes.sum { |w| w["threads"] }, "as many threads as Chrome has slots: three runs at a time, one of them the shots' (D-408)"
   end
 
   test "an unknown revision is ignored" do

@@ -1,8 +1,8 @@
 require "test_helper"
 require_relative "../support/course_rows"
 
-# The item shots of a bilingual item (D-402): the first instance is drawn a second time with the Italian translation open (`?tr=1`), and that shot says
-# `state: "tr"`. A legacy item is drawn exactly as before. A stand-in for Chrome records the pages it is sent to; the real browser is the render
+# The item shots of a bilingual item (D-402): every instance (D-408; the first only before) is drawn a second time with the Italian translation open (`?tr=1`), and that shot says
+# `state: "tr"`; an instance whose passage has an Italian text is drawn a third time as answered (`?tr=1&answered=1`, `state: "answered"`, D-408). A legacy item is drawn exactly as before. A stand-in for Chrome records the pages it is sent to; the real browser is the render
 # host's own test (it needs BROWSER_PATH).
 class ItemRenderRunnerTranslationTest < ActiveSupport::TestCase
   include CourseRows
@@ -35,11 +35,12 @@ class ItemRenderRunnerTranslationTest < ActiveSupport::TestCase
 
   setup { @english = build_course(subject_key: "english") }
 
-  def revision(bilingual:, instances: 3)
+  def revision(bilingual:, instances: 3, passage: false)
     item = Item.create!(subject: @english, key: "shot-#{SecureRandom.hex(3)}", kind: "practice_item")
     body = { schema: "banco.item/1", schema_version: 1, kind: "practice_item", subject: "english", skill: "english.demo", component: "choice", expected_seconds: 60,
              prompt: { stem_it: "Quale parola?" } }
     body[:bilingual] = true if bilingual
+    body.merge!(passage_en: "A short text.", passage_it: "Un breve testo.") if passage
     revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
     instances.times do |i|
       options = (1..3).map { |n| { id: "o#{n}", text: "word #{n} #{i}" } }
@@ -55,12 +56,13 @@ class ItemRenderRunnerTranslationTest < ActiveSupport::TestCase
     [ result, page ]
   end
 
-  test "a bilingual item has a second shot of instance 1 with the translation open, and only of the first instance" do
+  test "a bilingual item has a second shot of every instance with the translation open" do
     result, page = draw(revision(bilingual: true))
     assert_equal "passed", result.status
-    assert_equal [ [ 1, nil ], [ 1, "tr" ], [ 2, nil ], [ 3, nil ] ], result.shots.map { |s| [ s["instance"], s["state"] ] }
-    assert_equal [ false, true, false, false ], page.urls.map { |u| u.include?("&tr=1") }
-    assert_equal %w[1 1 2 3], page.urls.map { |u| u[/[?&]n=(\d+)/, 1] }
+    assert_equal [ [ 1, nil ], [ 1, "tr" ], [ 2, nil ], [ 2, "tr" ], [ 3, nil ], [ 3, "tr" ] ], result.shots.map { |s| [ s["instance"], s["state"] ] }
+    assert_equal [ false, true, false, true, false, true ], page.urls.map { |u| u.include?("&tr=1") }
+    assert_equal %w[1 1 2 2 3 3], page.urls.map { |u| u[/[?&]n=(\d+)/, 1] }
+    assert(page.urls.none? { |u| u.include?("answered") }, "no passage, no answered state")
     assert_equal result.shots.size, result.shots.map { |s| s["sha256"] }.uniq.size
     tr, plain = result.shots.values_at(1, 0)
     assert_equal [ plain["seed"], plain["shown_order"] ], [ tr["seed"], tr["shown_order"] ], "the same shuffle: the two pictures differ only by the translation"
@@ -79,10 +81,24 @@ class ItemRenderRunnerTranslationTest < ActiveSupport::TestCase
     plain = Validation::Harness.item_page_url("tok", 2)
     assert_equal "http://127.0.0.1:#{Validation::Harness.base_url[/\d+\z/]}/h/tok/item-render.html?n=2&theme=cream", plain
     assert_equal "#{plain}&tr=1", Validation::Harness.item_page_url("tok", 2, translation: true)
+    assert_equal "#{plain}&tr=1&answered=1", Validation::Harness.item_page_url("tok", 2, translation: true, answered: true)
   end
 
-  test "the rule is one instance and says so" do
-    assert_equal 1, Validation::Rules.get(:item_render, :translation_instances)
+  test "an instance whose passage has an Italian text is drawn a third time as answered, with the translation open; the others are not" do
+    result, page = draw(revision(bilingual: true, instances: 2, passage: true))
+    assert_equal [ [ 1, nil ], [ 1, "tr" ], [ 1, "answered" ], [ 2, nil ], [ 2, "tr" ], [ 2, "answered" ] ], result.shots.map { |s| [ s["instance"], s["state"] ] }
+    answered = page.urls.select { |u| u.include?("&answered=1") }
+    assert_equal 2, answered.size
+    assert(answered.all? { |u| u.include?("&tr=1") }, "the Italian of the passage shows only with the translation open")
+    assert_equal result.shots.size, result.shots.map { |s| s["sha256"] }.uniq.size
+    assert_equal %w[answered answered], result.timings.map { |t| t["state"] }.select { |st| st == "answered" }
+    legacy, legacy_page = draw(revision(bilingual: false, instances: 1, passage: true))
+    assert_equal [ nil ], legacy.shots.map { |s| s["state"] }
+    assert(legacy_page.urls.none? { |u| u.include?("answered") })
+  end
+
+  test "the rule covers every instance the render draws: as many as max_instances" do
+    assert_equal Validation::Rules.get(:item_render, :max_instances), Validation::Rules.get(:item_render, :translation_instances)
   end
 
   test "the shot meta says the state only for the translation picture" do
@@ -90,6 +106,7 @@ class ItemRenderRunnerTranslationTest < ActiveSupport::TestCase
     presentation = Items::ShotPresentation.call(revision, Items::ShotPresentation.instance(revision, 1), 1)
     assert_equal({ "instance" => 1, "seed" => presentation[:seed], "shown_order" => presentation[:shown_order] }, Items::ShotPresentation.meta(presentation))
     assert_equal "tr", Items::ShotPresentation.meta(presentation, state: "tr")["state"]
+    assert_equal "answered", Items::ShotPresentation.meta(presentation, state: Items::ShotPresentation::ANSWERED_STATE)["state"]
     assert Items::ShotPresentation.translation?(revision)
     refute Items::ShotPresentation.translation?(revision(bilingual: false))
   end

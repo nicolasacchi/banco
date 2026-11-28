@@ -35,6 +35,7 @@ var itemShotsWaitCap = 3600 * time.Second
 
 type itemShotsList struct {
 	Status    string            `json:"status"`
+	Stale     bool              `json:"stale"`
 	RenderID  int               `json:"render_id"`
 	Message   string            `json:"message"`
 	Ahead     *int              `json:"queue_ahead"`
@@ -101,6 +102,7 @@ func runItemShots(e *env, args []string) error {
 	dir := fs.String("dir", "", "folder for the images: DIR/REV/instance-NN_390x844.webp (default "+defaultItemShotsDir+")")
 	wait := fs.Bool("wait", false, "wait until the render is done (the Chrome lane runs two jobs at a time and says its place in the queue)")
 	force := fs.Bool("force", false, "draw the revision again even if it has been drawn")
+	progress := fs.Bool("progress", false, "with --wait: say the place in the queue on stderr each time it changes (by default nothing but the JSON answer is printed, so `2>&1 | jq` reads it)")
 	timeout := fs.Int("timeout", 0, "with --wait: give up after this many seconds without the queue moving; by default the wait follows the queue (as long as the server says queued or running), at most 3600 s")
 	fs.Bool("json", false, "JSON output (the default)")
 	pos, err := parseFlags(fs, args)
@@ -155,18 +157,32 @@ func runItemShots(e *env, args []string) error {
 		deadline := started.Add(stretch)
 		limit := started.Add(itemShotsWaitCap)
 		told, nearest := -1, -1
+		reasked := 0 // the request that was asked again because the server called it lost (stale): once for each
 		for {
 			if list, err = e.itemShots(rev); err != nil {
 				return err
+			}
+			// a queued request that nothing answers (its job is gone: a restart, a crash) is asked again, once, instead of waited for to the cap (D-408)
+			if list.Status == "queued" && list.Stale && list.RenderID != reasked {
+				reasked = list.RenderID
+				if again, aerr := requestItemShots(e, rev, false); aerr == nil {
+					if id, ok := again["render_id"].(float64); ok && again["enqueued"] == true {
+						after = int(id)
+						deadline = time.Now().Add(stretch)
+					}
+				}
 			}
 			pending := list.Status == "queued" || list.Status == "running"
 			if follow && pending {
 				deadline = time.Now().Add(stretch)
 			}
-			// the place in the queue, said on stderr each time it changes (stdout stays the one JSON answer); each step forward renews the wait
+			// the place in the queue, said on stderr each time it changes, only with --progress (stdout is the one JSON answer, and an agent that merges stderr into it reads
+			// the JSON alone, D-408); each step forward renews the wait
 			if list.Ahead != nil && *list.Ahead != told && !list.done() {
 				told = *list.Ahead
-				fmt.Fprintf(e.stderr, "item shots %s: queued, %d render requests ahead (item validations and lesson renders run first; waited %d s, the wait goes on while the render is queued or running, at most %d s)\n", rev, told, int(time.Since(started).Seconds()), int(itemShotsWaitCap.Seconds()))
+				if *progress {
+					fmt.Fprintf(e.stderr, "item shots %s: queued, %d render requests ahead (waited %d s, the wait goes on while the render is queued or running, at most %d s)\n", rev, told, int(time.Since(started).Seconds()), int(itemShotsWaitCap.Seconds()))
+				}
 			}
 			if list.Ahead != nil && !list.done() && (nearest < 0 || *list.Ahead < nearest) {
 				if nearest >= 0 {

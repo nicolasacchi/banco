@@ -11,7 +11,9 @@ module Validation
   # the picture, so nothing is cut and the sticky action bar sits under the item as it does when the student has scrolled to the end. The bytes go to
   # the shots store (LessonShots, by content). Each shot says its instance, the seed of its shuffle and the shown order of its choices (stored ids in the
   # order drawn), so the solver can map a position to a stored id. A bilingual item (D-402) is pictured a second time for its first
-  # item_render.translation_instances instances with the Italian translation open (`?tr=1`): that shot says `state: "tr"`, the others no state.
+  # item_render.translation_instances instances (every instance up to max_instances since D-408) with the Italian translation open (`?tr=1`): that shot says
+  # `state: "tr"`, the others no state. An instance whose passage has an Italian text (it is withheld until the answer) is pictured a third time as the student
+  # sees it after the answer, with the passage's Italian added and the translation open (`?tr=1&answered=1`, `state: "answered"`, D-408).
   #
   # The caller holds the ChromeRunner session. Nothing here judges: the findings are an aid for the reviewer and never a gate; nothing writes the database.
   # Time: a budget per revision and per instance (E-ITEM-RENDER "timeout:"); infrastructure trouble (Chrome gone, the host not answering) is raised.
@@ -65,6 +67,7 @@ module Validation
             end
             draw(page, row, number)
             draw(page, row, number, translation: true) if @translation && number <= @translation_instances
+            draw(page, row, number, translation: true, answered: true) if @translation && number <= @translation_instances && passage_italian?(row)
           end
         ensure
           (page.close rescue nil)
@@ -78,11 +81,15 @@ module Validation
 
     def over_budget? = (@clock.call - @started) > @budget
 
+    # Does the instance's passage have an Italian text (a bilingual reading text: the student reads it only after the answer)?
+    def passage_italian?(row) = Practice::Payload.passage(row).key?(:passage_it)
+
     # One picture of one instance: as drawn, or (translation: true) the same instance again with the Italian translation open, which the host
-    # measures too (overflow with the translation shown, a text with no translation unit: the same findings, each said once).
-    def draw(page, row, number, translation: false)
+    # measures too (overflow with the translation shown, a text with no translation unit: the same findings, each said once), or (answered: true, with
+    # the translation open) as it is after the answer, with the passage's Italian under the passage.
+    def draw(page, row, number, translation: false, answered: false)
       started = @clock.call
-      url = Harness.item_page_url(@token, number, theme: @theme, translation: translation)
+      url = Harness.item_page_url(@token, number, theme: @theme, translation: translation, answered: answered)
       LOAD_ATTEMPTS.times do |attempt|
         page.go_to(url)
         break if defined_in?(page)
@@ -93,14 +100,15 @@ module Validation
       answer = begin
         page.evaluate_async("window.bancoItemRender.ready.then(arguments[0])", @per_instance)
       rescue Ferrum::ScriptTimeoutError, Ferrum::TimeoutError
-        add(number, "timeout: the instance took more than #{@per_instance} s to draw#{' with the translation open' if translation}", viewport)
+        add(number, "timeout: the instance took more than #{@per_instance} s to draw#{answered ? ' as answered' : (' with the translation open' if translation)}", viewport)
         return
       end
       add(number, "the item did not draw: #{answer['error']}", viewport) unless answer["ok"]
       Array(answer["exceptions"]).each { |m| add(number, "exception: #{m}", viewport) }
       Array(answer["findings"]).each { |f| add(number, f["message"], f["where"], code: f["code"]) }
-      shoot(page, row, number, answer["height"].to_i, state: (Items::ShotPresentation::TRANSLATION_STATE if translation))
-      @timings << { "instance" => number, "draw" => (loaded - started).round(2), "ready" => (@clock.call - loaded).round(2) }.tap { |t| t["state"] = Items::ShotPresentation::TRANSLATION_STATE if translation }
+      state = answered ? Items::ShotPresentation::ANSWERED_STATE : (Items::ShotPresentation::TRANSLATION_STATE if translation)
+      shoot(page, row, number, answer["height"].to_i, state: state)
+      @timings << { "instance" => number, "draw" => (loaded - started).round(2), "ready" => (@clock.call - loaded).round(2) }.tap { |t| t["state"] = state if state }
     end
 
     def defined_in?(page) = self.class.wait_defined(page, DEFINED_WAIT, @clock)

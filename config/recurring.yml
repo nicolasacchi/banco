@@ -5,3 +5,6 @@ production:
     class: SearchIndexJob
     args: [ [ "all" ] ]
     schedule: every day at 3:30am
+  expire_lost_item_renders:
+    class: ExpireLostItemRendersJob
+    schedule: every 15 minutes

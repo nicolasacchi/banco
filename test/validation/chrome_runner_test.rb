@@ -64,11 +64,12 @@ class ChromeRunnerTest < ActiveSupport::TestCase
     end
   end
 
-  test "the `chrome` queue has as many threads as Chrome has slots, and no more (a thread past the slots would only wait on the lock)" do
+  test "the Chrome lanes (`chrome` and `chrome_shots`) have as many threads between them as Chrome has slots, and no more (a thread past the slots would only wait on the lock)" do
     workers = YAML.safe_load(ERB.new(Rails.root.join("config/queue.yml").read).result, aliases: true).dig("production", "workers")
-    chrome = workers.find { |w| Array(w["queues"]).include?("chrome") }
-    assert_equal Runner::SLOTS, chrome["threads"]
-    assert_equal 1, chrome["processes"], "the slots are shared by every process, but the browsers of a slot live in one"
+    lanes = workers.select { |w| (Array(w["queues"]) & %w[chrome chrome_shots]).any? }
+    assert_equal 2, lanes.size
+    assert_equal Runner::SLOTS, lanes.sum { |w| w["threads"] }
+    assert(lanes.all? { |w| w["processes"] == 1 }, "the slots are shared by every process, but the browsers of a slot live in one")
   end
 
   test "the reaper runs only when no other slot is in use: it never disposes the context of a run that is drawing" do

@@ -33,6 +33,8 @@ module Items
 
     # The shot of the same instance with the Italian translation open (D-402): the state of a picture drawn with `?tr=1`.
     TRANSLATION_STATE = "tr".freeze
+    # The shot of an instance whose passage has an Italian text, as the student sees it after the answer (D-408): the passage's Italian added, the translation open.
+    ANSWERED_STATE = "answered".freeze
 
     # Whether the revision has an Italian translation to picture (a bilingual item of english or spanish): a legacy item has no `-tr` shot.
     def translation?(revision) = JSON.parse(revision.body_json)["bilingual"] == true

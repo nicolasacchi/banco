@@ -3,7 +3,8 @@ require_relative "../support/course_rows"
 require_relative "../support/validation_servers"
 require_relative "../support/chrome_helper"
 
-# The bilingual items (D-402) in the server's Chrome, at the phone's 390 px: the pictures of instance 1 (as drawn, and with the translation open, one file each),
+# The bilingual items (D-402) in the server's Chrome, at the phone's 390 px: the pictures of every instance (as drawn, and with the translation open, one file each; D-408:
+# and as answered, with the passage's Italian, for an instance that has a passage),
 # the gap above a translation line, the `[[it:..]]` span, an item whose material is target-only (no `_it`), and the legend of a matching's right-hand labels.
 # Needs Chrome (BROWSER_PATH); skips without. BANCO_SHOT_DIR=/some/dir keeps the pictures as files for the eye.
 class ItemRenderBilingualTest < ActiveSupport::TestCase
@@ -66,12 +67,12 @@ class ItemRenderBilingualTest < ActiveSupport::TestCase
   end
 
   # The host page of instance 1, loaded and ready; yields the page to a block that measures it.
-  def with_host(revision, translation: true)
+  def with_host(revision, translation: true, answered: false)
     Validation::ChromeRunner.session do |session|
       session.context do |ctx|
         page = ctx.create_page
         page.command("Emulation.setDeviceMetricsOverride", width: 390, height: 844, deviceScaleFactor: 1, mobile: false)
-        page.go_to(Validation::Harness.item_page_url(Validation::Harness.issue("irev", revision.id), 1, translation: translation))
+        page.go_to(Validation::Harness.item_page_url(Validation::Harness.issue("irev", revision.id), 1, translation: translation, answered: answered))
         assert Validation::ItemRenderRunner.wait_defined(page, 20), "the host did not define bancoItemRender: #{Validation::ItemRenderRunner.describe(page)}"
         result = page.evaluate_async("window.bancoItemRender.ready.then(arguments[0])", 20)
         assert result["ok"], result.inspect
@@ -105,15 +106,35 @@ class ItemRenderBilingualTest < ActiveSupport::TestCase
     }).filter(Boolean))
   JS
 
-  test "instance 1 has a picture as drawn and one with the translation open, in two files of their own; the list names the state" do
+  test "every instance has a picture as drawn and one with the translation open, in files of their own; the list names the state" do
     revision = choice
     row = draw(revision, "choice")
     assert_equal "passed", row.status, row.result["errors"].inspect
-    assert_equal [ [ 1, nil ], [ 1, "tr" ], [ 2, nil ] ], row.shots.map { |s| [ s["instance"], s["state"] ] }
+    assert_equal [ [ 1, nil ], [ 1, "tr" ], [ 2, nil ], [ 2, "tr" ] ], row.shots.map { |s| [ s["instance"], s["state"] ] }
     plain, open = row.shots.values_at(0, 1)
     assert_not_equal plain["sha256"], open["sha256"], "the translation shows more: the two pictures differ"
     assert_operator open["height"], :>, plain["height"], "the open picture is taller: it holds the Italian lines"
     assert_equal [ plain["seed"], plain["shown_order"] ], [ open["seed"], open["shown_order"] ]
+  end
+
+  PASSAGE = { passage_en: "Tom lives in a small house near the sea.", passage_it: "Tom abita in una piccola casa vicino al mare." }.freeze
+
+  def reading
+    revision_with("choice", prompt: { stem_en: "Where does Tom live?", stem_it: "Dove abita Tom?" }, body: PASSAGE,
+                  instances: [ [ { options: [ { id: "o1", text: "near the sea", text_it: "vicino al mare" }, { id: "o2", text: "in a big city", text_it: "in una grande città" } ] }, "o1" ] ])
+  end
+
+  test "an instance with an Italian passage is pictured as answered: the passage's Italian is under the passage, and in no other picture" do
+    revision = reading
+    row = draw(revision, "reading")
+    assert_equal "passed", row.status, row.result["errors"].inspect
+    assert_equal [ [ 1, nil ], [ 1, "tr" ], [ 1, "answered" ] ], row.shots.map { |s| [ s["instance"], s["state"] ] }
+    plain, open, answered = row.shots
+    assert_equal 3, [ plain, open, answered ].map { |s| s["sha256"] }.uniq.size
+    assert_operator answered["height"], :>, open["height"], "the answered picture holds the passage's Italian"
+    passage_it = ->(**opts) { with_host(revision, **opts) { |page, _| return page.evaluate(%(JSON.stringify([...document.querySelectorAll(".passage .tr")].map((n) => [n.textContent, getComputedStyle(n).display !== "none"])))) } }
+    assert_equal [ [ "Tom abita in una piccola casa vicino al mare.", true ] ], JSON.parse(passage_it.call(translation: true, answered: true))
+    assert_equal [], JSON.parse(passage_it.call(translation: true, answered: false)), "before the answer the Italian of the passage is not on the page at all"
   end
 
   test "with the translation open no block translation line touches the text above or below it, at 390 px" do
