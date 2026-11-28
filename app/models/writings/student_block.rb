@@ -5,9 +5,9 @@ module Writings
   #
   #   Writings::StudentBlock.new(student, topic_view).tasks   # => [Task]
   class StudentBlock
-    # stem: the task as he reads it (the language he studies when the item has the pair, else Italian), stem_tr its Italian when it is a translation to offer.
-    # versions: his texts of this item (any revision of it), newest first.
-    Task = Data.define(:revision, :item_key, :stem, :stem_tr, :lang, :words_min, :words_max, :versions) do
+    # prompt: the task as he reads it (Writings::Prompt: the task text, the answer format, the word range, each in the language he studies when the item has
+    # the pair and with its Italian when that is a translation to offer). versions: his texts of this item (any revision of it), newest first.
+    Task = Data.define(:revision, :item_key, :prompt, :versions) do
       def latest = versions.first
       def state = latest.nil? ? :new : (latest.correction ? :corrected : :sent)
     end
@@ -21,7 +21,7 @@ module Writings
     def any? = tasks.any?
 
     # Whether the Italian of a task's text is a translation to offer (so the page offers the «Traduzione» button).
-    def translations? = tasks.any?(&:stem_tr)
+    def translations? = tasks.any? { |t| t.prompt.translations? }
 
     # The tasks, in the order of the topic file.
     def tasks
@@ -41,14 +41,9 @@ module Writings
 
     def task(revision)
       body = JSON.parse(revision.body_json)
-      prompt = body["prompt"] || {}
-      lang = @topic.lang
-      target = lang && prompt["stem_#{lang}"].presence
-      stem = target || prompt["stem_it"].to_s
       submissions = @student ? WritingSubmission.of_student(@student).of_item(revision.item).newest_first.to_a : []
       corrections = Writings::Corrections.for(submissions)
-      Task.new(revision: revision, item_key: revision.item.key, stem: stem, stem_tr: (prompt["stem_it"].presence if target), lang: (lang if target),
-               words_min: body["words_min"], words_max: body["words_max"],
+      Task.new(revision: revision, item_key: revision.item.key, prompt: Writings::Prompt.of(body, @topic.lang),
                versions: submissions.map { |s| Version.new(s, corrections[s.id]) })
     end
   end

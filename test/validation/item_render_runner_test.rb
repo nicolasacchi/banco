@@ -260,6 +260,48 @@ class ItemRenderRunnerTest < ActiveSupport::TestCase
     assert_equal [ "N.", 1 ], [ facts["header"], facts["headerLines"] ]
   end
 
+  # D-410: the shot of a writing task is «Scrivi tu» as the student's topic page draws it, not the practice question page: the task once (the prompt's stem and the
+  # instance's are the same text), its answer format and the word range, the empty box and «Consegna»; no «Non lo so», no «Come si risponde».
+  test "a writing task is pictured as Scrivi tu draws it: the task once with its plan as a list, the answer format and the range, no Non lo so and no Come si risponde" do
+    stem = "Racconta come hai risolto l'equazione.\n\n1. Che cosa hai fatto prima.\n2. Che cosa dopo.\n3. Come hai verificato."
+    rubric = { points: [ { id: "steps", weight: 2, expected_it: "Nomina i passaggi." }, { id: "check", weight: 1, expected_it: "Nomina la verifica." } ], threshold: 0.6,
+               model_answer_it: "Un testo che nomina i passaggi e la verifica." }
+    revision = revision_with("short_answer", body: { kind: "short_answer", prompt: { stem_it: stem }, answer_format_it: "Scrivi al passato prossimo e usa «prima» e «poi».",
+                                                     words_min: 20, words_max: 60, rubric: rubric, teacher_notes_it: "Guarda i tempi." },
+                                             instances: [ [ { stem_it: stem }, rubric, [], { model_answer_it: rubric[:model_answer_it] } ] ])
+    row = draw(revision)
+    assert_equal "passed", row.status, dump(row)
+    assert_empty row.result["errors"], dump(row)
+    facts = Validation::ChromeRunner.session do |session|
+      session.context do |ctx|
+        open_host(ctx, revision).evaluate(<<~JS)
+          (() => {
+            const text = document.body.innerText
+            return {
+              text: text,
+              stems: text.split("Racconta come hai risolto").length - 1,
+              items: [...document.querySelectorAll("#item-box ol li")].map((li) => li.textContent),
+              format: document.querySelector("#item-box .answer-format")?.textContent,
+              range: document.querySelector("#item-box .writing-range")?.textContent,
+              buttons: [...document.querySelectorAll("button")].map((b) => b.textContent.trim()),
+              box: document.querySelectorAll("textarea").length,
+              raw: text.includes("1. Che cosa")
+            }
+          })()
+        JS
+      end
+    end
+    assert_equal 1, facts["stems"], "the task is drawn once, not as the prompt and again as the instance's own stem"
+    assert_equal [ "Che cosa hai fatto prima.", "Che cosa dopo.", "Come hai verificato." ], facts["items"], "the plan is a list, drawn by the items' markup"
+    assert_equal "Scrivi al passato prossimo e usa «prima» e «poi».", facts["format"]
+    assert_equal "Da 20 a 60 parole.", facts["range"]
+    assert_equal [ "Consegna" ], facts["buttons"]
+    assert_equal 1, facts["box"]
+    refute_includes facts["text"], "Non lo so"
+    refute_includes facts["text"], "Come si risponde"
+    assert_equal false, facts["raw"]
+  end
+
   test "an instance that runs out of the phone's width is reported, the others are not, and every instance is still pictured" do
     long = (1..40).map { |n| "x_{#{n}}" }.join("+")
     options = (1..4).map { |n| { id: "o#{n}", text: "Risposta #{n}" } }

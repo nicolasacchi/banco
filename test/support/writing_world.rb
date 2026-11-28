@@ -8,6 +8,8 @@ module WritingWorld
   TASK_KEY = "math-write-1".freeze
   TASK_TEXT = "Racconta in poche righe come hai risolto un'equazione.".freeze
   TASK_NOTES = "Guarda se nomina la verifica e se i passaggi sono in ordine.".freeze
+  # The advice that the item's author wrote under `answer_format_it` and that the rubric grades (D-410): the student is told it under the task.
+  TASK_FORMAT = "Scrivi al passato prossimo e collega le frasi con «prima», «poi» e «alla fine».".freeze
 
   # The world of StudentCourseWorld, approved and released, whose topic revision (the one the student is shown) pins the writing task.
   def build_writing_world(**options)
@@ -19,14 +21,16 @@ module WritingWorld
     release_course!(@course)
   end
 
-  # A short_answer item with a word range, a model answer and the teacher's notes (banco.item/1, kind short_answer), validated.
-  def make_writing_item(key, subject: nil, words: [ 20, 60 ], status: "passed", text: TASK_TEXT, notes: TASK_NOTES)
+  # A short_answer item with a word range, a model answer, the answer format and the teacher's notes (banco.item/1, kind short_answer), validated. `prompt:` replaces the
+  # Italian-only prompt (a bilingual task: stem_en + stem_it) and `extra:` is merged into the body (answer_format_en, bilingual).
+  def make_writing_item(key, subject: nil, words: [ 20, 60 ], status: "passed", text: TASK_TEXT, notes: TASK_NOTES, format_it: TASK_FORMAT, prompt: nil, extra: {})
     subject ||= @subject
     item = Item.create!(subject: subject, key: key, kind: "short_answer")
-    body = { schema: "banco.item/1", schema_version: 1, kind: "short_answer", subject: subject.key, skill: SKILL, component: "short_answer", prompt: { stem_it: text },
+    body = { schema: "banco.item/1", schema_version: 1, kind: "short_answer", subject: subject.key, skill: SKILL, component: "short_answer", prompt: prompt || { stem_it: text },
              rubric: { points: [ { id: "steps", weight: 2, expected_it: "Nomina i passaggi." }, { id: "check", weight: 1, expected_it: "Nomina la verifica." } ], threshold: 0.6,
                        model_answer_it: "Un testo che nomina i passaggi e la verifica." },
-             words_min: words.first, words_max: words.last, teacher_notes_it: notes }
+             words_min: words.first, words_max: words.last, teacher_notes_it: notes }.merge(extra)
+    body[:answer_format_it] = format_it if format_it
     revision = ItemRevision.create!(item: item, seq: 1, body_json: JSON.generate(body), file_sessions_json: "{}")
     ItemValidation.create!(item_revision: revision, seq: 1, status: status, codes_json: "[]") if status
     ItemInstance.create!(item_revision: revision, seed: 1, display_json: JSON.generate(stem_it: text), answer_json: JSON.generate(body[:rubric]), errors_json: nil,

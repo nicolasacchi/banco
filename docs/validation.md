@@ -179,7 +179,7 @@ On demand, never part of a verdict. `POST /api/v1/item-revisions/ID/shots` (a co
 `/h/<irev-token>/item-render.html?n=N` (`HarnessController#item`, `items/render_host.js`) for each stored instance in one browser
 context at 390 x 844, cream, device scale 1, and takes a WebP of the whole page (never under 844 px tall). The page is the student's own: the same CSS, importmap,
 templates, MathLive, KaTeX and figures (`Items::Figures`), inside the practice page's card (a `practice_item`) or the sitting's, unanswered, with what
-`Diagnosis::ItemPresenter` tells the browser and nothing else (no key, error value, hint or solution). Choices, matching rows and ordering steps are
+`Diagnosis::ItemPresenter` tells the browser and nothing else (no key, error value, hint or solution). A writing task (a `short_answer` with a word range) is pictured as «Scrivi tu» draws it (D-410): the task once with its answer format and the word range, an empty box and «Consegna», no «Non lo so», no «Come si risponde». Choices, matching rows and ordering steps are
 shuffled with the fixed seed `item-shots|REVISION|N`; each shot's metadata says the `seed` and the `shown_order` (stored ids in the order
 drawn), so a number in the picture maps to the stored id. The host measures each instance and the runner records its findings (all aids, never a
 gate): `E-ITEM-OVERFLOW` (the page wider than the window, something wider than its box, a long formula that scrolls sideways) and `E-ITEM-RENDER` (an exception or

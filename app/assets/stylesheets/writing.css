@@ -5,7 +5,12 @@
 .topic-writing { margin-top: var(--space-5); }
 .writing-task { display: grid; gap: var(--space-2); max-width: 100%; box-sizing: border-box; }
 .writing-task [hidden] { display: none; }
-.writing-stem { margin: 0; font-size: var(--text-l); line-height: var(--leading-tight); white-space: pre-line; overflow-wrap: anywhere; }
+/* The task is drawn with the items' markup (D-410): a blank line is a paragraph and a numbered list is an <ol>, as in an item's stem. The format line under it is
+   the practice page's .answer-format. */
+.writing-stem { margin: 0; font-size: var(--text-l); line-height: var(--leading-tight); overflow-wrap: anywhere; }
+.writing-stem > p, .writing-stem > ol { margin: 0 0 var(--space-2); }
+.writing-stem > :last-child { margin-bottom: 0; }
+.writing-task .answer-format { margin: 0; overflow-wrap: anywhere; }
 .writing-range { margin: 0; color: var(--muted); }
 .writing-form { display: grid; gap: var(--space-2); }
 .writing-form label { font-weight: 700; }

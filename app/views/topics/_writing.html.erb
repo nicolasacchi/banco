@@ -1,5 +1,6 @@
 <%# «Scrivi tu» (D-407): the writing tasks of the topic, after the exercises. A task is not an exercise: no try, no skill, no part of the topic's completion. writing_controller.js is the
-    whole behaviour (draft in localStorage, live word count, «Consegna» through its own outbox); the server draws the state he is in: not written, sent, corrected. Locals: block (Writings::StudentBlock), topic. %>
+    whole behaviour (draft in localStorage, live word count, «Consegna» through its own outbox); the server draws the state he is in: not written, sent, corrected. Locals: block (Writings::StudentBlock), topic.
+    The task text and its answer format are drawn by topics/_writing_prompt with the items' markup (D-410). %>
 <section id="writing" class="topic-writing" aria-labelledby="writing-title" data-comment-anchor="writing">
   <h2 id="writing-title" class="card-title"><%= t("writing.title") %></h2>
   <p class="muted"><%= t("writing.intro") %></p>
@@ -7,17 +8,15 @@
     <% latest = task.latest %>
     <% correction = latest&.correction %>
     <article class="card writing-task" id="writing-<%= i + 1 %>" data-writing-task="<%= task.item_key %>" data-state="<%= task.state %>" data-comment-anchor="writing:<%= i + 1 %>"
-             data-controller="writing" data-writing-url-value="<%= spath("/topics/#{topic.key}/writings") %>" data-writing-item-revision-value="<%= task.revision.id %>"
+             data-controller="writing markup" data-writing-url-value="<%= spath("/topics/#{topic.key}/writings") %>" data-writing-item-revision-value="<%= task.revision.id %>"
              data-writing-item-key-value="<%= task.item_key %>" data-writing-preview-value="<%= preview? %>" data-writing-last-value="<%= latest&.submission&.text %>"
              data-writing-labels-value="<%= writing_labels.to_json %>">
-      <p class="writing-stem" id="writing-<%= i + 1 %>-stem" <%= tag.attributes(lang: task.lang) if task.lang %>><%= task.stem %></p>
-      <%= tr_node(task.stem_tr, tag: :p) if task.stem_tr %>
-      <p class="writing-range"><%= t("writing.words", min: task.words_min, max: task.words_max) %></p>
+      <%= render "topics/writing_prompt", prompt: task.prompt, id: "writing-#{i + 1}" %>
 
       <form class="writing-form" data-writing-target="form" data-action="submit->writing#send" novalidate<%= " hidden" unless task.state == :new %>>
         <label for="writing-<%= i + 1 %>-text"><%= t("writing.label") %></label>
         <textarea id="writing-<%= i + 1 %>-text" class="answer-input wide" rows="10" maxlength="<%= WritingSubmission::TEXT_MAX %>" aria-describedby="writing-<%= i + 1 %>-count"
-                  <%= tag.attributes(lang: task.lang) if task.lang %> data-writing-target="text" data-action="input->writing#input"></textarea>
+                  <%= tag.attributes(lang: task.prompt.lang) if task.prompt.lang %> data-writing-target="text" data-action="input->writing#input"></textarea>
         <p class="writing-meta"><span id="writing-<%= i + 1 %>-count" data-writing-target="count"></span> · <span data-writing-target="chars"></span></p>
         <p class="hint"><%= t("writing.draft_kept") %></p>
         <p class="writing-status" role="status" data-writing-target="status"></p>
@@ -29,7 +28,7 @@
 
       <div class="writing-sent" data-writing-target="sent"<%= " hidden" if task.state == :new %>>
         <p class="writing-note" role="status" tabindex="-1" data-writing-target="note"><%= task.state == :corrected ? t("writing.your_text") : t("writing.sent") %></p>
-        <p class="writing-text" data-writing-target="sentText" <%= tag.attributes(lang: task.lang) if task.lang %>><%= latest&.submission&.text %></p>
+        <p class="writing-text" data-writing-target="sentText" <%= tag.attributes(lang: task.prompt.lang) if task.prompt.lang %>><%= latest&.submission&.text %></p>
         <div class="writing-correction" data-writing-target="correction"<%= " hidden" unless correction %>>
           <h3><%= t("writing.correction") %></h3>
           <p class="writing-correction-text" data-writing-correction><%= correction&.text_it %></p>

@@ -1,0 +1,11 @@
+<%# The task of a writing item (D-407, D-410), drawn the same on the topic page's «Scrivi tu» and in the item's shot: the task text, then the advice on how to write it
+    (the item's answer_format, a plain line as the practice page draws it), then the word range. A bilingual item has the target language with its Italian behind the
+    translation toggle; the text is drawn with the items' markup (a blank line makes a paragraph, a numbered list needs a blank line before it), by the page's markup
+    controller (data-markup). Locals: prompt (Writings::Prompt), id (the prefix of the task's element ids). %>
+<div class="writing-stem" id="<%= id %>-stem" <%= tag.attributes(lang: prompt.lang) if prompt.lang %> data-markup="block"><%= prompt.stem %></div>
+<%= tr_node(prompt.stem_tr, tag: :div, markup: "inline") if prompt.stem_tr %>
+<% if prompt.format %>
+  <p class="answer-format" id="<%= id %>-format" <%= tag.attributes(lang: prompt.format_lang) if prompt.format_lang %> data-markup="inline"><%= prompt.format %></p>
+  <%= tr_node(prompt.format_tr, tag: :div, markup: "inline") if prompt.format_tr %>
+<% end %>
+<p class="writing-range"><%= t("writing.words", min: prompt.words_min, max: prompt.words_max) %></p>

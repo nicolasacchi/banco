@@ -53,7 +53,7 @@ class HarnessController < ActionController::API
 
     shown = Items::ShotPresentation.call(revision, instance, number)
     html = ApplicationController.render(template: "harness/item_render", layout: false,
-                                        assigns: { theme: params[:theme].to_s == "dark" ? "dark" : "cream", frame: shown[:frame], hints: shown[:hints],
+                                        assigns: { theme: params[:theme].to_s == "dark" ? "dark" : "cream", frame: shown[:frame], hints: shown[:hints], prompt: shown[:prompt],
                                                    item: shown[:item], config: item_config(instance, number) })
     hashes = html.scan(%r{<script(?![^>]*\bsrc=)(?![^>]*application/json)[^>]*>(.*?)</script>}m).map { |(code)| "'sha256-#{Base64.strict_encode64(Digest::SHA256.digest(code))}'" }
     response.set_header("Content-Security-Policy", format(Validation::Harness::ITEM_CSP, hashes: hashes.join(" ")))

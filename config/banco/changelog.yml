@@ -13,6 +13,15 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: writing-format
+    date: 2026-11-28
+    audience: [student, teacher]
+    kind: software
+    decisions: [D-410]
+    title_it: "Scrivi tu: ora vedi anche i consigli per scrivere"
+    body_it: "Sotto la consegna di «Scrivi tu» trovi il consiglio su come scrivere, per esempio i tempi dei verbi e le parole per collegare le frasi. Un elenco numerato nella consegna si legge come elenco."
+    title_en: "Write it yourself: you now see the writing tips too"
+    body_en: "Under the task of the writing box you find the advice on how to write, for example the verb tenses and the words that join sentences. A numbered list in the task is shown as a list."
   - id: figures-and-languages-round10
     date: 2026-11-28
     audience: [student, teacher]

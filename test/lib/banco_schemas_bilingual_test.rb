@@ -54,6 +54,31 @@ class BancoSchemasBilingualTest < ActiveSupport::TestCase
     end
   end
 
+  # D-410: the file names the Italian model answer alone; the derived schema is what the server checks english and spanish against.
+  test "a short answer's rubric takes its model answer as a pair for english and spanish (the Italian stays required), and for no other subject" do
+    file = S.read("item").dig("$defs", "rubric")
+    derived = S::Bilingual.derive(S.read("item"), "item").dig("$defs", "rubric")
+    assert_equal %w[model_answer_it], file["properties"].keys.grep(/model_answer/)
+    assert_equal %w[model_answer_en model_answer_es model_answer_it], derived["properties"].keys.grep(/model_answer/).sort
+    assert_equal file["properties"]["model_answer_it"], derived["properties"]["model_answer_en"]
+    assert_equal file["properties"]["model_answer_it"], derived["properties"]["model_answer_es"]
+    assert_equal file["required"], derived["required"], "the Italian model answer is still the one that is required"
+
+    task = lambda do |subject, bilingual, rubric|
+      { "schema" => "banco.item/1", "schema_version" => 1, "kind" => "short_answer", "component" => "short_answer", "subject" => subject, "skill" => "#{subject}.x",
+        "prompt" => { "stem_it" => "Scrivi." }, "words_min" => 5, "words_max" => 9, "teacher_notes_it" => "Guarda.", "rubric" => rubric,
+        "sources" => item["sources"] }.merge(bilingual ? { "bilingual" => true } : {})
+    end
+    rubric = { "points" => [ { "id" => "a", "weight" => 1, "expected_it" => "Uno." }, { "id" => "b", "weight" => 1, "expected_it" => "Due." } ], "model_answer_it" => "Un testo." }
+    %w[english spanish].each do |subject|
+      sample = task.call(subject, true, rubric.merge("model_answer_#{Lessons::Lang.target(subject)}" => "A text."))
+      assert_empty S.validate("item", sample).map(&:message), subject
+    end
+    refused = S.validate("item", task.call("math", false, rubric.merge("model_answer_en" => "A text.")))
+    assert_equal [ "/rubric/model_answer_en" ], refused.map(&:field), "a subject that teaches no language meets the file as it is"
+    assert_empty S.validate("item", task.call("math", false, rubric))
+  end
+
   test "an item of english or spanish may list the words it teaches (teaches_en, teaches_es); no other subject may" do
     derived = S::Bilingual.derive(S.read("item"), "item")
     %w[teaches_en teaches_es].each { |key| assert_equal "array", derived.dig("properties", key, "type") }

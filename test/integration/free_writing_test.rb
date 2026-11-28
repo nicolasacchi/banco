@@ -72,6 +72,44 @@ class FreeWritingTest < ActionDispatch::IntegrationTest
     assert_select "#writing[data-comment-anchor=writing]"
   end
 
+  # D-410: the advice of the item's `answer_format_*` (the rubric grades what it asks for) is drawn under the task, as the practice page draws it.
+  test "the writing block shows the answer format of an Italian task as a plain line under the task, before the range, with no translation and nothing to open" do
+    page(OFFICIAL, topic_path)
+    assert_response :success
+    assert_select "#writing-1[data-controller='writing markup']", 1, "the task is drawn again with the items' markup by the page's markup controller"
+    assert_select "#writing-1-stem[data-markup=block]", TASK_TEXT
+    assert_select "#writing-1-stem + p.answer-format[data-markup=inline] + p.writing-range", 1
+    assert_select "#writing-1 p.answer-format", TASK_FORMAT
+    assert_select "#writing-1 p.answer-format[lang]", 0, "an Italian format carries no language of its own"
+    assert_select "#writing-1 .tr", 0, "an Italian task has no translation to offer"
+    assert_select "#writing-1 details, #writing-1 button.tr-toggle", 0, "a plain line, not a collapsible"
+  end
+
+  test "a bilingual task shows the stem and the answer format in the language he studies, each with its Italian in a translation node" do
+    task = make_writing_item("eng-write-1", prompt: { stem_en: "Describe your day.\n\n1. Where are you?\n2. What do you do?", stem_it: "Descrivi la tua giornata." },
+                                            format_it: "Scrivi al presente e usa «and», «then», «but».",
+                                            extra: { bilingual: true, answer_format_en: "Write in the present simple and use \"and\", \"then\", \"but\"." })
+    english = Struct.new(:topic_revision, :lang).new(make_writing_topic(@practice_topic, [ task ]), "en")
+    shown = Writings::StudentBlock.new(@official, english)
+    assert shown.translations?, "the page offers the «Traduzione» button"
+    html = ApplicationController.render(partial: "topics/writing_prompt", locals: { prompt: shown.tasks.sole.prompt, id: "writing-1" })
+    fragment = Nokogiri::HTML5.fragment(html)
+    assert_select fragment, "#writing-1-stem[lang=en][data-markup=block]", text: /Describe your day\./
+    assert_select fragment, "#writing-1-stem + .tr[lang=it][data-nospeech][data-markup=inline]", text: "Descrivi la tua giornata."
+    assert_select fragment, "p.answer-format[lang=en][data-markup=inline]", text: "Write in the present simple and use \"and\", \"then\", \"but\"."
+    assert_select fragment, "p.answer-format + .tr[lang=it][data-markup=inline]", text: "Scrivi al presente e usa «and», «then», «but»."
+    assert_select fragment, "p.answer-format ~ p.writing-range", text: "Da 20 a 60 parole."
+
+    # an item with no english format keeps the Italian one alone; a task of a topic that teaches no language ignores the target keys
+    plain = Writings::Prompt.of({ "prompt" => { "stem_it" => "Scrivi." }, "answer_format_it" => "Usa il presente.", "words_min" => 5, "words_max" => 9 }, "en")
+    assert_equal [ "Scrivi.", nil, nil, "Usa il presente.", nil, nil ], plain.to_h.values_at(:stem, :stem_tr, :lang, :format, :format_tr, :format_lang)
+    none = Writings::Prompt.of({ "prompt" => { "stem_it" => "Scrivi." }, "words_min" => 5, "words_max" => 9 }, nil)
+    assert_nil none.format
+    html = ApplicationController.render(partial: "topics/writing_prompt", locals: { prompt: none, id: "writing-1" })
+    assert_select Nokogiri::HTML5.fragment(html), ".answer-format", 0
+    assert_not none.translations?
+  end
+
   test "a topic with no writing task has no block" do
     page(OFFICIAL, "/subjects/math")
     assert_response :success

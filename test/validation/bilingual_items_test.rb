@@ -352,6 +352,22 @@ class BilingualItemsTest < ActiveSupport::TestCase
     assert_includes codes(run_item(item.merge("words_min" => 90))), "E-WRITING-RANGE"
   end
 
+  # D-410: the model answer of a bilingual writing task is a pair like every student text; the rubric's points stay Italian.
+  test "the model answer of a bilingual writing task is a pair: the Italian alone is an orphan of its target, the wrong language is refused" do
+    item = { "schema" => "banco.item/1", "schema_version" => 1, "kind" => "short_answer", "component" => "short_answer", "subject" => "english", "bilingual" => true, "skill" => "english.present-simple",
+             "prompt" => { "stem_en" => "Describe your day.", "stem_it" => "Descrivi la tua giornata." },
+             "answer_format_en" => "Write in the present simple.", "answer_format_it" => "Scrivi al presente semplice.",
+             "words_min" => 40, "words_max" => 80, "teacher_notes_it" => "Guarda la -s del presente.",
+             "rubric" => { "points" => [ { "id" => "present", "expected_it" => "Usa il presente.", "weight" => 1 }, { "id" => "three", "expected_it" => "Dice tre cose.", "weight" => 1 } ],
+                           "model_answer_en" => "I wake up at seven. I go to school by bus.", "model_answer_it" => "Mi sveglio alle sette. Vado a scuola in autobus.", "threshold" => 0.5 },
+             "sources" => choice["sources"] }
+    assert_equal "passed", run_item(item).status
+    rubric = item["rubric"]
+    assert_equal [ "/rubric/model_answer_en" ], at(run_item(item.merge("rubric" => rubric.except("model_answer_en"))), "E-LANG-PAIR-ORPHAN")
+    assert_equal [ "/rubric" ], Banco::Schemas.validate("item", item.merge("rubric" => rubric.except("model_answer_it"))).map(&:field), "the Italian model answer is always required"
+    assert_equal [ "/rubric/model_answer_es" ], at(run_item(item.merge("rubric" => rubric.merge("model_answer_es" => "Me levanto."))), "E-LANG-BILINGUAL-FLAG")
+  end
+
   # ---- a reading text per instance (display.passage_*) --------------------------------------------------------------------------------------
 
   # The golden blank item with a passage in each instance's display (D-402: three to five questions on each text, not ten on one).

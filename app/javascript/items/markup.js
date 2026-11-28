@@ -138,3 +138,15 @@ export function renderInline(text, target) {
   }
   return target
 }
+
+// Agent text that the server put in the page as plain text, marked `data-markup`, drawn again under +root+ with the reader of the items: `data-markup="block"` is
+// the item page's own (renderMarkup: paragraphs and numbered lists, as the stem of an item is drawn), any other value is the inline one (renderInline).
+// The text is read with textContent and rebuilt as DOM nodes.
+export function drawMarked(root) {
+  for (const node of root.querySelectorAll("[data-markup]")) {
+    const text = node.textContent
+    node.textContent = ""
+    if (node.getAttribute("data-markup") === "block") node.appendChild(renderMarkup(text))
+    else renderInline(text, node)
+  }
+}

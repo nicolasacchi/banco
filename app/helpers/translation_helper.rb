@@ -15,9 +15,9 @@ module TranslationHelper
     safe_join([ tag.span(topic.title_target, lang: topic.lang), tr_node(topic.title_it) ])
   end
 
-  # A translation node: <span class="tr" lang="it" data-nospeech>.
-  def tr_node(text, tag: :span)
-    content_tag(tag, text, class: "tr", lang: "it", data: { nospeech: "" })
+  # A translation node: <span class="tr" lang="it" data-nospeech>. `markup:` ("inline" or "block") asks the page's markup controller to draw its text with the items' markup.
+  def tr_node(text, tag: :span, markup: nil)
+    content_tag(tag, text, class: "tr", lang: "it", data: { nospeech: "", markup: markup }.compact)
   end
 
   # The attributes that make an element the scope of a list or topic page: closed (the preference opens it), the context of the event it

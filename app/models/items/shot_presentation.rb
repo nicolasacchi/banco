@@ -20,15 +20,20 @@ module Items
     # The seed of instance number n: stated in the shot's metadata.
     def seed(revision, number) = "item-shots|#{revision.id}|#{number}"
 
-    # { number:, seed:, shown_order:, frame:, item:, hints: } for the host page; shown_order is {column => stored ids in the order shown}
+    # A writing task (D-407): a short answer with a word range. Its shot is «Scrivi tu» as the student's topic page draws it (D-410), not the practice question page.
+    def writing?(body) = body["kind"] == "short_answer" && !body["words_min"].nil?
+
+    # { number:, seed:, shown_order:, frame:, item:, hints: } for the host page, and for a writing task `prompt:` (Writings::Prompt: the task, its answer format and the word range); shown_order is {column => stored ids in the order shown}
     # (a testlet: per sub item), which the solver reads to map a position to a stored id.
     def call(revision, instance, number)
       body = JSON.parse(revision.body_json)
       shuffled = Diagnosis::Conductor.rekey(instance, body, seed(revision, number))
       served = ItemServed.new(item_instance: instance, skill_key: body["skill"].to_s, shown_order_json: shuffled.shown_order.to_json)
       item = Diagnosis::ItemPresenter.new(served: served, number: 1, subject: revision.item.subject).as_json[:item]
-      { number: number, seed: seed(revision, number), shown_order: shuffled.shown_order, frame: FRAMES.fetch(body["kind"], "sitting"), item: item,
-        hints: Practice::Instances.hints(instance).size }
+      writing = writing?(body)
+      { number: number, seed: seed(revision, number), shown_order: shuffled.shown_order, frame: writing ? "writing" : FRAMES.fetch(body["kind"], "sitting"), item: item,
+        hints: Practice::Instances.hints(instance).size,
+        prompt: (Writings::Prompt.of(body, Lessons::Lang.target(revision.item.subject.key)) if writing) }
     end
 
     # The shot of the same instance with the Italian translation open (D-402): the state of a picture drawn with `?tr=1`.

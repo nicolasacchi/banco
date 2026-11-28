@@ -104,7 +104,7 @@ exercises (pieces to order and complete) are as they were; a task is **not an ex
   english and spanish). The rubric the schema asks of a short answer stands beside the notes. `E-TOPIC-WRITING` (the pin is not such an item, twice, or also an exercise), a blueprint never
   pins one (`E-BLUEPRINT-WRITING-ITEM`). Independent review and blind solve as for any pinned item (the approval gate reads `TopicRevision#pinned_item_revision_ids`).
 - Never in the practice: no serve, no try, no skill state, no part of the topic's completion; `practice/6` and the rules version are unchanged.
-- Student: on the topic page after the exercises, «Scrivi tu» (`topics/_writing`, `writing_controller.js`): the task, the word range, a box with a live word count, a draft kept in
+- Student: on the topic page after the exercises, «Scrivi tu» (`topics/_writing`, `writing_controller.js`): the task, drawn with the items' markup (a blank line is a paragraph, a numbered list needs a blank line before it; D-410), the item's `answer_format_*` under it as a plain line (the target language with its Italian behind the translation toggle for english and spanish), the word range, a box with a live word count, a draft kept in
   localStorage, «Consegna» (`POST /topics/:topic/writings`, 1 to 4000 characters, idempotent on `client_writing_id`). Then «Consegnato. Lo corregge il docente.» and the text
   read-only; when corrected, the correction under the text and «Scrivi una nuova versione» (a new row; a new text waits for the correction of the last). Oggi says «Il docente ha
   corretto un tuo testo» until he opens the topic page (the app event `writing_correction_seen`). The teacher's preview writes only the preview student.

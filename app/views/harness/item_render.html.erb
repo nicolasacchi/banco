@@ -28,6 +28,26 @@
           </section>
         </div>
       </main>
+    <% elsif @frame == "writing" %>
+      <%# A writing task (D-407, D-410): «Scrivi tu» as the topic page draws it: the task text, its answer format and the word range (topics/_writing_prompt, the same partial),
+          then the empty box and «Consegna». No «Non lo so», no «Come si risponde»: nothing is graded. The static form stands where writing_controller.js draws nothing more. %>
+      <main class="page course topic-page">
+        <section class="topic-writing">
+          <h2 class="card-title"><%= t("writing.title") %></h2>
+          <article class="card writing-task">
+            <div id="item-box" data-frame="writing" data-comment-anchor="writing">
+              <%= render "topics/writing_prompt", prompt: @prompt, id: "writing-1" %>
+            </div>
+            <div class="writing-form">
+              <label for="writing-1-text"><%= t("writing.label") %></label>
+              <textarea id="writing-1-text" class="answer-input wide" rows="10" <%= tag.attributes(lang: @prompt.lang) if @prompt.lang %>></textarea>
+              <p class="writing-meta"><%= t("writing.words_other", count: 0) %> · <%= t("writing.chars", n: 0, max: WritingSubmission::TEXT_MAX) %></p>
+              <p class="hint"><%= t("writing.draft_kept") %></p>
+              <div class="button-row"><button type="button" class="button"><%= t("writing.send") %></button></div>
+            </div>
+          </article>
+        </section>
+      </main>
     <% else %>
       <main class="page">
         <section>

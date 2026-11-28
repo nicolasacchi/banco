@@ -10,7 +10,7 @@
 // a figure that did not draw). The item is what the student is told: the page holds no key, and nothing here is sent anywhere (the CSP of the
 // host allows no connection).
 import { renderItem } from "items/render"
-import { ensureChem } from "items/markup"
+import { drawMarked, ensureChem } from "items/markup"
 import { rawMarkupIn } from "lesson/raw_markup"
 import { refresh } from "items/translation"
 import { reveal } from "items/bilingual"
@@ -121,11 +121,15 @@ const ready = (async () => {
     // a web font is fetched when text first wears it: every face is loaded before the instance is measured, or its text is measured in the fallback
     if (document.fonts) await waitFor("the fonts", Promise.allSettled([...document.fonts].map((face) => face.load())))
     // The shots are the solver's pictures too: the passage's Italian (withheld from the student until the answer) is not in the presentation, so it is drawn only in the answered state.
-    const handle = await waitFor("the item", renderItem(presentation, { t: config.texts }))
+    // A writing task (D-410) is «Scrivi tu», which the server drew (topics/_writing_prompt) and the page's markup reader draws; the item's own template is not used.
+    const writing = box.getAttribute("data-frame") === "writing"
+    const handle = writing ? null : await waitFor("the item", renderItem(presentation, { t: config.texts }))
     box.setAttribute("data-tr-scope", "item")
     box.setAttribute("data-translation", translationOpen ? "on" : "off")
-    box.appendChild(handle.element)
-    handle.mounted()
+    if (handle) {
+      box.appendChild(handle.element)
+      handle.mounted()
+    } else drawMarked(box)
     if (answered && config.passage_it) reveal(box, config.passage_it)
     refresh(box)
     // a chemistry formula is drawn as plain text until mhchem arrives (items/markup.js); the redraw is queued on the same promise

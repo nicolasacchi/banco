@@ -50,4 +50,19 @@ class ItemsShotPresentationTest < ActiveSupport::TestCase
     shown = Items::ShotPresentation.call(practice, Items::ShotPresentation.instance(practice, 1), 1)
     assert_equal [ "practice", 3 ], shown.values_at(:frame, :hints)
   end
+
+  # D-410: a short answer with a word range is a writing task; its shot is «Scrivi tu», with the prompt as the student reads it.
+  test "a writing task has the writing frame and the prompt of Scrivi tu; a short answer with no word range keeps the sitting frame" do
+    body = JSON.parse(@revision.body_json).merge("kind" => "short_answer", "component" => "short_answer", "prompt" => { "stem_it" => "Racconta." }, "answer_format_it" => "Usa il passato.",
+                                                 "words_min" => 20, "words_max" => 60)
+    writing = ItemRevision.create!(item: @revision.item, seq: 3, body_json: JSON.generate(body), file_sessions_json: "{}")
+    ItemInstance.create!(item_revision: writing, seed: 1, display_json: JSON.generate(stem_it: "Racconta."), answer_json: "{}", fingerprint: SecureRandom.hex(8))
+    shown = Items::ShotPresentation.call(writing, Items::ShotPresentation.instance(writing, 1), 1)
+    assert_equal "writing", shown[:frame]
+    assert_equal [ "Racconta.", "Usa il passato.", 20, 60 ], shown[:prompt].to_h.values_at(:stem, :format, :words_min, :words_max)
+    plain = ItemRevision.create!(item: @revision.item, seq: 4, body_json: JSON.generate(body.except("words_min", "words_max")), file_sessions_json: "{}")
+    ItemInstance.create!(item_revision: plain, seed: 1, display_json: JSON.generate(stem_it: "Riassumi."), answer_json: "{}", fingerprint: SecureRandom.hex(8))
+    shown = Items::ShotPresentation.call(plain, Items::ShotPresentation.instance(plain, 1), 1)
+    assert_equal [ "sitting", nil ], shown.values_at(:frame, :prompt)
+  end
 end
