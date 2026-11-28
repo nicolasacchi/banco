@@ -74,6 +74,7 @@ class CourseCodesTest < ActiveSupport::TestCase
     "E-TOPIC-PIN" => ->(t) { t.topic_codes(t.topic([ "math-p-a", "math-p-missing" ])) },
     "E-TOPIC-SKILLS" => ->(t) { t.topic_codes(t.topic([ "math-p-a", "math-p-b" ], skill: "math.percentages")) },
     "E-TOPIC-ITEM-KIND" => ->(t) { t.make_revision("math-d-x", SKILL); t.topic_codes(t.topic([ "math-p-a", "math-d-x" ])) },
+    "E-TOPIC-WRITING" => ->(t) { t.topic_codes(t.topic([ "math-p-a", "math-p-b" ]).merge("writing" => [ { "item" => "math-p-a", "revision" => "latest" } ])) },
     "E-TOPIC-POOL" => ->(t) {
       t.make_practice_item("math-p-few", SKILL, instances: 2, level: 1)
       t.make_practice_item("math-p-few2", SKILL, instances: 2, level: 2)

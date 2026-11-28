@@ -17,13 +17,8 @@ class FreeWritingTest < ActionDispatch::IntegrationTest
   TEXT = "Ho spostato il sette a destra e ho diviso per tre. Poi ho fatto la verifica.".freeze
   CORRECTION = "Bene i passaggi. Attento: «ho fatto la verifica» va dopo il risultato.".freeze
 
-  setup do
-    build_writing_world
-    @saved_forgery = ActionController::Base.allow_forgery_protection
-    ActionController::Base.allow_forgery_protection = true
-  end
-
-  teardown { ActionController::Base.allow_forgery_protection = @saved_forgery }
+  # DecisionWorld turns CSRF protection on and restores it; saving it again here under the same name would restore it as on.
+  setup { build_writing_world }
 
   # ---- helpers -------------------------------------------------------------------------------------------
 

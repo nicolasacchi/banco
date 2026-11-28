@@ -23,6 +23,7 @@ class CodeFixturesTest < ActiveSupport::TestCase
     E-LESSON-BOOK E-LESSON-PAGE E-LESSON-SUMMARY E-LESSON-REFS W-LESSON-WHY W-LESSON-MISTAKES W-LESSON-FINAL-MISSING
     W-LESSON-FINAL-IN-TRY E-COURSE-SKILL-DUPLICATE E-COURSE-TOPIC E-COURSE-EXTRA-SKILL W-COURSE-ORDER W-COURSE-GRAPH-STALE E-TOPIC-UNKNOWN
     E-TOPIC-PIN E-TOPIC-SKILLS E-TOPIC-ITEM-KIND E-TOPIC-POOL W-TOPIC-INSTANCE-IN-LESSON W-PRACTICE-DIAGNOSIS-OVERLAP
+    E-TOPIC-WRITING
   ].freeze
   # The banco.lesson/2 codes (D-245): their bad fixtures are test/fixtures/lesson2/bad (one code each, manifest.json),
   # run by the lesson/2 checks (R1) and the render check (R4). Until then they are registered and have a fixture file.
@@ -372,6 +373,17 @@ class CodeFixturesTest < ActiveSupport::TestCase
     "E-BLUEPRINT-PRACTICE-ITEM" => lambda {
       practice = ->(id) { Validation::BlueprintChecks::ItemInfo.new(id: id, skills: [ BP_ITEMS.fetch(id) ], passed: true, kind: "practice_item", instances: (1..4).map { |i| { fingerprint: "#{id}-#{i}", low_guess: true } }) }
       blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? (id == "r1a" ? practice.call(id) : bp_info(id)) : nil })
+    },
+    # a blueprint pins a writing task (D-407)
+    "E-BLUEPRINT-WRITING-ITEM" => lambda {
+      writing = ->(id) { Validation::BlueprintChecks::ItemInfo.new(id: id, skills: [ BP_ITEMS.fetch(id) ], passed: true, kind: "short_answer", writing: true, instances: (1..4).map { |i| { fingerprint: "#{id}-#{i}", low_guess: true } }) }
+      blueprint_codes(items: ->(id) { BP_ITEMS.key?(id) ? (id == "r1a" ? writing.call(id) : bp_info(id)) : nil })
+    },
+    # a writing task whose word range runs backwards (D-407)
+    "E-WRITING-RANGE" => lambda {
+      found = Validation::Findings.new
+      Validation::ItemChecks.writing_range({ "words_min" => 90, "words_max" => 60 }, found)
+      found.map(&:code).uniq
     },
     "W-MATH-LAST-NOTE" => lambda {
       findings = Validation::Findings.new

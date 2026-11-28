@@ -286,7 +286,7 @@ class AgentSessionCorrectionTest < ActionDispatch::IntegrationTest
 
   test "no route reaches a correction" do
     names = Rails.application.routes.routes.map { |r| [ r.path.spec.to_s, r.defaults[:controller].to_s, r.defaults[:action].to_s ].join(" ") }
-    assert_empty names.grep(/correct(?!ions\b.*teacher)/i).reject { |n| n.include?("teacher/corrections") }, "no route may write a session correction"
+    assert_empty names.grep(/correct(?!ions\b.*teacher)/i).reject { |n| n.include?("teacher/corrections") || n.include?("teacher/writing-submissions") } # D-407: the teacher's correction of a student's text is no session correction, "no route may write a session correction"
     assert_empty names.grep(/agent_session|session_correction/i)
     sessions = names.select { |n| n.include?("api/v1/sessions") }
     assert_equal [ "/api/v1/sessions api/v1/sessions create" ], sessions.map { |n| n.sub("(.:format)", "") }, "the only session route creates a session"
