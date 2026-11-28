@@ -104,6 +104,25 @@ class LessonsChecksTest < ActiveSupport::TestCase
     assert grade(three, right3.merge(shown3.call("l3") => shown3.call("r1")), map3).wrong?, "one option for every row (D-314)"
   end
 
+  # Round 10 (D-408): the rows of a `translate_material: false` check have `text_en` and no `text_it`; the note quotes them, never their ids.
+  test "matching: the pair note of a right-but-one lesson quotes the words of the rows, whichever key holds them" do
+    left = %w[dog cat bird].each_with_index.map { |w, i| { "id" => "l#{i + 1}", "text_en" => w } }
+    right = %w[barks purrs sings].each_with_index.map { |w, i| { "id" => "r#{i + 1}", "text_en" => w } }
+    check = { "component" => "matching", "prompt_en" => "Match.", "translate_material" => false, "left" => left, "right" => right,
+              "answer" => { "l1" => "r1", "l2" => "r2", "l3" => "r3" } }
+    map = Lessons::Checks.id_map(check, "lesson|s|1|2|3")
+    shown = ->(stored) { map.key(stored) }
+    one_off = { shown.("l1") => shown.("r1"), shown.("l2") => shown.("r2"), shown.("l3") => shown.("r1") }
+    graded = grade(check, one_off, map, subject: "english")
+    assert_predicate graded, :right?
+    assert_equal "Giusto, tranne una coppia: «bird» va con «sings», non con «barks».", graded.message_it
+    # a bilingual row with both: the target text is what the student reads
+    both = check.merge("left" => left.map { |o| o.merge("text_it" => "italiano") }, "right" => right.map { |o| o.merge("text_it" => "italiano") })
+    assert_equal "Giusto, tranne una coppia: «bird» va con «sings», non con «barks».", grade(both, one_off, map, subject: "english").message_it
+    assert_equal "Giusto, tranne una coppia: «x» va con «y», non con «z».", Grading::PairNote.line({ "left" => [ { "id" => "l1", "text_it" => "x" } ], "right" => [ { "id" => "r1", "text_it" => "y" }, { "id" => "r2", "text_it" => "z" } ] },
+                                                                                          { "off_pair" => { "left" => "l1", "key" => "r1", "given" => "r2" } })
+  end
+
   test "span_select: a set of shown span ids, in any order" do
     check = { "component" => "span_select", "prompt_it" => "Tocca.", "text_it" => "La bambina canta una canzone",
               "spans" => [ { "id" => "s1", "text_it" => "La bambina" }, { "id" => "s2", "text_it" => "canta" }, { "id" => "s3", "text_it" => "una canzone" } ],

@@ -58,13 +58,15 @@ module Grading
         contracted = spec.contractions == "en"
         # The key decides which reading of an ambiguous 's/'d is meant ("'s got" is "is got" or "has got"): any reading of the answer that an
         # accepted text has is right, unless that reading is itself a declared error value (Contractions.accepts?).
+        # A suffix at the start of the answer ('s, 're) is a fragment only after a word of the frame: «___ Jack coming?» has none (round 10).
+        context = contracted ? frame_context(spec) : {}
         if contracted
           errors = spec.error_values.map { |_code, v| normalize(v.to_s, case_sensitive: spec.case_sensitive) }
-          i = accepted.index { |t| Contractions.accepts?(t, answer, case_sensitive: spec.case_sensitive, except: errors) }
+          i = accepted.index { |t| Contractions.accepts?(t, answer, case_sensitive: spec.case_sensitive, except: errors, **context) }
           return right.(i) if i
         end
         # A declared error value that the answer equals is looked at first (D-403): «por que» for «porque» is its declared error, not a code typed in groups.
-        declared = declared_entries(spec, answer)
+        declared = declared_entries(spec, answer, **context)
         if declared.any?
           code, written = declared.first
           return Closed.result("typical_error", error_codes: declared.map(&:first).uniq, normalized: answer, matched: { kind: "error", value: written, code: code })
@@ -86,11 +88,19 @@ module Grading
       end
 
       # [[code, value as written]] of the declared error values that the answer equals (or, with contractions on, reads as), in the order of the catalogue.
-      def declared_entries(spec, answer)
+      def declared_entries(spec, answer, **context)
         spec.error_values.select do |_code, v|
           written = normalize(v.to_s, case_sensitive: spec.case_sensitive)
-          written == answer || (spec.contractions == "en" && Contractions.accepts?(written, answer, case_sensitive: spec.case_sensitive))
+          written == answer || (spec.contractions == "en" && Contractions.accepts?(written, answer, case_sensitive: spec.case_sensitive, **context))
         end
+      end
+
+      # What the sentence shown says about the contractions of a gap's filler (Contractions.accepts?): `fragment`, whether the filler may start with a suffix of the table
+      # ('s, 're), which it may not when the sentence opens with the gap (a contraction needs a word before it); `after`, the words that follow the gap, which tell a
+      # final «'s» whether it is «has» (before a participle) or «is». No sentence shown (no frame): the author's own text decides, as before.
+      def frame_context(spec)
+        frame = Frame.for_spec(spec)
+        frame ? { fragment: frame.prefix.any?, after: frame.suffix.first(2) } : {}
       end
 
       # The accepted entry an accent slip is of (the one that is the answer without its accents).
@@ -111,7 +121,7 @@ module Grading
       end
 
       def near_of(spec, answer, accepted, entries)
-        i = accepted.index { |c| damerau(answer, c) == Diagnosis::Rules::V1::NEAR_MISS_EDIT_DISTANCE }
+        i = accepted.index { |c| damerau(answer, c) == Diagnosis::Rules::V1::NEAR_MISS_EDIT_DISTANCE && !NearText.inflection_only?(answer, c, spec.subject) }
         i ? { kind: "slip", value: entries[i] } : nil
       end
 
@@ -206,7 +216,7 @@ module Grading
         return false unless spec.spelling_policy == "near"
         return false if answer.length < Diagnosis::Rules::V1::NEAR_MISS_MIN_LENGTH
 
-        accepted.any? { |c| damerau(answer, c) == Diagnosis::Rules::V1::NEAR_MISS_EDIT_DISTANCE }
+        accepted.any? { |c| damerau(answer, c) == Diagnosis::Rules::V1::NEAR_MISS_EDIT_DISTANCE && !NearText.inflection_only?(answer, c, spec.subject) }
       end
 
       # Optimal string alignment distance: insertion, deletion, substitution and

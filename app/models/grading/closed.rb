@@ -42,15 +42,15 @@ module Grading
       # prompt_it is the stem), so the rule is the same there.
       def normalized_text(spec, value)
         frame = value.is_a?(String) && !binary?(spec) ? Frame.for_spec(spec) : nil
-        return Text.grade(spec, value) unless frame
+        return with_pronoun(spec, value, nil) unless frame
         return invalid("blank_copied") if value.match?(Frame::BLANK)
 
         # An item whose key is itself a whole sentence keeps it: what the student typed is right as it stands.
-        plain = Text.grade(spec, value)
+        plain = with_pronoun(spec, value, frame)
         return plain if plain.verdict == "correct"
 
         part = frame.part(value)
-        graded = part && Text.grade(spec, part)
+        graded = part && with_pronoun(spec, part, frame)
         return graded.full_sentence(part) if graded&.verdict == "correct"
 
         filler = whole_sentence_filler(spec, frame, value)
@@ -65,6 +65,21 @@ module Grading
         plain
       end
 
+      # Text.grade, and in a Spanish verb gap a leading subject pronoun that agrees with the key's person is no word too many (SubjectPronouns, round 10):
+      # «yo he ido» is right for «he ido». Only when the plain grading is not right and the gap does not follow a subject.
+      def with_pronoun(spec, text, frame)
+        graded = Text.grade(spec, text)
+        return graded unless spec.subject == "spanish" && text.is_a?(String) && graded.verdict != "correct" && graded.verdict != "invalid" && SubjectPronouns.gap_open?(frame)
+
+        pronoun, rest = SubjectPronouns.split(text)
+        return graded unless pronoun
+
+        bare = Text.grade(spec, rest)
+        return graded unless bare.verdict == "correct" && SubjectPronouns.agrees?(pronoun, bare.matched && bare.matched[:value] || spec.answer)
+
+        result("correct", normalized: Text.normalize(text, case_sensitive: spec.case_sensitive), matched: bare.matched)
+      end
+
       # The key or accepted value whose frame, filled, is the answer (D-352); nil when none is. Compared with the grader's
       # normalisation, the case, the punctuation .,!?;: … and the quotes ignored, the spaces collapsed, the direction of an accent ignored.
       def whole_sentence_filler(spec, frame, value)
@@ -76,7 +91,7 @@ module Grading
         return exact if exact || spec.contractions != "en"
 
         errors = spec.error_values.map { |_code, v| sentence_key(frame.fill(v.to_s), spec) }
-        fillers.find { |filler| Contractions.accepts?(filled.(filler), given, case_sensitive: spec.case_sensitive, except: errors) }
+        fillers.find { |filler| Contractions.accepts?(filled.(filler), given, case_sensitive: spec.case_sensitive, except: errors, fragment: frame.prefix.any?) }
       end
 
       def sentence_key(text, spec)

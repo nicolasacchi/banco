@@ -196,7 +196,8 @@ class GradingContractionsTest < ActiveSupport::TestCase
     assert Lessons::Checks.grade(check, "that is why", subject: "english").right?
     assert Lessons::Checks.grade(lesson_check("that is why"), "That's why!", subject: "english").right?
     assert Lessons::Checks.grade(lesson_check("won't"), "will not", subject: "english").right?
-    assert Lessons::Checks.grade(check, "that has why", subject: "english").right?, "'s after that is is or has: either reading fits the key's"
+    assert Lessons::Checks.grade(lesson_check("that's gone"), "that has gone", subject: "english").right?, "'s before a participle is is or has: either reading fits the key's"
+    assert Lessons::Checks.grade(check, "that has why", subject: "english").wrong?, "round 10: 's before anything but a participle or got is is only"
     assert Lessons::Checks.grade(lesson_check("Anna's book"), "Anna is book", subject: "english").wrong?
     assert Lessons::Checks.grade(check, "that is why", subject: "italian").wrong?
     assert Lessons::Checks.grade(check, "that is why", subject: "spanish").wrong?
