@@ -408,6 +408,7 @@ Entry format: `## D-NNN · date · title`, then Design ref, Design said, We do, 
 | D-403 | 2026-11-27 | `spaces_in_code` only for codes; a declared error value is looked at first: a one-word key of a language subject typed as two words («por que» for «porque», «every day» for «everyday») is graded as any answer, its declared error or a near miss or wrong, no more «Scrivi la risposta di seguito, senza spazi» | implemented |
 | D-404 | 2026-11-27 | the Spanish cut-over of D-402: `lang.bilingual_required` lists `spanish` (rules version 14), so a NEW lesson or item of `spanish` must be bilingual; english stays out until its two culture topics are rewritten | implemented |
 | D-405 | 2026-11-27 | the English cut-over of D-402: `lang.bilingual_required` lists `english` too (rules version 15), so a NEW lesson or item of `english` must be bilingual, as one of `spanish` must since D-404 | implemented |
+| D-406 | 2026-11-28 | operator, the Marconi review: free writing is corrected by the teacher and the guided writing exercises stay (built by D-407); `physical_education` leaves the official student's course (console `release_course` open 0, content kept); the order of work is tooling round 10 with the free-writing software, then six topics for uncovered programme lines, wider topics, new exercise kinds, beyond-programme topics as extras | decided |
 
 ## D-001 · 2026-10-02 · operator G · diagnosis grading is hybrid
 
@@ -5075,3 +5076,17 @@ coordinates, `AUT` with its shape): a student with devtools could read which sha
 - **Status:** implemented.
 - **Back-port:** the comment above `version:` and the `lang:` block of `validation_rules.yml`.
 - **Tests:** `test/lib/lessons/bilingual_test.rb` (the rules: english and spanish listed), `test/validation/bilingual_items_test.rb` and `test/lib/lessons/bilingual_lesson_test.rb` (a new english revision is refused without the flag, a grandfathered one is not), `test/models/changelog/entries_test.rb`.
+
+## D-406 · 2026-11-28 · operator · the Marconi review: free writing corrected by the teacher, scienze motorie out of the student's course, the order of work
+
+- **Design ref:** the review of the course against the Marconi programme of seconda (2026-11-24; one report per subject in the orchestrator's working folder, not in git), D-344 (`physical_education`), D-324 (topics outside the programme), D-168 and D-317 (answers the teacher reads), firm rules 1 and 2.
+- **Operator's answers (2026-11-28):**
+  1. **Free writing:** the teacher corrects a text the student writes himself (an Italian narrative or argumentative text, a Spanish biography, an English description or message); the guided writing exercises (pieces to order and complete) stay as they are. D-407 builds it.
+  2. **Scienze motorie:** out of the student's course. The Marconi programme of seconda has no section for it.
+  3. **Order of work:** (a) tooling round 10 (grader, server and renderer fixes met in the English and Spanish courses) together with the free-writing software; (b) six topics for programme lines no topic covers: history, Byzantines and Lombards; law_economics, the market, supply and demand, needs and economic systems; italian, the plot, historical context and poetics of the *Promessi sposi*; english, the house (there is/are, prepositions of place); spanish, culture («ambito sociale»); chemistry with biology, the basics of carbon chemistry; (c) wider topics where a generic line is covered narrowly; (d) new kinds of exercise built from the existing components (a proof as steps to order, a program to complete, an outline or a profile in history and geography); (e) beyond-programme topics become optional extras (D-324), nothing deleted.
+- **We do:** (1) the console decision `release_course` with `open: 0` for `physical_education` (2026-11-28, origin `console`): the official student no longer sees the subject; course revision 90 and its 5 approved topics stay, and a new `release_course` reopens them. (2) The «Novità» entry `physical-education-out` tells the student and the teacher. (3) Points 1 and 3 are carried out by D-407 and the next waves.
+- **Not done / must not change:** no topic, lesson or item of `physical_education` is withdrawn or changed; a trial student and the teacher's preview keep their own views (`Course::Catalog`).
+- **Why:** the exam follows the Marconi programme; a subject that the programme of seconda does not have takes time from the ones it has, and the student never opened it.
+- **Cost:** none for the code; reopening is one teacher decision.
+- **Status:** decided; (1) and (2) implemented.
+- **Tests:** `test/models/changelog/entries_test.rb` (the entry).

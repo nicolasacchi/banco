@@ -13,6 +13,15 @@
 #
 # The student's text has no decision number and no jargon; it is second person and never blames. Newest first is the order of the pages, not of this file.
 entries:
+  - id: physical-education-out
+    date: 2026-11-28
+    audience: [student, teacher]
+    kind: content
+    decisions: [D-406]
+    title_it: "Scienze motorie non è più tra le tue materie"
+    body_it: "Il programma della seconda non ha scienze motorie, quindi non la trovi più tra le materie. Le altre materie non cambiano."
+    title_en: "Physical education is no longer one of your subjects"
+    body_en: "The second-year programme has no physical education, so it is no longer among your subjects. The other subjects stay the same."
   - id: english-in-english
     date: 2026-11-27
     audience: [student, teacher]
